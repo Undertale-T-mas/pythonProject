@@ -20,4 +20,5 @@ class Entity(GameObject):
         raise NotImplementedError()
 
     image: image
+    surfaceName: str = "default"
     area: rect

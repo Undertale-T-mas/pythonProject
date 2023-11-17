@@ -1,18 +1,20 @@
 import pygame
+from Core.Render.RenderOptions import *
 
 from Core.GameStates import *
+from pygame import Vector2 as vec2
 
 # pygame setup
 pygame.init()
-screen = pygame.display.set_mode(pygame.Vector2(1280, 720))
+render_options = RenderOptions()
+screen = pygame.display.set_mode(vec2(1280, 720))
 clock = pygame.time.Clock()
 pygame.key.stop_text_input()
 running = True
 dt = 0
 
-player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
+player_pos = vec2(screen.get_width() / 2, screen.get_height() / 2)
 
-GS = GameStates()
 
 while running:
     # poll for events

@@ -1,13 +1,13 @@
 from Core import GameStates
+from pygame import *
 
 
 class GameArgs:
     elapsedSec = 0.0
     totalSec = 0.0
-    gameStates: GameStates
 
-    def __init__(self, gs: GameStates):
-        self.gameStates = gs
+    def __init__(self):
+        pass
 
     def update(self, time_elapsed: float):
         self.elapsedSec = time_elapsed
@@ -15,4 +15,4 @@ class GameArgs:
 
 
 class RenderArgs:
-    pass
+    target_surface: surface
