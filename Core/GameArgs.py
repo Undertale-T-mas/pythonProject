@@ -15,4 +15,4 @@ class GameArgs:
 
 
 class RenderArgs:
-    target_surface: surface
+    target_surface: Surface

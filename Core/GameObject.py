@@ -1,5 +1,7 @@
 from Core.GameArgs import *
 from pygame import *
+from pygame import Vector2 as vec2
+from Core.Animation.ImageSet import *
 
 
 class GameObject:
@@ -19,6 +21,6 @@ class Entity(GameObject):
     def draw(self, render_args: RenderArgs):
         raise NotImplementedError()
 
-    image: image
+    image: ImageSetBase
     surfaceName: str = "default"
-    area: rect
+    centre: vec2 = vec2(0, 0)

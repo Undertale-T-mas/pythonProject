@@ -4,12 +4,12 @@ from Core.GameObject import *
 
 class ObjectManager:
 
-    __objects__: List[GameObject]
+    __objects__: List[GameObject] = []
 
-    __buffer__: List[GameObject]
+    __buffer__: List[GameObject] = []
 
-    __idx__: Set[int]
-    __idx_list__: List[int]
+    __idx__: Set[int] = set()
+    __idx_list__: List[int] = []
 
     __idx_cnt__ = 0
 
@@ -17,7 +17,11 @@ class ObjectManager:
         self.__buffer__.append(obj)
 
     def get_objects(self):
-        return self.__objects__
+        objects : List[GameObject] = []
+        for obj in self.__objects__:
+            if not obj.is_disposed():
+                objects.append(obj)
+        return objects
 
     def update_all(self, args: GameArgs):
         for obj in self.__buffer__:

@@ -1,9 +1,15 @@
 from Core.GameStates.ObjectManager import *
 from Core.Render.SurfaceManager import *
+from Core.GameStates import GameStates
 
 
 class Scene:
     __objManager__ = ObjectManager()
+    __render_args__ = RenderArgs()
+    __render_options__: RenderOptions
+
+    def __init__(self):
+        self.__render_options__ = GameStates.__gsRenderOptions__
 
     def update(self, game_args: GameArgs):
         self.__objManager__.update_all(game_args)
@@ -13,7 +19,8 @@ class Scene:
         for obj in self.__objManager__.get_objects():
             if isinstance(obj, Entity):
                 manager.draw_insert(obj)
-        manager.draw_end()
+
+        manager.draw_end(self.__render_args__)
 
     def instance_create(self, obj: GameObject):
         self.__objManager__.instance_create(obj)

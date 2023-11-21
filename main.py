@@ -1,20 +1,22 @@
 import pygame
+
+import Game.TestScene
+from Core.GameStates import GameStates
+from Core.GameStates.Scene import Scene
 from Core.Render.RenderOptions import *
 
-from Core.GameStates import *
 from pygame import Vector2 as vec2
 
 # pygame setup
 pygame.init()
 render_options = RenderOptions()
-screen = pygame.display.set_mode(vec2(1280, 720))
 clock = pygame.time.Clock()
 pygame.key.stop_text_input()
 running = True
 dt = 0
 
-player_pos = vec2(screen.get_width() / 2, screen.get_height() / 2)
-
+GameStates.initialize(render_options)
+GameStates.change_scene(Game.TestScene.TestScene())
 
 while running:
     # poll for events
@@ -23,19 +25,8 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # fill the screen with a color to wipe away anything from last frame
-    screen.fill("black")
-    pygame.draw.circle(screen, "#6600ffff", player_pos, 40)
-
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_w]:
-        player_pos.y -= 300 * dt
-    if keys[pygame.K_s]:
-        player_pos.y += 300 * dt
-    if keys[pygame.K_a]:
-        player_pos.x -= 300 * dt
-    if keys[pygame.K_d]:
-        player_pos.x += 300 * dt
+    GameStates.update(dt)
+    GameStates.render()
 
     # flip() the display to put your work on screen
     pygame.display.flip()
