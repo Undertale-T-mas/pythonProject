@@ -23,7 +23,7 @@ class ObjectManager:
                 objects.append(obj)
         return objects
 
-    def update_all(self, args: GameArgs):
+    def push_buffer(self):
         for obj in self.__buffer__:
             if self.__idx_cnt__ > 0:
                 tar = self.__idx_list__[-1]
@@ -35,12 +35,25 @@ class ObjectManager:
                 self.__objects__.append(obj)
         self.__buffer__.clear()
 
+    def collect(self):
+        i = 0
+        for obj in self.__objects__:
+            if obj.is_disposed():
+                self.__idx__.add(i)
+                self.__idx_list__.append(i)
+                self.__idx_cnt__ += 1
+            i += 1
+
+    def update_all(self, args: GameArgs):
+        self.push_buffer()
+
         i = 0
         for obj in self.__objects__:
             if not obj.is_disposed():
                 obj.update(args)
             else:
-                self.__idx__.add(i)
-                self.__idx_list__.append(i)
-                self.__idx_cnt__ += 1
+                if i not in self.__idx__:
+                    self.__idx__.add(i)
+                    self.__idx_list__.append(i)
+                    self.__idx_cnt__ += 1
             i += 1

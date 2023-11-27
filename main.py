@@ -18,6 +18,8 @@ dt = 0
 GameStates.initialize(render_options)
 GameStates.change_scene(Game.TestScene.TestScene())
 
+flipped = False
+
 while running:
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
@@ -29,10 +31,14 @@ while running:
     GameStates.render()
 
     # flip() the display to put your work on screen
-    pygame.display.flip()
+    if not flipped:
+        flipped = True
+        pygame.display.flip()
+    else:
+        pygame.display.update()
 
     # limits FPS to 60
-    # dt is delta time in seconds since last frame, used for framerate-
+    # dt is delta time in seconds since last frame, used for frame rate
     # independent physics.
     dt = clock.tick(60) / 1000
 

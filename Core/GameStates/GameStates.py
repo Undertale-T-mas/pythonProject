@@ -16,11 +16,16 @@ __gsKeyStates__: ScancodeWrapper
 __gsKeyLast__: ScancodeWrapper
 
 
+def set_display(render_options: RenderOptions) -> Surface:
+    return pygame.display.set_mode(render_options.screenSize)
+
+
 def initialize(render_options: RenderOptions):
     global __gsSurfaceManager__
     global __gsRenderOptions__
     __gsSurfaceManager__ = SurfaceManager(render_options)
     __gsRenderOptions__ = render_options
+    set_display(render_options)
 
 
 def instance_create(obj: GameObject):

@@ -2,6 +2,8 @@ from typing import *
 
 import pygame
 
+import Core.GameStates.GameStates
+from Core.GameStates.GameStates import *
 from Core.Render.RenderOptions import *
 from Core.GameObject import *
 from pygame import Vector2 as vec2
@@ -28,7 +30,7 @@ class SurfaceManager:
             self.__curSize__ = self.__renderOptions__.screenSize
             for i in range(BUFFER_COUNT):
                 self.buffers[i] = Surface((self.__renderOptions__.screenSize.x, self.__renderOptions__.screenSize.y))
-            self.screen = pygame.display.set_mode(self.__curSize__)
+            self.screen = Core.GameStates.GameStates.set_display(self.__renderOptions__)
 
     def __init__(self, render_options: RenderOptions):
         self.__renderOptions__ = render_options

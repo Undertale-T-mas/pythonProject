@@ -6,32 +6,9 @@ from pygame import *
 from pygame import Vector2 as vec2
 
 import Resources.ResourceLoad
-from Core.Animation.anchor import Anchor
+from Core.Animation.Anchor import *
 from Core.GameArgs import *
-from Resources import ResourceLoad
-
-
-class ImageSetBase:
-
-    def load(self, path: str):
-        self.imageSource = image.load(path)
-
-    imageSource: Surface
-    blockSize: vec2
-    indexX: int
-    indexY: int
-
-    anchor: Anchor
-
-    def source_area(self) -> Rect:
-        raise NotImplementedError()
-
-    def draw_self(self, args: RenderArgs, centre: vec2):
-        args.target_surface.blit(
-            self.imageSource,
-            centre - self.anchor.get_anchor_pos(),
-            self.source_area()
-        )
+from Resources.ResourceLoad import *
 
 
 class SingleImage(ImageSetBase):
@@ -45,9 +22,10 @@ class ImageSet(ImageSetBase):
     __blockDistance__: vec2
 
     def __init__(self, block_size: vec2, block_distance: vec2, path: str):
-        self.imageSource = image.load(path)
+        self.imageSource = load_image(path)
         self.blockSize = block_size
         self.__blockDistance__ = block_distance
+        self.anchor = ACentre(self)
 
     def source_area(self):
         x = self.__blockDistance__.x * self.indexX
@@ -59,9 +37,10 @@ class MultiImageSet(ImageSetBase):
     __blockDistance__: vec2
 
     def __init__(self, block_size: vec2, block_distance: vec2, path: str):
-        self.imageSource = image.load(path)
+        self.load(path)
         self.blockSize = block_size
         self.__blockDistance__ = block_distance
+        self.anchor = ACentre(self)
 
     def source_area(self):
         x = self.__blockDistance__.x * self.indexX
@@ -77,10 +56,10 @@ class MultiImageSet(ImageSetBase):
         elif index is str:
             self.imageSource = self.imageDict[index]
 
-    def load(self, path: str):
-        paths = os.listdir()
+    def load(self, root: str):
+        paths = os.listdir('Resources\\Images\\' + root)
         for path in paths:
-            surf = ResourceLoad.load_image(path)
+            surf = load_image(root + '\\' + path)
             self.imageDict[path] = surf
             self.imageList.append(surf)
         self.imageSource = self.imageList[0]
