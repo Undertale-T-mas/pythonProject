@@ -1,4 +1,9 @@
+from Core.Physics.CollidingArea import CollideArea
 
 
 class Collidable:
-    physic_surf_name: str
+    physicSurfName: str
+    physicArea: CollideArea
+
+    def on_collide(self, another):
+        raise NotImplementedError()

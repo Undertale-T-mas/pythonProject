@@ -9,7 +9,7 @@ class PhysicManager:
     def insert_object(self, obj: GameObject):
         if not isinstance(obj, Collidable):
             raise Exception()
-        s = obj.physic_surf_name
+        s = obj.physicSurfName
         if s not in self.__surfMap__:
             sur = PhysicSurface()
             self.__surfs__.add(sur)

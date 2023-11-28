@@ -9,6 +9,8 @@ class CollideArea:
 class CollideRect:
     area: Rect
 
-    def CollideWith(self, another: Rect):
-        return self.area.colliderect(another)
+    def CollideWith(self, another) -> bool:
+        if isinstance(another, CollideRect):
+            return self.area.colliderect(another.area)
+        raise NotImplementedError()
 

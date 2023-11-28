@@ -10,6 +10,7 @@ from pygame.transform import rotate
 import Resources.ResourceLoad
 from Core.Animation.AnchorBase import Anchor
 from Core.GameArgs import *
+from Core.MathUtil import Math
 from Resources.ResourceLoad import *
 
 
@@ -29,14 +30,32 @@ class ImageSetBase:
     def source_area(self) -> Rect:
         raise NotImplementedError()
 
+    __curScale__: float = 1.0
+    __imageDraw__: Surface = None
+
+    def __need_refresh__(self) -> bool:
+        if self.__imageDraw__ is None:
+            return True
+
+        if Math.abs(self.scale - self.__curScale__) > 0.0001:
+            return True
+
+        return False
+
+    def __create_img__(self):
+        cur = self.imageSource.subsurface(self.source_area())
+        if Math.abs(self.scale - 1.0) > 0.0001:
+            cur = transform.scale(cur, vec2(self.scale * cur.get_width(), self.scale * cur.get_height()))
+        self.__imageDraw__ = cur
+        self.__curScale__ = self.scale
+
     def draw_self(self, args: RenderArgs, centre: vec2):
-        r = self.source_area()
+        if self.__need_refresh__():
+            self.__create_img__()
+
         v = centre - self.anchor.get_anchor_pos() * self.scale
 
-        transform.scale()
-
         args.target_surface.blit(
-            self.imageSource,
-            v,
-            r
+            self.__imageDraw__,
+            v
         )
