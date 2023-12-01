@@ -22,7 +22,7 @@ class ImageSet(ImageSetBase):
     __blockDistance__: vec2
 
     def __init__(self, block_size: vec2, block_distance: vec2, path: str):
-        self.imageSource = load_image(path)
+        self.imageSource = load_image('Tiles\\' + path)
         self.blockSize = block_size
         self.__blockDistance__ = block_distance
         self.anchor = ACentre(self)
@@ -60,6 +60,6 @@ class MultiImageSet(ImageSetBase):
         paths = os.listdir('Resources\\Images\\' + root)
         for path in paths:
             surf = load_image(root + '\\' + path)
-            self.imageDict[path] = surf
+            self.imageDict[path.removesuffix('.png')] = surf
             self.imageList.append(surf)
         self.imageSource = self.imageList[0]

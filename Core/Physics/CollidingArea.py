@@ -2,12 +2,12 @@ from pygame import *
 
 
 class CollideArea:
-    def CollideWith(self, another):
+    def CollideWith(self, another) -> bool:
         raise Exception()
 
 
-class CollideRect:
-    area: Rect
+class CollideRect(CollideArea):
+    area: Rect = Rect(0, 0, 0, 0)
 
     def CollideWith(self, another) -> bool:
         if isinstance(another, CollideRect):

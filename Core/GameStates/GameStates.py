@@ -10,6 +10,9 @@ __gsGameArgs__ = GameArgs()
 __gsRenderArgs__ = RenderArgs()
 __gsScene__: Scene = None
 __gsSceneBuffer__: Scene = None
+
+from Core.GameStates.Scene import Scene
+
 __gsSurfaceManager__: SurfaceManager
 __gsRenderOptions__: RenderOptions
 __gsKeyStates__: ScancodeWrapper
@@ -55,6 +58,10 @@ def update(time_elapsed: float):
         __gsScene__ = __gsSceneBuffer__
     __gsScene__.update(__gsGameArgs__)
     __gsKeyLast__ = __gsKeyStates__
+
+
+def current_scene() -> Scene:
+    return __gsScene__
 
 
 def key_hold(key_id):

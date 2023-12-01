@@ -1,6 +1,7 @@
 from Core.GameStates.ObjectManager import *
 from Core.Render.SurfaceManager import *
 from Core.GameStates import GameStates
+from Core.Render.SurfaceManager import SurfaceManager
 
 
 class Scene:

@@ -4,6 +4,16 @@ from pygame import Vector2 as vec2
 from Core.Animation.ImageSet import *
 
 
+class Action:
+    __fun__: staticmethod | classmethod
+
+    def __init__(self, fun):
+        self.__fun__ = fun
+
+    def act(self):
+        self.__fun__()
+
+
 class GameObject:
     def update(self, args: GameArgs):
         raise NotImplementedError()
@@ -21,6 +31,6 @@ class Entity(GameObject):
     def draw(self, render_args: RenderArgs):
         raise NotImplementedError()
 
-    image: ImageSetBase
+    image: ImageSetBase | None = None
     surfaceName: str = "default"
     centre: vec2 = vec2(0, 0)
