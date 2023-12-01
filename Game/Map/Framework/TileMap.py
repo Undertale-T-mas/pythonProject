@@ -5,19 +5,23 @@ from typing import *
 class TileMap(Entity):
     tiles: List[List[Tile]] = []
 
-    width: int = -1
-    height: int = -1
+    width: int = 0
+    height: int = 0
 
     def __init__(self):
         self.surfaceName = 'bg'
 
     def __extend__(self, x: int, y: int):
-        while y > self.height:
+        while y >= self.height:
             self.height += 1
-            self.tiles.append([])
-        if x > self.width:
-            for y in range(self.height + 1):
-                for i in range(x - self.width):
+            row = []
+            for i in range(self.width):
+                row.append(Tile(TileLibrary.empty))
+            self.tiles.append(row)
+
+        if x >= self.width:
+            for y in range(self.height):
+                for i in range(x - self.width + 1):
                     self.tiles[y].append(Tile(TileLibrary.empty))
             self.width = x
 
@@ -28,6 +32,7 @@ class TileMap(Entity):
         tile.locY = y
 
     def get_tile(self, x: int, y: int) -> Tile:
+        self.__extend__(x, y)
         return self.tiles[y][x]
 
     def update(self, args: GameArgs):

@@ -22,6 +22,9 @@ from Game.Map.Framework.TileMap import *
 class MapTEST0(TileMap):
     def __init__(self):
         super().__init__()
-        self.set_tile(2,5, Tile(TileLibrary.grass))
-        self.set_tile(3,5, Tile(TileLibrary.grass))
-        self.set_tile(4,5, Tile(TileLibrary.grass))
+        self.set_tile(0, 5, Tile(TileLibrary.grass))
+        self.set_tile(1, 5, Tile(TileLibrary.grass))
+        self.set_tile(4, 5, Tile(TileLibrary.grass))
+        self.set_tile(5, 5, Tile(TileLibrary.grass))
+        self.set_tile(8, 8, Tile(TileLibrary.grass))
+        self.set_tile(9, 8, Tile(TileLibrary.grass))

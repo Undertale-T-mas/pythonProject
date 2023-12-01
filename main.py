@@ -20,6 +20,8 @@ GameStates.change_scene(Game.TestScene.TestScene())
 
 flipped = False
 
+speed = 1
+
 while running:
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
@@ -37,9 +39,9 @@ while running:
     else:
         pygame.display.update()
 
-    # limits FPS to 60
+    # limits FPS to 125
     # dt is delta time in seconds since last frame, used for frame rate
     # independent physics.
-    dt = clock.tick(60) / 1000
+    dt = min(clock.tick(125) / 1000, 0.1) * speed
 
 pygame.quit()

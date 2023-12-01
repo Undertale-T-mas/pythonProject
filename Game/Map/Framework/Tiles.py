@@ -28,7 +28,7 @@ class TileInfo:
     sizeX: int = 1
     sizeY: int = 1
     bound: CollideRect = CollideRect()
-    _id: int
+    uuid: int
     onUpdate: Action | None = None
 
     def __init__(self, path: str, size: Tuple[int, int] | List[int], _id: int, on_update: Action = None):
@@ -36,7 +36,7 @@ class TileInfo:
         self.bound.area = Rect(0, 0, TILE_LENGTH, TILE_LENGTH)
         self.sizeX = size[0]
         self.sizeY = size[1]
-        self._id = _id
+        self.uuid = _id
         self.onUpdate = on_update
 
 
@@ -48,6 +48,16 @@ class TileLibrary(Enum):
 class Tile(Entity, Collidable):
     locX: int = 0
     locY: int = 0
+
+    __areaRect__: Rect
+
+    @property
+    def areaRect(self) -> Rect:
+        return self.__areaRect__
+
+    @property
+    def uuid(self):
+        return self.info.uuid
 
     info: TileInfo
 
@@ -64,7 +74,13 @@ class Tile(Entity, Collidable):
     def update(self, args: GameArgs):
         if self.info.onUpdate is not None:
             self.info.onUpdate.act()
-        self.centre = vec2((self.locX + 0.5) * TILE_LENGTH, (self.locY + 0.5) * TILE_LENGTH)
+        if self.uuid != 0:
+            self.centre = vec2((self.locX + 0.5) * TILE_LENGTH, (self.locY + 0.5) * TILE_LENGTH)
+            s = CollideRect()
+            sz = vec2(TILE_LENGTH, TILE_LENGTH)
+            s.area = Rect(self.centre - sz / 2, sz)
+            self.physicArea = s
+            self.__areaRect__ = s.area
 
     def draw(self, render_args: RenderArgs):
         if self.image is not None:

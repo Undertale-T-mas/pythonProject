@@ -24,7 +24,9 @@ class Player(MovableEntity):
         self.__image_set__ = s
         self.image = s
         self.gravity = 9.8
-        self.size = s.blockSize
+        self.size = vec2(40, 96 - 24)
+        self.boundAnchor = vec2(20, 48 - 24)
+        self.centre = vec2(24, 0)
         s.scale = 2.0
         s.imageSource = s.imageDict['Punk_run']
 
@@ -48,19 +50,28 @@ class Player(MovableEntity):
         self.__step_timing__ = 0
         self.image.indexX = 0
 
+    __jumpPressTime__ = 0.0
+
     def update(self, args: GameArgs):
         if key_hold(pygame.K_LEFT):
             self.__moveIntention__.x = -5
+            self.image.flip = True
         if key_hold(pygame.K_RIGHT):
             self.__moveIntention__.x = 5
+            self.image.flip = False
 
         need_jump = key_hold(pygame.K_c)
-        if need_jump and self.onGround:
+        if need_jump:
+            self.__jumpPressTime__ += args.elapsedSec
+        else:
+            self.__jumpPressTime__ = 0
+
+        if need_jump and self.onGround and self.__jumpPressTime__ < 0.1:
             self.jump(self.jump_speed)
             self.state = MoveState.jump
 
         if self.__ySpeed__ < 0 and not need_jump:
-            self.gravity = 66
+            self.gravity = 33
         else:
             self.gravity = 9.8
 
@@ -69,8 +80,6 @@ class Player(MovableEntity):
         if abs(d.x) > 1e-8:
             if self.onGround:
                 self.state = MoveState.run
-
-            self.__image_set__.flip = (d.x < 0)
 
         else:
             if self.onGround:
@@ -82,9 +91,10 @@ class Player(MovableEntity):
             self.image.imageSource = self.__image_set__.imageDict['Punk_run']
             if self.__step_timing__ > 0.1:
                 self.__step_timing__ -= 0.1
-                self.image.indexX += 1
-                if self.image.indexX >= 6:
-                    self.image.indexX = 0
+                if abs(d.x) > 0:
+                    self.image.indexX += 1
+                    if self.image.indexX >= 6:
+                        self.image.indexX = 0
 
         elif self.state == MoveState.idle:
             self.image.imageSource = self.__image_set__.imageDict['Punk_idle']
