@@ -4,7 +4,7 @@ import Game.TestScene
 from Core.GameStates import GameStates
 from Core.GameStates.Scene import Scene
 from Core.Render.RenderOptions import *
-
+from Game.Scenes.Start import *
 from pygame import Vector2 as vec2
 
 # pygame setup
@@ -16,7 +16,8 @@ running = True
 dt = 0
 
 GameStates.initialize(render_options)
-GameStates.change_scene(Game.TestScene.TestScene())
+# GameStates.change_scene(Game.TestScene.TestScene())
+GameStates.change_scene(Start())
 
 flipped = False
 
