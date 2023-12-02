@@ -12,6 +12,7 @@ pygame.init()
 render_options = RenderOptions()
 clock = pygame.time.Clock()
 pygame.key.stop_text_input()
+if(player.clicked())
 running = True
 dt = 0
 
