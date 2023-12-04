@@ -26,24 +26,23 @@ class PlayerHand(Entity):
     __inAttack__: bool = False
 
     __runPos__: List[vec2] = [
-        vec2(8, 7),
-        vec2(8, 7),
-        vec2(8, 7),
-        vec2(8, 7),
-        vec2(8, 7),
-        vec2(8, 7)
+        vec2(7, 7),
+        vec2(7, 7),
+        vec2(7, 7),
+        vec2(7, 7),
+        vec2(7, 7),
+        vec2(7, 7),
+        vec2(7, 7)
     ]
     __jumpPos__: List[vec2] = [
-        vec2(12, 6),
         vec2(12, 4),
-        vec2(12, 2),
-        vec2(12, 5)
+        vec2(12, 1),
+        vec2(12, -3),
+        vec2(12, 3)
     ]
 
     def delta(self) -> vec2:
-        if not self.__inAttack__:
-            if self.idx == 3:
-                self.idx = 1
+        self.idx = 2
         if self.__state__ == MoveState.idle:
             if self.phase == 1 or self.phase == 2:
                 return vec2(4, 8)
@@ -54,7 +53,7 @@ class PlayerHand(Entity):
             return self.__runPos__[self.phase]
 
         elif self.__state__ == MoveState.jump:
-            return self.__jumpPos__[self.phase] - vec2(-1 + self.idx * 2, 4 - self.idx * 2)
+            return self.__jumpPos__[self.phase] - vec2((2 if self.idx >= 1 else -2), 4 - self.idx * 2)
 
     def update(self, args: GameArgs):
         self.__state__ = self.__follow__.__state__
@@ -63,7 +62,7 @@ class PlayerHand(Entity):
         self.phase = self.__follow__.image.indexX
         d = self.delta()
         if flip:
-            d.x = -d.x
+            d = vec2(-d.x, d.y)
         self.centre = self.__follow__.centre + d
         pass
 
@@ -76,6 +75,8 @@ class PlayerHand(Entity):
 
 class Player(MovableEntity):
 
+    faceRight: bool = True
+
     __state__: MoveState = MoveState.idle
     __image_set__: MultiImageSet
     __hand__: PlayerHand
@@ -87,6 +88,7 @@ class Player(MovableEntity):
         self.__hand__ = PlayerHand(self)
         self.__image_set__ = s
         self.image = s
+        self.fractionLock = False
         self.gravity = 9.8
         self.size = vec2(40, 96 - 24)
         self.boundAnchor = vec2(20, 48 - 24)
@@ -130,6 +132,8 @@ class Player(MovableEntity):
 
         if key_on_press(pygame.K_SPACE):
             self.attack()
+
+        self.faceRight = not self.image.flip
 
         need_jump = key_hold(pygame.K_c)
         if need_jump:
@@ -177,11 +181,11 @@ class Player(MovableEntity):
 
         elif self.state == MoveState.jump:
             self.image.imageSource = self.__image_set__.imageDict['Punk_jump']
-            if d.y < -self.jump_speed * 0.5:
+            if self.__ySpeed__ < -self.jump_speed * 0.5:
                 self.image.indexX = 0
-            elif d.y < 0:
+            elif self.__ySpeed__ < 0:
                 self.image.indexX = 1
-            elif d.y < self.jump_speed * 0.5:
+            elif self.__ySpeed__ < self.jump_speed * 0.35:
                 self.image.indexX = 2
             else:
                 self.image.indexX = 3

@@ -19,6 +19,8 @@ class MovableEntity(Entity, Collidable):
 
     __moveIntention__: vec2 = vec2(0, 0)
     __jumpIntention__: bool = False
+    __groundTile__: Tile | None = None
+    __fractionLock__: bool = False
 
     __onGround__: bool = False
 
@@ -26,6 +28,14 @@ class MovableEntity(Entity, Collidable):
     __ySpeed__: float = 0.0
     __gravity__: float = 0.0
     __collision__: bool = True
+
+    @property
+    def fractionLock(self) -> bool:
+        return self.__fractionLock__
+
+    @fractionLock.setter
+    def fractionLock(self, val: bool):
+        self.__fractionLock__ = False
 
     @property
     def boundAnchor(self) -> vec2:
@@ -72,6 +82,7 @@ class MovableEntity(Entity, Collidable):
     __inGroundDistance__ = 0.0
 
     def __check_on_ground__(self) -> bool:
+        self.__groundTile__ = None
         if not isinstance(self.physicArea, CollideRect):
             raise Exception()
         if self.__ySpeed__ < 0.0:
@@ -96,6 +107,7 @@ class MovableEntity(Entity, Collidable):
                         return False
                     self.__onGround__ = True
                     self.__inGroundDistance__ = self.physicArea.area.bottom - r.top
+                    self.__groundTile__ = tile
                     return True
 
         self.__onGround__ = (self.physicArea.area.bottom > 450)
@@ -110,6 +122,8 @@ class MovableEntity(Entity, Collidable):
     def set_move_intention(self, move_intention: vec2):
         self.__moveIntention__ = move_intention
 
+    __lastMove__: vec2 = vec2(0, 0)
+
     def move(self, args: GameArgs) -> vec2:
         if not isinstance(self.physicArea, CollideRect):
             raise Exception()
@@ -117,9 +131,16 @@ class MovableEntity(Entity, Collidable):
         old_pos = self.centre
         move_del = self.__moveIntention__ * args.elapsedSec * 60
 
-        # we check the gravity in the following codes:
+        if not self.__fractionLock__ and self.__groundTile__ is not None:
+            lerps = min(args.elapsedSec * 15, 1)
+            move_del.x = self.__lastMove__.x * (1 - lerps) + self.__moveIntention__.x * lerps
+            if move_del.x < 0.1:
+                move_del.x = 0
+
         self.centre = old_pos + move_del
         self.physicArea.area = Rect(self.centre - self.boundAnchor, self.size)
+
+        # we check the gravity in the following codes:
 
         if self.__gravity__ > 0.001:
             self.__check_on_ground__()
@@ -197,5 +218,7 @@ class MovableEntity(Entity, Collidable):
         self.physicArea.area = Rect(self.centre - self.boundAnchor, self.size)
 
         self.__moveIntention__ = vec2(0, 0)
+
+        self.__lastMove__ = move_del
 
         return move_del
