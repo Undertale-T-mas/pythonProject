@@ -26,12 +26,12 @@ class PlayerHand(Entity):
     __inAttack__: bool = False
 
     __runPos__: List[vec2] = [
-        vec2(7, 7),
-        vec2(7, 7),
-        vec2(7, 7),
-        vec2(7, 7),
-        vec2(7, 7),
-        vec2(7, 7)
+        vec2(8, 7),
+        vec2(8, 7),
+        vec2(8, 7),
+        vec2(8, 7),
+        vec2(8, 7),
+        vec2(8, 7)
     ]
     __jumpPos__: List[vec2] = [
         vec2(12, 6),
@@ -54,14 +54,17 @@ class PlayerHand(Entity):
             return self.__runPos__[self.phase]
 
         elif self.__state__ == MoveState.jump:
-            if self.idx == 1:
-                self.idx = 3
-            return self.__jumpPos__[self.phase] - vec2(3, 0)
+            return self.__jumpPos__[self.phase] - vec2(-1 + self.idx * 2, 4 - self.idx * 2)
 
     def update(self, args: GameArgs):
         self.__state__ = self.__follow__.__state__
+        flip = self.__follow__.image.flip
+        self.image.flip = flip
         self.phase = self.__follow__.image.indexX
-        self.centre = self.__follow__.centre + self.delta()
+        d = self.delta()
+        if flip:
+            d.x = -d.x
+        self.centre = self.__follow__.centre + d
         pass
 
     def draw(self, render_args: RenderArgs):
