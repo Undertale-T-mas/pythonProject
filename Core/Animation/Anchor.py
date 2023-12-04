@@ -22,10 +22,10 @@ class ACentre(Anchor):
         return self.__imageset__.blockSize / 2.0
 
 
-class ABottomLeft(Anchor):
+class ATopLeft(Anchor):
     __image__: Surface
 
-    def __init__(self, image: Surface):
+    def __init__(self, image: Surface | None = None):
         self.__image__ = image
 
     def get_anchor_pos(self) -> vec2:

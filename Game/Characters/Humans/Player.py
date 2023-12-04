@@ -9,18 +9,79 @@ from Game.Characters.Movable import *
 class MoveState(Enum):
     idle = 0,
     run = 1,
-    jump = 2
+    jump = 2,
+
+
+class PlayerHand(Entity):
+    def __init__(self, follow):
+        self.__follow__ = follow
+        self.image = MultiImage('Characters\\Player\\Hands')
+        self.image.scale = 2
+
+    __follow__: Entity
+    __state__: MoveState
+    visible: bool = True
+    phase: int = 0
+    idx: int = 1
+    __inAttack__: bool = False
+
+    __runPos__: List[vec2] = [
+        vec2(7, 7),
+        vec2(7, 7),
+        vec2(7, 7),
+        vec2(7, 7),
+        vec2(7, 7),
+        vec2(7, 7)
+    ]
+    __jumpPos__: List[vec2] = [
+        vec2(12, 6),
+        vec2(12, 4),
+        vec2(12, 2),
+        vec2(12, 5)
+    ]
+
+    def delta(self) -> vec2:
+        if not self.__inAttack__:
+            if self.idx == 3:
+                self.idx = 1
+        if self.__state__ == MoveState.idle:
+            if self.phase == 1 or self.phase == 2:
+                return vec2(4, 8)
+            else:
+                return vec2(6, 8)
+
+        elif self.__state__ == MoveState.run:
+            return self.__runPos__[self.phase]
+
+        elif self.__state__ == MoveState.jump:
+            if self.idx == 1:
+                self.idx = 3
+            return self.__jumpPos__[self.phase] - vec2(3, 0)
+
+    def update(self, args: GameArgs):
+        self.__state__ = self.__follow__.__state__
+        self.phase = self.__follow__.image.indexX
+        self.centre = self.__follow__.centre + self.delta()
+        pass
+
+    def draw(self, render_args: RenderArgs):
+        if not isinstance(self.image, MultiImage):
+            raise Exception()
+        self.image.set_image(self.idx - 1)
+        self.image.draw_self(render_args, self.centre)
 
 
 class Player(MovableEntity):
 
     __state__: MoveState = MoveState.idle
     __image_set__: MultiImageSet
+    __hand__: PlayerHand
 
     def __init__(self):
         self.physicSurfName = 'player'
         super().__init__()
         s = MultiImageSet(vec2(32, 48), vec2(48, 48), 'Characters\\Player')
+        self.__hand__ = PlayerHand(self)
         self.__image_set__ = s
         self.image = s
         self.gravity = 9.8
@@ -31,6 +92,7 @@ class Player(MovableEntity):
         s.imageSource = s.imageDict['Punk_run']
 
     def draw(self, render_args: RenderArgs):
+        self.__hand__.draw(render_args)
         self.image.draw_self(render_args, centre=self.centre)
 
     __x_moving__: bool = False
@@ -52,6 +114,9 @@ class Player(MovableEntity):
 
     __jumpPressTime__ = 0.0
 
+    def attack(self):
+        pass
+
     def update(self, args: GameArgs):
         if key_hold(pygame.K_LEFT):
             self.__moveIntention__.x = -5
@@ -59,6 +124,9 @@ class Player(MovableEntity):
         if key_hold(pygame.K_RIGHT):
             self.__moveIntention__.x = 5
             self.image.flip = False
+
+        if key_on_press(pygame.K_SPACE):
+            self.attack()
 
         need_jump = key_hold(pygame.K_c)
         if need_jump:
@@ -114,4 +182,6 @@ class Player(MovableEntity):
                 self.image.indexX = 2
             else:
                 self.image.indexX = 3
+
+        self.__hand__.update(args)
 

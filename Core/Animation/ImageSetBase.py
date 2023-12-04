@@ -19,8 +19,27 @@ class ImageSetBase:
     def load(self, path: str):
         self.imageSource = load_image(path)
 
-    imageSource: Surface
-    blockSize: vec2
+    __blockSize__: vec2
+
+    @property
+    def blockSize(self) -> vec2:
+        return self.__blockSize__
+
+    @blockSize.setter
+    def blockSize(self, size: vec2):
+        self.__blockSize__ = size
+
+    __imageSource__: Surface
+
+    @property
+    def imageSource(self) -> Surface:
+        return self.__imageSource__
+
+    @imageSource.setter
+    def imageSource(self, surf: Surface):
+        self.__imageSource__ = surf
+        self.__imageUpdated__ = True
+
     indexX: int = 0
     indexY: int = 0
     scale: float = 1.0
@@ -31,6 +50,7 @@ class ImageSetBase:
     def source_area(self) -> Rect:
         raise NotImplementedError()
 
+    __imageUpdated__: bool = False
     __idxXLast__: int = 0
     __idxYLast__: int = 0
     __flipLast__: bool = False
@@ -38,7 +58,8 @@ class ImageSetBase:
     __imageDraw__: Surface = None
 
     def __need_refresh__(self) -> bool:
-        if self.__imageDraw__ is None:
+        if self.__imageDraw__ is None or self.__imageUpdated__:
+            self.__imageUpdated__ = False
             return True
 
         if Math.abs(self.scale - self.__curScale__) > 0.0001:
