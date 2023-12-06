@@ -27,12 +27,14 @@ class TileInfo:
     imgPath: str
     sizeX: int = 1
     sizeY: int = 1
-    bound: CollideRect = CollideRect()
+    bound: CollideRect
     uuid: int
     onUpdate: Action | None = None
+    fraction: float = 0.5
 
     def __init__(self, path: str, size: Tuple[int, int] | List[int], _id: int, on_update: Action = None):
         self.imgPath = path
+        self.bound = CollideRect()
         self.bound.area = Rect(0, 0, TILE_LENGTH, TILE_LENGTH)
         self.sizeX = size[0]
         self.sizeY = size[1]
@@ -58,6 +60,10 @@ class Tile(Entity, Collidable):
     @property
     def uuid(self):
         return self.info.uuid
+
+    @property
+    def fraction(self):
+        return self.info.fraction
 
     info: TileInfo
 

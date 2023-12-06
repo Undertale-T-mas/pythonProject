@@ -5,6 +5,7 @@ from Core.GameStates import GameStates
 from Core.GameStates.Scene import Scene
 from Core.Render.RenderOptions import *
 from Game.Scenes.Start import *
+from Game.TestScene import *
 from pygame import Vector2 as vec2
 
 # pygame setup
@@ -12,13 +13,12 @@ pygame.init()
 render_options = RenderOptions()
 clock = pygame.time.Clock()
 pygame.key.stop_text_input()
-if(player.clicked())
 running = True
 dt = 0
 
 GameStates.initialize(render_options)
-# GameStates.change_scene(Game.TestScene.TestScene())
-GameStates.change_scene(Start())
+GameStates.change_scene(TestScene())
+# GameStates.change_scene(Start())
 
 flipped = False
 

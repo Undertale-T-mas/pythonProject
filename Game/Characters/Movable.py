@@ -1,4 +1,4 @@
-from Game.Map.FightScene import *
+from Game.Scenes.FightScene import *
 from Game.Map.Framework.TileMap import *
 from Game.Map.Framework.Tiles import *
 from Core.GameStates.GameStates import *
@@ -9,6 +9,7 @@ class MovableEntity(Entity, Collidable):
     __tileMap__: TileMap
 
     def __init__(self):
+        self.__lastMove__ = self.__moveIntention__ = vec2(0, 0)
         s = current_scene()
 
         if not isinstance(s, FightScene):
@@ -17,7 +18,7 @@ class MovableEntity(Entity, Collidable):
         self.__tileMap__ = s.tileMap
         self.physicArea = CollideRect()
 
-    __moveIntention__: vec2 = vec2(0, 0)
+    __moveIntention__: vec2
     __jumpIntention__: bool = False
     __groundTile__: Tile | None = None
     __fractionLock__: bool = False
@@ -122,7 +123,7 @@ class MovableEntity(Entity, Collidable):
     def set_move_intention(self, move_intention: vec2):
         self.__moveIntention__ = move_intention
 
-    __lastMove__: vec2 = vec2(0, 0)
+    __lastMove__: vec2
 
     def move(self, args: GameArgs) -> vec2:
         if not isinstance(self.physicArea, CollideRect):
@@ -131,10 +132,17 @@ class MovableEntity(Entity, Collidable):
         old_pos = self.centre
         move_del = self.__moveIntention__ * args.elapsedSec * 60
 
-        if not self.__fractionLock__ and self.__groundTile__ is not None:
-            lerps = min(args.elapsedSec * 15, 1)
-            move_del.x = self.__lastMove__.x * (1 - lerps) + self.__moveIntention__.x * lerps
-            if move_del.x < 0.1:
+        if not self.__fractionLock__:
+            ground_tile = self.__groundTile__
+            if ground_tile is None:
+                fr = 0.2
+            else:
+                fr = ground_tile.fraction
+
+            lerps = min(args.elapsedSec * 60 * fr, 1)
+            x_intention_speed = self.__moveIntention__.x * args.elapsedSec * 60
+            move_del.x = self.__lastMove__.x * (1 - lerps) + x_intention_speed * lerps
+            if abs(move_del.x) < 0.1:
                 move_del.x = 0
 
         self.centre = old_pos + move_del

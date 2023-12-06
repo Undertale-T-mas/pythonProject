@@ -3,6 +3,7 @@ from Core.GameStates.GameStates import *
 import pygame
 
 from Core.Physics.Collidable import *
+from Game.Barrage.Barrage import *
 from Game.Characters.Movable import *
 
 
@@ -12,12 +13,39 @@ class MoveState(Enum):
     jump = 2,
 
 
+class PlayerBullet(Barrage):
+    def __init__(self, start: vec2, dir: bool):
+        self.surfaceName = 'bullet'
+        self.image = MultiImage('Characters\\Player\\Bullets')
+        self.move(EasingGenerator.linear(start, vec2(-100, 0) if dir else vec2(100, 0)))
+
+    def update(self, args: GameArgs):
+        pass
+
+    def draw(self, render_args: RenderArgs):
+        self.image.draw_self(render_args, self.centre)
+
+
+class Weapon(Entity):
+    def __init__(self):
+        self.image = MultiImage('Characters\\Player\\Weapons')
+        self.image.scale = 2
+
+    def draw(self, render_args: RenderArgs):
+        self.image.draw_self(render_args, self.centre)
+
+    def shoot(self):
+        GameStates.instance_create(PlayerBullet(self.centre, self.image.flip))
+
+
 class PlayerHand(Entity):
     def __init__(self, follow):
         self.__follow__ = follow
         self.image = MultiImage('Characters\\Player\\Hands')
         self.image.scale = 2
+        self.__weapon__ = Weapon()
 
+    __weapon__: Weapon
     __follow__: Entity
     __state__: MoveState
     visible: bool = True
@@ -40,6 +68,14 @@ class PlayerHand(Entity):
         vec2(12, -3),
         vec2(12, 3)
     ]
+    __weaponMove__: List[vec2] = [
+        vec2(0, 9),
+        vec2(7, 6),
+        vec2(9, 0)
+    ]
+
+    def shoot(self):
+        self.__weapon__.shoot()
 
     def delta(self) -> vec2:
         self.idx = 2
@@ -61,14 +97,20 @@ class PlayerHand(Entity):
         self.image.flip = flip
         self.phase = self.__follow__.image.indexX
         d = self.delta()
+        wd = self.__weaponMove__[self.idx - 1] * 2
         if flip:
             d = vec2(-d.x, d.y)
+            wd = vec2(-wd.x, wd.y)
+        self.__weapon__.image.flip = flip
+
         self.centre = self.__follow__.centre + d
+        self.__weapon__.centre = self.centre + wd
         pass
 
     def draw(self, render_args: RenderArgs):
         if not isinstance(self.image, MultiImage):
             raise Exception()
+        self.__weapon__.draw(render_args)
         self.image.set_image(self.idx - 1)
         self.image.draw_self(render_args, self.centre)
 
@@ -120,7 +162,7 @@ class Player(MovableEntity):
     __jumpPressTime__ = 0.0
 
     def attack(self):
-        pass
+        self.__hand__.shoot()
 
     def update(self, args: GameArgs):
         if key_hold(pygame.K_LEFT):

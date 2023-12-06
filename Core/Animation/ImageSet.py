@@ -38,6 +38,8 @@ class MultiImageSet(ImageSetBase):
     __blockDistance__: vec2
 
     def __init__(self, block_size: vec2, block_distance: vec2, path: str):
+        self.imageDict = dict()
+        self.imageList = []
         self.load(path)
         self.blockSize = block_size
         self.__blockDistance__ = block_distance
@@ -48,8 +50,8 @@ class MultiImageSet(ImageSetBase):
         y = self.__blockDistance__.y * self.indexY
         return Rect(x, y, self.blockSize.x, self.blockSize.y)
 
-    imageDict: Dict[str, Surface] = dict()
-    imageList: List[Surface] = []
+    imageDict: Dict[str, Surface]
+    imageList: List[Surface]
 
     def set_image(self, index: int | str):
         if index is int:
@@ -70,6 +72,8 @@ class MultiImageSet(ImageSetBase):
 
 class MultiImage(ImageSetBase):
     def __init__(self,  path: str):
+        self.imageList = []
+        self.imageDict = dict()
         self.load(path)
         self.anchor = ACentre(self)
 
@@ -80,8 +84,8 @@ class MultiImage(ImageSetBase):
     def source_area(self):
         return Rect(0, 0, self.__imageSource__.get_width(), self.__imageSource__.get_height())
 
-    imageDict: Dict[str, Surface] = dict()
-    imageList: List[Surface] = []
+    imageDict: Dict[str, Surface]
+    imageList: List[Surface]
 
     def set_image(self, index: int | str):
         if isinstance(index, int):
