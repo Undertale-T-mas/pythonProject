@@ -19,11 +19,22 @@ from pygame import Vector2 as vec2
 from pygame import *
 
 
-class Barrage(Entity):
+class Barrage(Entity, Collidable):
+    autoDispose: bool = False
+
     def __set_centre__(self, result: vec2):
         self.centre = result
+        self.physicSurfName = 'barrage'
+        self.surfaceName = 'barrage'
 
     def move(self, ease: EasingRunner | Easing):
         if isinstance(ease, Easing):
             ease = EasingRunner(ease.time, ease.start, ease.end, ease)
         ease.run(self.__set_centre__, self)
+
+    def update(self, args: GameArgs):
+        if self.centre.x < -200 or self.centre.x > GameStates.__gsRenderOptions__.screenSize.x:
+            self.dispose()
+        if self.centre.y < -200 or self.centre.y > GameStates.__gsRenderOptions__.screenSize.y:
+            self.dispose()
+

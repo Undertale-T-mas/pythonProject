@@ -4,14 +4,21 @@ from Core.GameObject import *
 
 class ObjectManager:
 
-    __objects__: List[GameObject] = []
+    __objects__: List[GameObject]
 
-    __buffer__: List[GameObject] = []
+    __buffer__: List[GameObject]
 
-    __idx__: Set[int] = set()
-    __idx_list__: List[int] = []
+    __idx__: Set[int]
+    __idx_list__: List[int]
 
     __idx_cnt__ = 0
+
+    def __init__(self):
+        self.__idx__ = set()
+        self.__idx_list__ = []
+        self.__buffer__ = []
+        self.__objects__ = []
+        self.__idx_cnt__ = 0
 
     def instance_create(self, obj: GameObject):
         self.__buffer__.append(obj)

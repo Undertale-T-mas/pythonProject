@@ -5,14 +5,18 @@ import random
 import pygame.draw_py
 
 from Game.Characters.Humans.Player import *
+from Game.Scenes.FightScene import FightScene
 
 
 class TestScene(FightScene):
     time_tot = 0
 
+    def __init__(self):
+        super().__init__()
+
     def start(self):
         self.set_tiles(Game.Map.Begin.TestMap.MapTEST0())
-        GameStates.instance_create(Player())
+        self.create_player()
 
     def update(self, game_args: GameArgs):
         super().update(game_args)
@@ -22,14 +26,4 @@ class TestScene(FightScene):
 
     def draw(self, surface_manager: SurfaceManager):
         super().draw(surface_manager)
-        rec = pygame.rect.Rect(0, 0, self.__render_options__.screenSize.x, self.__render_options__.screenSize.y)
-        surface_manager.screen.blit(
-            surface_manager.get_surface('bg'),
-            dest=rec,
-            area=rec,
-        )
-        surface_manager.screen.blit(
-            surface_manager.get_surface('default'),
-            dest=rec,
-            area=rec,
-        )
+

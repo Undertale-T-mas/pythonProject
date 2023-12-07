@@ -37,6 +37,8 @@ class ImageSetBase:
 
     @imageSource.setter
     def imageSource(self, surf: Surface):
+        if surf is self.__imageSource__:
+            return
         self.__imageSource__ = surf
         self.__imageUpdated__ = True
 

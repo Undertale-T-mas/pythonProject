@@ -1,5 +1,7 @@
 from pygame import *
 
+from Core.MathUtil import FRect
+
 
 class CollideArea:
     def CollideWith(self, another) -> bool:
@@ -7,10 +9,10 @@ class CollideArea:
 
 
 class CollideRect(CollideArea):
-    area: Rect = Rect(0, 0, 0, 0)
+    area: FRect = FRect(0, 0, 0, 0)
 
     def CollideWith(self, another) -> bool:
         if isinstance(another, CollideRect):
-            return self.area.colliderect(another.area)
+            return self.area.collide_rect(another.area)
         raise NotImplementedError()
 

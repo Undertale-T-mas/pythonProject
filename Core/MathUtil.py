@@ -1,4 +1,6 @@
 import math
+from pygame import Vector2 as vec2
+import pygame.rect
 
 
 class Math:
@@ -11,3 +13,89 @@ class Math:
         if val > 0:
             return val
         return -val
+
+
+class FRect:
+    x: float
+    y: float
+    width: float
+    height: float
+
+    def __init__(self, *args):
+        if len(args) == 4:
+            self.__init0__(args[0], args[1], args[2], args[3])
+        elif len(args) == 2:
+            self.__init1__(args[0], args[1])
+        elif len(args) == 1:
+            self.__init2__(args[0])
+        else:
+            raise Exception()
+
+    def __init0__(self, x: float | int, y: float | int, w: float | int, h: float | int):
+        self.x = x
+        self.y = y
+        self.width = w
+        self.height = h
+
+    def __init1__(self, pos: vec2, size: vec2):
+        self.x = pos.x
+        self.y = pos.y
+        self.width = size.x
+        self.height = size.y
+
+    def __init2__(self, rect: any):
+        self.x = rect.x
+        self.y = rect.y
+        self.width = rect.width
+        self.height = rect.height
+
+    @property
+    def left(self):
+        return self.x
+
+    @property
+    def i_left(self):
+        return int(self.x)
+
+    @property
+    def right(self):
+        return self.x + self.width
+
+    @property
+    def i_right(self):
+        return int(self.x + self.width)
+
+    @property
+    def top(self):
+        return self.y
+
+    @property
+    def i_top(self):
+        return int(self.y)
+
+    @property
+    def bottom(self):
+        return self.y + self.height
+
+    @property
+    def i_bottom(self):
+        return int(self.y + self.height)
+
+    def collide_rect(self, another: any):
+        return (self.right > another.left and self.left < another.right and
+                self.bottom > another.top and self.top < another.bottom)
+
+    @property
+    def size(self):
+        return vec2(self.width, self.height)
+
+    @size.setter
+    def size(self, val: vec2):
+        self.width = val.x
+        self.height = val.y
+
+    def move(self, x: float, y: float):
+        res = FRect(self)
+        res.x += x
+        res.y += y
+        return res

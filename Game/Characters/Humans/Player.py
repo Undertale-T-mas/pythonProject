@@ -14,10 +14,13 @@ class MoveState(Enum):
 
 
 class PlayerBullet(Barrage):
-    def __init__(self, start: vec2, dir: bool):
-        self.surfaceName = 'bullet'
+    def __init__(self, start: vec2, d: bool):
         self.image = MultiImage('Characters\\Player\\Bullets')
-        self.move(EasingGenerator.linear(start, vec2(-100, 0) if dir else vec2(100, 0)))
+        self.physicSurfName = 'pl_bullet'
+        self.move(EasingGenerator.linear(start, vec2(-900, 0) if d else vec2(900, 0)))
+        self.image.scale = 2
+        self.image.flip = d
+        self.autoDispose = True
 
     def update(self, args: GameArgs):
         pass
@@ -31,11 +34,24 @@ class Weapon(Entity):
         self.image = MultiImage('Characters\\Player\\Weapons')
         self.image.scale = 2
 
+    def update(self, args: GameArgs):
+        super().update(args)
+        self.idx = 0
+        self.image.imageSource = self.image.imageList[0]
+
     def draw(self, render_args: RenderArgs):
         self.image.draw_self(render_args, self.centre)
 
     def shoot(self):
-        GameStates.instance_create(PlayerBullet(self.centre, self.image.flip))
+        d = self.delta[self.idx]
+        if self.image.flip:
+            d = vec2(-d.x, d.y)
+        GameStates.instance_create(PlayerBullet(self.centre + d, self.image.flip))
+
+    idx = 0
+    delta: List[vec2] = [
+        vec2(20, -2)
+    ]
 
 
 class PlayerHand(Entity):
@@ -116,15 +132,11 @@ class PlayerHand(Entity):
 
 
 class Player(MovableEntity):
-
-    faceRight: bool = True
-
     __state__: MoveState = MoveState.idle
     __image_set__: MultiImageSet
     __hand__: PlayerHand
 
     def __init__(self):
-        self.physicSurfName = 'player'
         super().__init__()
         s = MultiImageSet(vec2(32, 48), vec2(48, 48), 'Characters\\Player')
         self.__hand__ = PlayerHand(self)
@@ -137,6 +149,7 @@ class Player(MovableEntity):
         self.centre = vec2(24, 0)
         s.scale = 2.0
         s.imageSource = s.imageDict['Punk_run']
+        self.physicSurfName = 'player'
 
     def draw(self, render_args: RenderArgs):
         self.__hand__.draw(render_args)
@@ -175,8 +188,6 @@ class Player(MovableEntity):
         if key_on_press(pygame.K_SPACE):
             self.attack()
 
-        self.faceRight = not self.image.flip
-
         need_jump = key_hold(pygame.K_c)
         if need_jump:
             self.__jumpPressTime__ += args.elapsedSec
@@ -188,7 +199,7 @@ class Player(MovableEntity):
             self.state = MoveState.jump
 
         if self.__ySpeed__ < 0 and not need_jump:
-            self.gravity = 33
+            self.gravity = 43
         else:
             self.gravity = 9.8
 

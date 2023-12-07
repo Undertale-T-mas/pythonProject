@@ -20,6 +20,9 @@ class SurfaceManager:
     __renderOptions__: RenderOptions
     __ent_dict__: Dict[str, int] = dict()
 
+    def exist_surface(self, _name: str) -> bool:
+        return _name in self.__ent_dict__
+
     def get_surface(self, _name: str):
         if _name not in self.__ent_dict__:
             self.__ent_dict__[_name] = len(self.__ent_dict__)

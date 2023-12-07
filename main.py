@@ -10,6 +10,7 @@ from pygame import Vector2 as vec2
 
 # pygame setup
 pygame.init()
+pygame.mixer.pre_init(44100, 16, 2, 4096)
 render_options = RenderOptions()
 clock = pygame.time.Clock()
 pygame.key.stop_text_input()

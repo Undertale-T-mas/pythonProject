@@ -3,6 +3,7 @@ from typing import *
 
 
 class TileMap(Entity):
+    worldPos: vec2
     tiles: List[List[Tile]] = []
 
     width: int = 0
