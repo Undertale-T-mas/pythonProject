@@ -89,10 +89,19 @@ class FRect:
     def size(self):
         return vec2(self.width, self.height)
 
+    @property
+    def centre(self):
+        return vec2(self.x + self.width / 2, self.y + self.height / 2)
+
     @size.setter
     def size(self, val: vec2):
         self.width = val.x
         self.height = val.y
+
+    @centre.setter
+    def centre(self, centre: vec2):
+        self.x = centre.x - self.width / 2
+        self.y = centre.y - self.height / 2
 
     def move(self, x: float, y: float):
         res = FRect(self)

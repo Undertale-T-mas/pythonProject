@@ -6,6 +6,7 @@ import pygame.draw_py
 
 from Game.Characters.Humans.Player import *
 from Game.Scenes.FightScene import FightScene
+from Game.Characters.Enemys.Robots import *
 
 
 class TestScene(FightScene):
@@ -17,6 +18,7 @@ class TestScene(FightScene):
     def start(self):
         self.set_tiles(Game.Map.Begin.TestMap.MapTEST0())
         self.create_player()
+        instance_create(MeleeRobot(14, 0))
 
     def update(self, game_args: GameArgs):
         super().update(game_args)

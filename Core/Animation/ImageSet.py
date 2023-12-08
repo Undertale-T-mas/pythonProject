@@ -23,6 +23,7 @@ class ImageSet(ImageSetBase):
     __blockDistance__: vec2
 
     def __init__(self, block_size: vec2, block_distance: vec2, path: str):
+        super().__init__()
         self.blockSize = block_size
         self.__blockDistance__ = block_distance
         self.anchor = ACentre(self)
@@ -38,6 +39,7 @@ class MultiImageSet(ImageSetBase):
     __blockDistance__: vec2
 
     def __init__(self, block_size: vec2, block_distance: vec2, path: str):
+        super().__init__()
         self.imageDict = dict()
         self.imageList = []
         self.load(path)
@@ -72,6 +74,7 @@ class MultiImageSet(ImageSetBase):
 
 class MultiImage(ImageSetBase):
     def __init__(self,  path: str):
+        super().__init__()
         self.imageList = []
         self.imageDict = dict()
         self.load(path)

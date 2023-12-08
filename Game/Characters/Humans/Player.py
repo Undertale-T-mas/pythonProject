@@ -1,9 +1,10 @@
 from Core.GameObject import *
-from Core.GameStates.GameStates import *
+from Core.GameStates.GameState import *
 import pygame
 
 from Core.Physics.Collidable import *
 from Game.Barrage.Barrage import *
+from Game.Characters.Humans.HPBar import HPBar
 from Game.Characters.Movable import *
 
 
@@ -14,6 +15,8 @@ class MoveState(Enum):
 
 
 class PlayerBullet(Barrage):
+    rect: CollideRect
+
     def __init__(self, start: vec2, d: bool):
         self.image = MultiImage('Characters\\Player\\Bullets')
         self.physicSurfName = 'pl_bullet'
@@ -21,8 +24,13 @@ class PlayerBullet(Barrage):
         self.image.scale = 2
         self.image.flip = d
         self.autoDispose = True
+        self.rect = CollideRect()
+        self.rect.area = FRect(0, 0, 10, 3)
+        self.physicArea = self.rect
 
     def update(self, args: GameArgs):
+        self.rect.area.centre = self.centre
+        super().update(args)
         pass
 
     def draw(self, render_args: RenderArgs):
@@ -46,7 +54,7 @@ class Weapon(Entity):
         d = self.delta[self.idx]
         if self.image.flip:
             d = vec2(-d.x, d.y)
-        GameStates.instance_create(PlayerBullet(self.centre + d, self.image.flip))
+        instance_create(PlayerBullet(self.centre + d, self.image.flip))
 
     idx = 0
     delta: List[vec2] = [
@@ -142,6 +150,7 @@ class Player(MovableEntity):
         self.__hand__ = PlayerHand(self)
         self.__image_set__ = s
         self.image = s
+        self.hp = HPBar(self.__scene__, self)
         self.fractionLock = False
         self.gravity = 9.8
         self.size = vec2(40, 96 - 24)
@@ -158,6 +167,7 @@ class Player(MovableEntity):
     __x_moving__: bool = False
     __step_timing__: float = 0.0
 
+    hp: HPBar
     jump_speed = 9.8
 
     @property
@@ -176,6 +186,9 @@ class Player(MovableEntity):
 
     def attack(self):
         self.__hand__.shoot()
+
+    def deal_damage(self, damage_level: int):
+        self.hp.take_damage(damage_level)
 
     def update(self, args: GameArgs):
         if key_hold(pygame.K_LEFT):

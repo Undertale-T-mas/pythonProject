@@ -2,7 +2,7 @@ from Core.Animation.Anchor import *
 from Core.Animation.AnchorBase import *
 from Core.Animation.ImageSetBase import *
 from Core.Animation.ImageSet import *
-import Core.GameStates.GameStates
+import Core.GameStates.GameState
 from Core.GameStates.ObjectManager import *
 from Core.Physics.PhysicSurface import *
 from Core.Physics.PhysicManager import *

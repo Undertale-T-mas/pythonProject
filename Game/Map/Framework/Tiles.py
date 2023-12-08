@@ -5,7 +5,7 @@ from Core.Animation.AnchorBase import *
 from Core.Animation.ImageSetBase import *
 from Core.Animation.ImageSet import *
 from Core.GameStates.Scene import *
-import Core.GameStates.GameStates
+import Core.GameStates.GameState
 from Core.GameStates.ObjectManager import *
 from Core.MathUtil import FRect
 from Core.Physics.PhysicSurface import *
@@ -62,7 +62,7 @@ class TileInfo:
 
 
 class TileLibrary(Enum):
-    empty = TileInfo('', size=FRect(0, 0, 1, 1), _id=0)
+    empty = TileInfo('', size=FRect(0, 0, 1, 1), _id=0, collidable=False)
     grass = TileInfo('Tutorial\\Grass.png', size=FRect(0, 0, 1, 1), _id=1)
     grass_cl = TileInfo('Tutorial\\GrassCL.png', size=FRect(0.1, 0, 0.9, 1), _id=2)
     grass_cr = TileInfo('Tutorial\\GrassCR.png', size=FRect(0, 0, 0.9, 1), _id=3)
@@ -89,6 +89,10 @@ class Tile(Entity, Collidable):
     locY: int = 0
 
     __areaRect__: FRect
+
+    @staticmethod
+    def Empty():
+        return Tile(TileLibrary.empty)
 
     @property
     def areaRect(self) -> FRect:

@@ -42,22 +42,34 @@ class ImageSetBase:
         self.__imageSource__ = surf
         self.__imageUpdated__ = True
 
-    indexX: int = 0
-    indexY: int = 0
-    scale: float = 1.0
-    flip: bool = False
+    indexX: int
+    indexY: int
+    scale: float
+    flip: bool
 
     anchor: Anchor
 
     def source_area(self) -> Rect:
         raise NotImplementedError()
 
-    __imageUpdated__: bool = False
-    __idxXLast__: int = 0
-    __idxYLast__: int = 0
-    __flipLast__: bool = False
-    __curScale__: float = 1.0
-    __imageDraw__: Surface = None
+    __imageUpdated__: bool
+    __idxXLast__: int
+    __idxYLast__: int
+    __flipLast__: bool
+    __curScale__: float
+    __imageDraw__: Surface | None
+
+    def __init__(self):
+        self.indexX = 0
+        self.indexY = 0
+        self.scale = 1.0
+        self.flip = False
+        self.__imageDraw__ = None
+        self.__curScale__ = 1.0
+        self.__flipLast__ = False
+        self.__idxXLast__ = 0
+        self.__idxYLast__ = 0
+        self.__imageUpdated__ = False
 
     def __need_refresh__(self) -> bool:
         if self.__imageDraw__ is None or self.__imageUpdated__:

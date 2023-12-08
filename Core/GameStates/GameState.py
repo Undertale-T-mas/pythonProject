@@ -5,13 +5,12 @@ from Core.GameObject import *
 from Core.GameStates.ObjectManager import *
 from Core.GameStates.Scene import *
 from typing import *
+from Core.Render.SurfaceManager import SurfaceManager
 
 __gsGameArgs__ = GameArgs()
 __gsRenderArgs__ = RenderArgs()
 __gsScene__: Scene = None
 __gsSceneBuffer__: Scene = None
-
-from Core.GameStates.Scene import Scene
 
 __gsSurfaceManager__: SurfaceManager
 __gsRenderOptions__: RenderOptions

@@ -19,18 +19,18 @@ class FightScene(TileMapScene):
 
     def create_player(self):
         self.__player__ = Player()
-        Core.GameStates.GameStates.instance_create(self.__player__)
+        Core.GameStates.GameState.instance_create(self.__player__)
 
     def update(self, game_args: GameArgs):
         super().update(game_args)
         self.__phyManager__.update()
+        self.__phyManager__.check('player', 'barrage')
+        self.__phyManager__.check('pl_bullet', 'enemy')
 
     def instance_create(self, obj: GameObject):
         super().instance_create(obj)
         if isinstance(obj, Collidable):
             self.__phyManager__.insert_object(obj)
-        self.__phyManager__.check('player', 'barrage')
-        self.__phyManager__.check('pl_bullet', 'enemy')
 
     def draw(self, surface_manager: SurfaceManager):
         super().draw(surface_manager)

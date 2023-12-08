@@ -2,7 +2,7 @@ import builtins
 from enum import Enum
 from math import *
 
-import Core.GameStates.GameStates
+import Core.GameStates.GameState
 from Core.GameObject import *
 
 T = TypeVar("T", bound=Union[float, vec2])
@@ -145,6 +145,9 @@ class VirtualEasingObject(GameObject, Generic[T]):
         if self.follow is None:
             pos = vec2(0, 0)
         else:
+            if self.is_disposed():
+                self.dispose()
+                return
             pos = self.follow.centre
         result = self.easings[self.easeIndex].func.calc(EasingArgs(self.timeProgress, pos))
         self.action(result)
@@ -195,4 +198,4 @@ class EasingRunner(Generic[T]):
             tot += self.easings[i].time
 
     def run(self, action, follow: Entity | None = None):
-        Core.GameStates.GameStates.instance_create(VirtualEasingObject(action, self.easings, follow))
+        Core.GameStates.GameState.instance_create(VirtualEasingObject(action, self.easings, follow))

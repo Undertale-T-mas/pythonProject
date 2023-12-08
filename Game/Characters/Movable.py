@@ -1,7 +1,7 @@
 from Game.Scenes.TileMapScene import TileMapScene
 from Game.Map.Framework.TileMap import *
 from Game.Map.Framework.Tiles import *
-from Core.GameStates.GameStates import *
+from Core.GameStates.GameState import *
 from pygame import Vector2 as vec2
 
 
@@ -20,6 +20,9 @@ class MovableEntity(Entity, Collidable):
         self.__scene__ = s
         self.__tileMap__ = s.tileMap
         self.physicArea = CollideRect()
+
+    def died(self):
+        self.dispose()
 
     @property
     def faceRight(self) -> bool:

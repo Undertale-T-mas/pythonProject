@@ -24,7 +24,7 @@ class ObjectManager:
         self.__buffer__.append(obj)
 
     def get_objects(self):
-        objects : List[GameObject] = []
+        objects: List[GameObject] = []
         for obj in self.__objects__:
             if not obj.is_disposed():
                 objects.append(obj)
@@ -46,6 +46,8 @@ class ObjectManager:
         i = 0
         for obj in self.__objects__:
             if obj.is_disposed():
+                if i in self.__idx__:
+                    continue
                 self.__idx__.add(i)
                 self.__idx_list__.append(i)
                 self.__idx_cnt__ += 1

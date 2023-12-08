@@ -1,7 +1,7 @@
 import pygame
 
 import Game.TestScene
-from Core.GameStates import GameStates
+from Core.GameStates import GameState
 from Core.GameStates.Scene import Scene
 from Core.Render.RenderOptions import *
 from Game.Scenes.Start import *
@@ -17,8 +17,8 @@ pygame.key.stop_text_input()
 running = True
 dt = 0
 
-GameStates.initialize(render_options)
-GameStates.change_scene(TestScene())
+GameState.initialize(render_options)
+GameState.change_scene(TestScene())
 # GameStates.change_scene(Start())
 
 flipped = False
@@ -32,8 +32,8 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    GameStates.update(dt)
-    GameStates.render()
+    GameState.update(dt)
+    GameState.render()
 
     # flip() the display to put your work on screen
     if not flipped:

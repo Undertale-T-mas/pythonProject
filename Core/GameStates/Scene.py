@@ -1,6 +1,6 @@
 from Core.GameStates.ObjectManager import *
 from Core.Render.SurfaceManager import *
-from Core.GameStates import GameStates
+from Core.GameStates import GameState
 from Core.Render.SurfaceManager import SurfaceManager
 
 
@@ -14,7 +14,7 @@ class Scene:
         pass
 
     def __init__(self):
-        self.__render_options__ = GameStates.__gsRenderOptions__
+        self.__render_options__ = GameState.__gsRenderOptions__
 
     def update(self, game_args: GameArgs):
         if not self.__initialized__:
