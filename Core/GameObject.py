@@ -29,7 +29,7 @@ class GameObject:
 
 class Entity(GameObject):
     def draw(self, render_args: RenderArgs):
-        raise NotImplementedError()
+        self.image.draw_self(render_args, centre=self.centre)
 
     image: ImageSetBase | None = None
     surfaceName: str = "default"

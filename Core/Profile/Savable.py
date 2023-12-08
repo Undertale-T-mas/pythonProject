@@ -25,3 +25,28 @@ class Savable(Generic[T]):
     def value(self, val: T):
         self.__val__ = val
         ProfileIO.set(self.path_with_obj, val)
+
+    def __int__(self):
+        return int(self.__val__)
+
+    def __str__(self):
+        return str(self.__val__)
+
+    def __float__(self):
+        return float(self.__val__)
+
+    def __add__(self, other):
+        return self.__val__ + other
+
+    def __sub__(self, other):
+        return self.__val__ - other
+
+    def __mul__(self, other):
+        return self.__val__ * other
+
+    def __eq__(self, other):
+        return self.__val__ == other
+
+    def __divmod__(self, other):
+        return divmod(self.__val__, other)
+

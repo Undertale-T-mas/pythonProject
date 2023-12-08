@@ -19,10 +19,18 @@ from Core.GameArgs import *
 from pygame import Vector2 as vec2
 from pygame import *
 
+from Game.Characters.Movable import Damage
+
 
 class Barrage(Entity, Collidable):
-    autoDispose: bool = False
-    pierce: bool = False
+    autoDispose: bool
+    pierce: bool
+    damage: Damage
+
+    def __init__(self, damage: Damage):
+        self.autoDispose = True
+        self.pierce = False
+        self.damage = damage
 
     def __set_centre__(self, result: vec2):
         self.centre = result

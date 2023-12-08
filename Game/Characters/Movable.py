@@ -11,7 +11,8 @@ class MovableEntity(Entity, Collidable):
 
     def __init__(self):
         self.physicSurfName = 'enemy'
-        self.__lastMove__ = self.__moveIntention__ = vec2(0, 0)
+        self.__moveIntention__ = vec2(0, 0)
+        self.__lastSpeedX__ = 0
         s = current_scene()
 
         if not isinstance(s, TileMapScene):
@@ -162,7 +163,10 @@ class MovableEntity(Entity, Collidable):
     def set_move_intention(self, move_intention: vec2):
         self.__moveIntention__ = move_intention
 
-    __lastMove__: vec2
+    __lastSpeedX__: float
+
+    def give_force(self, speed_x: float):
+        self.__lastSpeedX__ += speed_x
 
     def move(self, args: GameArgs) -> vec2:
         if not isinstance(self.physicArea, CollideRect):
@@ -170,18 +174,19 @@ class MovableEntity(Entity, Collidable):
 
         old_pos = self.centre
         move_del = self.__moveIntention__ * args.elapsedSec * 60
-        old_move_del = vec2(move_del.x, move_del.y)
 
         if not self.__fractionLock__:
             ground_tile = self.__groundTile__
             if ground_tile is None:
-                fr = 0.2
+                fr = 0.17
             else:
                 fr = ground_tile.fraction
 
-            lerps = min(args.elapsedSec * 60 * fr, 1)
-            x_intention_speed = self.__moveIntention__.x * args.elapsedSec * 60
-            move_del.x = self.__lastMove__.x * (1 - lerps) + x_intention_speed * lerps
+            lerps = min(args.elapsedSec * 120 * fr, 1)
+            x_intention_speed = self.__moveIntention__.x
+            move_del.x = self.__lastSpeedX__ * (1 - lerps) + x_intention_speed * lerps
+            self.__lastSpeedX__ = move_del.x
+            move_del.x *= args.elapsedSec * 60
             if abs(move_del.x) < 0.1:
                 move_del.x = 0
 
@@ -289,6 +294,14 @@ class MovableEntity(Entity, Collidable):
         self.physicArea.area = FRect(self.centre - self.boundAnchor, self.size)
 
         self.__moveIntention__ = vec2(0, 0)
-        self.__lastMove__ = old_move_del
 
         return move_del
+
+
+class Damage:
+    source: Entity
+    damageLevel: int
+
+    def __init__(self, source: Entity, damage_level: int):
+        self.source = source
+        self.damageLevel = damage_level

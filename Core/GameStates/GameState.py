@@ -19,7 +19,7 @@ __gsKeyLast__: ScancodeWrapper
 
 
 def set_display(render_options: RenderOptions) -> Surface:
-    return pygame.display.set_mode(render_options.screenSize)
+    return pygame.display.set_mode(render_options.screenSize, render_options.surfaceFlag)
 
 
 def initialize(render_options: RenderOptions):

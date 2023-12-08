@@ -27,7 +27,7 @@ class ImageSet(ImageSetBase):
         self.blockSize = block_size
         self.__blockDistance__ = block_distance
         self.anchor = ACentre(self)
-        self.__imageSource__ = load_image('Tiles\\' + path)
+        self.__imageSource__ = load_image(path)
 
     def source_area(self):
         x = self.__blockDistance__.x * self.indexX

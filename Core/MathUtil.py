@@ -1,6 +1,9 @@
 import math
 from pygame import Vector2 as vec2
 import pygame.rect
+import random
+
+rander = random.Random()
 
 
 class Math:
@@ -13,6 +16,18 @@ class Math:
         if val > 0:
             return val
         return -val
+
+    @staticmethod
+    def damage(damage_level: int, defense_level: int) -> float:
+        val = (damage_level + 1) * 8.0
+        eff = ((defense_level + 2) * 8.0 - pow(val, 0.5)) / (val + 24)
+        if eff > 0:
+            val *= (1 - min(1, eff))
+        return val
+
+    @staticmethod
+    def rand(l: int, r: int):
+        return rander.randint(l, r)
 
 
 class FRect:

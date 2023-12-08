@@ -42,7 +42,10 @@ class SurfaceManager:
     def __init__(self, render_options: RenderOptions):
         self.__renderOptions__ = render_options
         for i in range(BUFFER_COUNT):
-            self.buffers.append(Surface((render_options.screenSize.x, render_options.screenSize.y)))
+            self.buffers.append(Surface(
+                (render_options.screenSize.x, render_options.screenSize.y),
+                flags=render_options.surfaceFlag)
+            )
 
     def draw_begin(self):
         self.__reset_size__()

@@ -45,7 +45,24 @@ class ImageSetBase:
     indexX: int
     indexY: int
     scale: float
-    flip: bool
+
+    @property
+    def alpha(self) -> float:
+        return self.__alpha__
+
+    @alpha.setter
+    def alpha(self, val: float):
+        self.__alpha__ = val
+        self.__imageUpdated__ = True
+
+    @property
+    def flip(self) -> bool:
+        return self.__flip__
+
+    @flip.setter
+    def flip(self, val: bool):
+        self.__flip__ = val
+        self.__imageUpdated__ = True
 
     anchor: Anchor
 
@@ -55,7 +72,8 @@ class ImageSetBase:
     __imageUpdated__: bool
     __idxXLast__: int
     __idxYLast__: int
-    __flipLast__: bool
+    __alpha__: float
+    __flip__: bool
     __curScale__: float
     __imageDraw__: Surface | None
 
@@ -64,9 +82,10 @@ class ImageSetBase:
         self.indexY = 0
         self.scale = 1.0
         self.flip = False
+        self.__alpha__ = 1.0
         self.__imageDraw__ = None
         self.__curScale__ = 1.0
-        self.__flipLast__ = False
+        self.__flip__ = False
         self.__idxXLast__ = 0
         self.__idxYLast__ = 0
         self.__imageUpdated__ = False
@@ -82,9 +101,6 @@ class ImageSetBase:
         if self.__idxYLast__ != self.indexY or self.__idxXLast__ != self.indexX:
             return True
 
-        if self.__flipLast__ != self.flip:
-            return True
-
         return False
 
     def __create_img__(self):
@@ -93,6 +109,9 @@ class ImageSetBase:
             cur = transform.scale(cur, vec2(self.scale * cur.get_width(), self.scale * cur.get_height()))
         if self.flip:
             cur = transform.flip(cur, True, False)
+        if Math.abs(1 - self.alpha) > 0.0001:
+            cur.set_alpha(int(self.alpha * 255))
+
         self.__imageDraw__ = cur
         self.__curScale__ = self.scale
         self.__idxXLast__ = self.indexX

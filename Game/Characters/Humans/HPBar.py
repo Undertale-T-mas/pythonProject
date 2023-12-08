@@ -1,5 +1,3 @@
-from cmath import sqrt
-
 from Core.GameObject import GameObject
 from Game.Characters.Movable import MovableEntity
 from Game.Scenes.TileMapScene import *
@@ -27,11 +25,8 @@ class HPBar(GameObject):
         self.__hp__ = self.hp_max
 
     def take_damage(self, damage_level: int):
-        d = TechData.get_defense()
-        val = (damage_level + 1) * 8.0
-        eff = ((d + 2) * 8.0 - sqrt(val)) / (val + 24)
-        if eff > 0:
-            val *= (1 - min(1, eff))
+        defense_level = TechData.get_defense()
+        val = Math.damage(damage_level, defense_level)
 
         self.__hp__ -= val
         if self.__hp__ < 0:

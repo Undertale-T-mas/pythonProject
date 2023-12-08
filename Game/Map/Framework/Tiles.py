@@ -38,7 +38,7 @@ class TileInfo:
     @property
     def img(self) -> ImageSet:
         if self.imgPath != '' and self.__img__ is None:
-            self.__img__ = ImageSet(vec2(TILE_LENGTH, TILE_LENGTH), vec2(TILE_LENGTH, TILE_LENGTH), self.imgPath)
+            self.__img__ = ImageSet(vec2(TILE_LENGTH, TILE_LENGTH), vec2(TILE_LENGTH, TILE_LENGTH), 'Tiles\\' + self.imgPath)
             sz = self.__img__.imageSource.get_size()
             sz = vec2(sz[0], sz[1])
             mod = vec2(sz.x % 48, sz.y % 48)

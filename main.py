@@ -1,6 +1,7 @@
 import pygame
 
 import Game.TestScene
+import Resources.ResourceLib
 from Core.GameStates import GameState
 from Core.GameStates.Scene import Scene
 from Core.Render.RenderOptions import *
@@ -11,6 +12,7 @@ from pygame import Vector2 as vec2
 # pygame setup
 pygame.init()
 pygame.mixer.pre_init(44100, 16, 2, 4096)
+Resources.ResourceLib.Sounds.initialize()
 render_options = RenderOptions()
 clock = pygame.time.Clock()
 pygame.key.stop_text_input()
@@ -40,7 +42,7 @@ while running:
         flipped = True
         pygame.display.flip()
     else:
-        pygame.display.update()
+        pygame.display.flip()
 
     # limits FPS to 125
     # dt is delta time in seconds since last frame, used for frame rate
