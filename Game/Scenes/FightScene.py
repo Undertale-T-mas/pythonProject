@@ -1,3 +1,4 @@
+from Core.Animation.Animation import Animation
 from Core.GameStates.Scene import *
 from Core.GameStates import *
 import Core.GameStates.GameState
@@ -53,6 +54,15 @@ class FightScene(TileMapScene):
     def __init__(self):
         super().__init__()
         self.__phyManager__ = PhysicManager()
+
+    def __move_player__(self):
+        self.__player__.centre = vec2(-1000, -1000)
+
+    def remove_player(self):
+        self.__player__.dispose()
+        self.instance_create(DelayedAction(0, Action(self.__move_player__)))
+        self.__player__.image.imageSource = self.player.__image_set__.imageDict['Punk_death']
+        self.instance_create(Animation(self.__player__.image, 0.1, self.__player__.centre, False))
 
     def create_player(self):
         self.__player__ = Player()

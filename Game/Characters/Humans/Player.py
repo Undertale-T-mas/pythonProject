@@ -190,7 +190,7 @@ class Player(MovableEntity):
     __image_set__: MultiImageSet
     __hand__: PlayerHand
 
-    def __init__(self):
+    def __init__(self, position: vec2 = vec2(24, 0), speed: vec2 = vec2(0, 0)):
         super().__init__()
         s = MultiImageSet(vec2(32, 48), vec2(48, 48), 'Characters\\Player')
         self.__hand__ = PlayerHand(self)
@@ -201,7 +201,9 @@ class Player(MovableEntity):
         self.gravity = 9.8
         self.size = vec2(40, 96 - 24)
         self.boundAnchor = vec2(20, 48 - 24)
-        self.centre = vec2(24, 0)
+        self.centre = position
+        self.__ySpeed__ = speed.y
+        self.__lastSpeedX__ = speed.x
         s.scale = 2.0
         s.imageSource = s.imageDict['Punk_run']
         self.physicSurfName = 'player'
@@ -237,6 +239,8 @@ class Player(MovableEntity):
         Sounds.shoot.play()
 
     def died(self):
+        instance_create(DelayedAction(0, Action(self.dispose)))
+        GameState.__gsScene__.remove_player()
         return
 
     def deal_damage(self, damage: Damage):

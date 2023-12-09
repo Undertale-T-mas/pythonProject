@@ -27,6 +27,21 @@ class GameObject:
         self.__disposed__ = True
 
 
+class DelayedAction(GameObject):
+    __action__: Action
+    __delay__: float
+
+    def __init__(self, delay: float, action: Action):
+        self.__delay__ = delay
+        self.__action__ = action
+
+    def update(self, args: GameArgs):
+        self.__delay__ -= args.elapsedSec
+        if self.__delay__ <= 0:
+            self.dispose()
+            self.__action__.act()
+
+
 class Entity(GameObject):
     def __init__(self):
         self.image = None
