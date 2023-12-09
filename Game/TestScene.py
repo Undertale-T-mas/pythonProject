@@ -18,7 +18,8 @@ class TestScene(FightScene):
     def start(self):
         self.set_tiles(Game.Map.Begin.TestMap.MapTEST0())
         self.create_player()
-        instance_create(MeleeRobot(14, 0))
+        for obj in self.tileMap.get_objects():
+            instance_create(obj)
 
     def update(self, game_args: GameArgs):
         super().update(game_args)

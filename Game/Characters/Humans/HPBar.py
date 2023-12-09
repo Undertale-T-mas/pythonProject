@@ -16,8 +16,10 @@ class HPBar(GameObject):
     def hp_max(self):
         return __playerHpChart__[self.__scene__.scene_difficulty]
 
-    def __init__(self, scene: TileMapScene, player: MovableEntity):
-        self.__scene__ = scene
+    def __init__(self, player: MovableEntity):
+        if not isinstance(GameState.__gsScene__, TileMapScene):
+            raise Exception()
+        self.__scene__ = GameState.__gsScene__
         self.__player__ = player
         self.recover()
 

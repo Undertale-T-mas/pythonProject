@@ -2,9 +2,26 @@ from Game.Map.Framework.TileBack import *
 from Game.Map.Framework.Tiles import *
 from typing import *
 
+from Game.Map.Framework.WorldData import WorldData
+
 
 class TileMap(Entity):
-    worldPos: vec2
+    __worldPos__: vec2
+
+    @property
+    def worldPos(self):
+        return self.__worldPos__
+
+    @worldPos.setter
+    def worldPos(self, val: vec2):
+        self.__worldPos__ = val
+        WorldData.insert(self, int(self.worldPos.x), int(self.worldPos.y))
+
+    __objects__: List[GameObject]
+
+    def get_objects(self):
+        return self.__objects__
+
     tiles: List[List[Tile]]
 
     __width__: int
@@ -20,8 +37,12 @@ class TileMap(Entity):
     __backGrounds__: List[Entity]
     __initialized__: bool
 
+    def add_object(self, obj: GameObject):
+        self.__objects__.append(obj)
+
     def __init__(self):
         super().__init__()
+        self.__objects__ = []
         self.surfaceName = 'bg'
         self.__initialized__ = False
         self.actived = []

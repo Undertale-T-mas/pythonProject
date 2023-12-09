@@ -16,6 +16,7 @@ from Core.GameArgs import *
 from pygame import Vector2 as vec2
 from pygame import *
 
+from Game.Characters.Enemys.Robots import MeleeRobot
 from Game.Map.Framework.TileMap import *
 
 
@@ -45,3 +46,4 @@ class MapTEST0(TileMap):
         self.add_background('City\\2.png', 0.02)
         self.add_background('City\\3.png', 0.06)
         self.add_background('City\\4.png', 0.2)
+        self.add_object(MeleeRobot(14, 0))

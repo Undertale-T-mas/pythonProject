@@ -13,10 +13,10 @@ class FightCameraObj(Entity):
     __player__: Entity
     __map__: TileMap
 
-    def __init__(self, player: Entity, map: TileMap):
+    def __init__(self, player: Entity, _map: TileMap):
         super().__init__()
         self.__player__ = player
-        self.__map__ = map
+        self.__map__ = _map
         self.centre = GameState.__gsRenderOptions__.screenSize / 2
 
     def calc_x(self):

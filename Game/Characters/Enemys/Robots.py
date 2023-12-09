@@ -79,6 +79,10 @@ class LandRobot(MovableEntity):
         if self.__hp__ <= 0:
             self.died()
 
+    def update(self, args: GameArgs):
+        if not self.__initialized__:
+            self.__start__()
+
 
 class MeleeRobot(LandRobot):
     def __init__(self, *args):
@@ -122,6 +126,8 @@ class MeleeRobot(LandRobot):
         instance_create(AlphaAnimation(img, 0.12, self.centre, 0.04))
 
     def update(self, args: GameArgs):
+        super().update(args)
+
         if self.__killed__:
             self.dispose()
             return

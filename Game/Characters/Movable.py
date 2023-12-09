@@ -54,12 +54,19 @@ class DeathAnimation(Animation):
 class MovableEntity(Entity, Collidable):
     __tileMap__: TileMap
     __scene__: TileMapScene
+    __initialized__: bool
 
     def __init__(self):
         super().__init__()
+        self.physicArea = CollideRect()
+        self.__initialized__ = False
         self.physicSurfName = 'enemy'
         self.__moveIntention__ = vec2(0, 0)
         self.__lastSpeedX__ = 0
+
+    def __start__(self):
+        self.__initialized__ = True
+
         s = current_scene()
 
         if not isinstance(s, TileMapScene):
@@ -67,7 +74,6 @@ class MovableEntity(Entity, Collidable):
 
         self.__scene__ = s
         self.__tileMap__ = s.tileMap
-        self.physicArea = CollideRect()
 
     def died(self):
         self.dispose()
@@ -218,6 +224,9 @@ class MovableEntity(Entity, Collidable):
     def move(self, args: GameArgs) -> vec2:
         if not isinstance(self.physicArea, CollideRect):
             raise Exception()
+
+        if not self.__initialized__:
+            self.__start__()
 
         old_pos = self.centre
         move_del = self.__moveIntention__ * args.elapsedSec * 60

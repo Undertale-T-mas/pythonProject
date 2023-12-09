@@ -196,7 +196,7 @@ class Player(MovableEntity):
         self.__hand__ = PlayerHand(self)
         self.__image_set__ = s
         self.image = s
-        self.hp = HPBar(self.__scene__, self)
+        self.hp = HPBar(self)
         self.fractionLock = False
         self.gravity = 9.8
         self.size = vec2(40, 96 - 24)
