@@ -1,8 +1,54 @@
+from Core.Animation.Animation import Animation
 from Game.Scenes.TileMapScene import TileMapScene
 from Game.Map.Framework.TileMap import *
 from Game.Map.Framework.Tiles import *
 from Core.GameStates.GameState import *
 from pygame import Vector2 as vec2
+
+
+class DeathAnimation(Animation):
+    area: FRect
+    scene: TileMapScene
+    __y_speed__: float
+
+    def __init__(self, img: ImageSetBase, obj: Entity, phy_anchor: vec2 = None, phy_size: vec2 = None):
+        super().__init__(img, 0.1, obj.centre, False)
+        if phy_anchor is None:
+            phy_anchor = img.__blockSize__ / 2
+        if phy_size is None:
+            phy_size = img.__blockSize__
+        self.__y_speed__ = 2.0
+
+        if not isinstance(GameState.__gsScene__, TileMapScene):
+            raise Exception()
+
+        self.scene = GameState.__gsScene__
+        self.area = FRect(self.centre.x - phy_anchor.x, self.centre.y - phy_anchor.y, phy_size.x, phy_size.y)
+
+    def update(self, args: GameArgs):
+        super().update(args)
+        bdec = (self.area.i_bottom + 4) // TILE_LENGTH
+        ldec = self.area.i_left // TILE_LENGTH
+        rdec = self.area.i_right // TILE_LENGTH
+        on_ground = False
+        y = self.area.bottom
+        addon = self.__y_speed__ * args.elapsedSec * 60
+        for i in range(ldec, rdec + 1):
+            tile = self.scene.tileMap.get_tile(i, bdec)
+            if tile.uuid == 0 or not tile.collidable:
+                continue
+            if self.area.right < tile.areaRect.left or self.area.left > tile.areaRect.right:
+                continue
+            if y + addon >= tile.areaRect.top:
+                on_ground = True
+                addon = tile.areaRect.top - y
+        if not on_ground:
+            self.__y_speed__ += 9.8 * args.elapsedSec * 1.5
+        else:
+            self.__y_speed__ = 0.00001
+
+        self.centre.y += addon
+        self.area.y += addon
 
 
 class MovableEntity(Entity, Collidable):

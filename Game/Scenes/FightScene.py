@@ -4,6 +4,7 @@ from Core.GameStates import *
 import Core.GameStates.GameState
 from Core.GameStates.GameState import *
 from Game.Characters.Humans.Player import Player
+from Game.Characters.Movable import DeathAnimation
 from Game.Map.Framework.TileMap import *
 from Game.Scenes.TileMapScene import *
 
@@ -62,7 +63,7 @@ class FightScene(TileMapScene):
         self.__player__.dispose()
         self.instance_create(DelayedAction(0, Action(self.__move_player__)))
         self.__player__.image.imageSource = self.player.__image_set__.imageDict['Punk_death']
-        self.instance_create(Animation(self.__player__.image, 0.1, self.__player__.centre, False))
+        self.instance_create(DeathAnimation(self.__player__.image, self.__player__, vec2(20, 30), vec2(40, 77)))
 
     def create_player(self):
         self.__player__ = Player()
