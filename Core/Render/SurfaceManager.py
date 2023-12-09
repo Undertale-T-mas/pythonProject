@@ -36,8 +36,13 @@ class SurfaceManager:
         if (self.__curSize__ - self.__renderOptions__.screenSize).length_squared() > 0.01:
             self.__curSize__ = self.__renderOptions__.screenSize
             for i in range(BUFFER_COUNT):
-                self.buffers[i] = Surface(self.__renderOptions__.screenSize, pygame.SRCALPHA)
-            self.screen = Core.GameStates.GameState.set_display(self.__renderOptions__)
+                self.buffers[i] = Surface(self.__renderOptions__.screenSize, self.__renderOptions__.surfaceFlag)
+
+            if self.__renderOptions__.extraBuffer:
+                self.screen = Surface(self.__renderOptions__.screenSize, self.__renderOptions__.surfaceFlag)
+                self.display = Core.GameStates.GameState.set_display(self.__renderOptions__)
+            else:
+                self.screen = Core.GameStates.GameState.set_display(self.__renderOptions__)
 
     def __init__(self, render_options: RenderOptions):
         self.__renderOptions__ = render_options
@@ -46,6 +51,7 @@ class SurfaceManager:
                 (render_options.screenSize.x, render_options.screenSize.y),
                 flags=render_options.surfaceFlag)
             )
+        self.__reset_size__()
 
     def draw_begin(self):
         self.__reset_size__()

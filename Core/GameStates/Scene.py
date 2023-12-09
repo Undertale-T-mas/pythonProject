@@ -8,12 +8,21 @@ class Scene:
     __objManager__ = ObjectManager()
     __render_args__ = RenderArgs()
     __render_options__: RenderOptions
-    __initialized__ = False
+    __initialized__: bool
+    __camera__: Entity | None
+
+    @property
+    def camera(self):
+        return self.__camera__
+
+    def __set_camera__(self, obj: Entity):
+        self.__camera__ = obj
 
     def start(self):
         pass
 
     def __init__(self):
+        self.__initialized__ = False
         self.__render_options__ = GameState.__gsRenderOptions__
 
     def update(self, game_args: GameArgs):
@@ -26,7 +35,13 @@ class Scene:
         manager.draw_begin()
         for obj in self.__objManager__.get_objects():
             if isinstance(obj, Entity):
-                manager.draw_insert(obj)
+                if obj.visible:
+                    manager.draw_insert(obj)
+
+        if self.__camera__ == None:
+            self.__render_args__.camera_delta = vec2(0, 0)
+        else:
+            self.__render_args__.camera_delta = self.__camera__.centre - manager.__renderOptions__.screenSize * 0.5
 
         manager.draw_end(self.__render_args__)
 

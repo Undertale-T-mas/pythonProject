@@ -28,6 +28,7 @@ class Barrage(Entity, Collidable):
     damage: Damage
 
     def __init__(self, damage: Damage):
+        super().__init__()
         self.autoDispose = True
         self.pierce = False
         self.damage = damage

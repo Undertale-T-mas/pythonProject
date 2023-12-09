@@ -30,10 +30,10 @@ class TileInfo:
     sizeY: int = 1
     bound: CollideRect
     uuid: int
-    onUpdate: Action | None = None
+    onUpdate: Action | None
     fraction: float = 0.5
     collidable: bool = True
-    __img__: ImageSet | None = None
+    __img__: ImageSet | None
 
     @property
     def img(self) -> ImageSet:
@@ -57,6 +57,7 @@ class TileInfo:
         self.sizeX = int(size.right)
         self.sizeY = int(size.bottom)
         self.uuid = _id
+        self.__img__ = None
         self.collidable = collidable
         self.onUpdate = on_update
 

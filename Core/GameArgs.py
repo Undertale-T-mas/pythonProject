@@ -1,5 +1,6 @@
 from Core import GameStates
 from pygame import *
+from pygame import Vector2 as vec2
 
 
 class GameArgs:
@@ -14,5 +15,15 @@ class GameArgs:
         self.totalSec += time_elapsed
 
 
+HIGH_QUALITY = 2
+MED_QUALITY = 1
+LOW_QUALITY = 0
+
+
 class RenderArgs:
+    def __init__(self):
+        self.quality = HIGH_QUALITY
+
     target_surface: Surface
+    quality: int
+    camera_delta: vec2

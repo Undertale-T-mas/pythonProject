@@ -28,9 +28,16 @@ class GameObject:
 
 
 class Entity(GameObject):
+    def __init__(self):
+        self.image = None
+        self.surfaceName = 'default'
+        self.centre = vec2(0, 0)
+        self.visible = True
+
     def draw(self, render_args: RenderArgs):
         self.image.draw_self(render_args, centre=self.centre)
 
-    image: ImageSetBase | None = None
-    surfaceName: str = "default"
-    centre: vec2 = vec2(0, 0)
+    image: ImageSetBase | None
+    surfaceName: str
+    centre: vec2
+    visible: bool

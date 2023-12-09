@@ -45,6 +45,7 @@ class ImageSetBase:
     indexX: int
     indexY: int
     scale: float
+    stable: bool
 
     @property
     def alpha(self) -> float:
@@ -89,6 +90,7 @@ class ImageSetBase:
         self.__idxXLast__ = 0
         self.__idxYLast__ = 0
         self.__imageUpdated__ = False
+        self.stable = False
 
     def __need_refresh__(self) -> bool:
         if self.__imageDraw__ is None or self.__imageUpdated__:
@@ -122,7 +124,11 @@ class ImageSetBase:
         if self.__need_refresh__():
             self.__create_img__()
 
-        v = centre - self.anchor.get_anchor_pos() * self.scale
+        a = self.anchor.get_anchor_pos()
+        v = centre - vec2(a.x * self.scale, a.y * self.scale)
+
+        if not self.stable:
+            v += args.camera_delta
 
         args.target_surface.blit(
             self.__imageDraw__,

@@ -1,11 +1,48 @@
 from Core.GameStates.Scene import *
 from Core.GameStates import *
+import Core.GameStates.GameState
+from Core.GameStates.GameState import *
 from Game.Characters.Humans.Player import Player
 from Game.Map.Framework.TileMap import *
 from Game.Scenes.TileMapScene import *
 
 
+class FightCameraObj(Entity):
+    __player__: Entity
+    __map__: TileMap
+
+    def __init__(self, player: Entity, map: TileMap):
+        super().__init__()
+        self.__player__ = player
+        self.__map__ = map
+        self.centre = GameState.__gsRenderOptions__.screenSize / 2
+
+    def calc_x(self):
+        screen_x = GameState.__gsRenderOptions__.screenSize.x
+        map_w = self.__map__.width * TILE_LENGTH
+        if map_w <= screen_x:
+            return screen_x / 2
+        else:
+            raise Exception()
+
+    def calc_y(self):
+        screen_y = GameState.__gsRenderOptions__.screenSize.y
+        map_h = self.__map__.height * TILE_LENGTH
+        if map_h <= screen_y:
+            return screen_y / 2
+        else:
+            raise Exception()
+
+    def update(self, args: GameArgs):
+        self.centre.x = self.calc_x()
+        self.centre.y = self.calc_y()
+
+    def draw(self, render_args: RenderArgs):
+        pass
+
+
 class FightScene(TileMapScene):
+
     __phyManager__: PhysicManager
     __player__: Player
 
@@ -19,13 +56,16 @@ class FightScene(TileMapScene):
 
     def create_player(self):
         self.__player__ = Player()
-        Core.GameStates.GameState.instance_create(self.__player__)
+        instance_create(self.__player__)
+        self.__camera__ = FightCameraObj(self.__player__, self.tileMap)
 
     def update(self, game_args: GameArgs):
         super().update(game_args)
         self.__phyManager__.update()
         self.__phyManager__.check('player', 'barrage')
         self.__phyManager__.check('pl_bullet', 'enemy')
+        if self.__camera__ is not None:
+            self.__camera__.update(game_args)
 
     def instance_create(self, obj: GameObject):
         super().instance_create(obj)

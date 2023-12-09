@@ -8,6 +8,11 @@ class TileMapScene(Scene):
     tileMap: TileMap
     __difficulty__: Savable[int]
     __diffDynamic__: Savable[float]
+    tileChanged: bool
+
+    def __init__(self):
+        super().__init__()
+        self.tileChanged = False
 
     def set_tiles(self, tile_map: TileMap):
         self.tileMap = tile_map
@@ -19,6 +24,11 @@ class TileMapScene(Scene):
             self.__diffDynamic__.value = 0
         ProfileIO.save()
         self.instance_create(self.tileMap)
+
+    def update(self, game_args: GameArgs):
+        super().update(game_args)
+        self.tileChanged = self.tileMap.tileChanged
+        self.tileMap.visible = self.tileChanged
 
     @property
     def scene_difficulty(self):

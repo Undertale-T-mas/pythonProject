@@ -24,7 +24,7 @@ class PlayerBullet(Barrage):
         super().__init__(damage)
         self.image = MultiImage('Characters\\Player\\Bullets')
         self.physicSurfName = 'pl_bullet'
-        self.move(EasingGenerator.linear(start, vec2(-900, 0) if d else vec2(900, 0)))
+        self.move(EasingGenerator.linear(start, vec2(-1100, 0) if d else vec2(1100, 0)))
         self.image.scale = 2
         self.image.flip = d
         self.autoDispose = True
@@ -57,6 +57,7 @@ class PlayerBullet(Barrage):
 
 class Weapon(Entity):
     def __init__(self):
+        super().__init__()
         self.image = MultiImage('Characters\\Player\\Weapons')
         self.image.scale = 2
 
@@ -84,6 +85,7 @@ class MoveSmoke(Entity):
     speedX: float
 
     def __init__(self, place: vec2, speed_x: float, path: str, index_max: int = 4):
+        super().__init__()
         self.image = ImageSet(vec2(48, 48), vec2(48, 48), path)
         self.image.scale = 1.5
         self.tot = 0

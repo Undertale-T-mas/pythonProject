@@ -10,6 +10,7 @@ class MovableEntity(Entity, Collidable):
     __scene__: TileMapScene
 
     def __init__(self):
+        super().__init__()
         self.physicSurfName = 'enemy'
         self.__moveIntention__ = vec2(0, 0)
         self.__lastSpeedX__ = 0

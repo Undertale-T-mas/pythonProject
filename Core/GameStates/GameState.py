@@ -27,7 +27,6 @@ def initialize(render_options: RenderOptions):
     global __gsRenderOptions__
     __gsSurfaceManager__ = SurfaceManager(render_options)
     __gsRenderOptions__ = render_options
-    set_display(render_options)
 
 
 def instance_create(obj: GameObject):
@@ -44,6 +43,8 @@ def change_scene(scene: Scene):
 
 def render():
     __gsScene__.draw(__gsSurfaceManager__)
+    if __gsRenderOptions__.extraBuffer:
+        __gsSurfaceManager__.display.blit(__gsSurfaceManager__.screen, vec2(0, 0))
 
 
 def update(time_elapsed: float):

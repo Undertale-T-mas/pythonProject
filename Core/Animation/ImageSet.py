@@ -13,6 +13,11 @@ from Core.Animation.ImageSetBase import *
 
 
 class SingleImage(ImageSetBase):
+    def __init__(self, path: str):
+        super().__init__()
+        self.__imageSource__ = load_image(path)
+        self.anchor = ACentre(self)
+        self.blockSize = vec2(self.__imageSource__.get_width(), self.__imageSource__.get_height())
 
     def source_area(self):
         size = self.imageSource.get_size()
