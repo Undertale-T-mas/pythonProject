@@ -189,9 +189,13 @@ class Player(MovableEntity):
     __state__: MoveState = MoveState.idle
     __image_set__: MultiImageSet
     __hand__: PlayerHand
+    ammunition: int
+    fire_cooldown: float
 
     def __init__(self, position: vec2 = vec2(24, 0), speed: vec2 = vec2(0, 0)):
         super().__init__()
+        self.ammunition = 10
+        self.fire_cooldown = 1
         s = MultiImageSet(vec2(32, 48), vec2(48, 48), 'Characters\\Player')
         self.__hand__ = PlayerHand(self)
         self.__image_set__ = s
@@ -255,17 +259,30 @@ class Player(MovableEntity):
         Sounds.player_damaged.play()
 
     def update(self, args: GameArgs):
-        if key_hold(pygame.K_LEFT):
-            self.__moveIntention__.x = -5
-            self.image.flip = True
-        if key_hold(pygame.K_RIGHT):
-            self.__moveIntention__.x = 5
+        speed_x_target = 0
+        if key_hold(pygame.K_LEFT) or key_hold(pygame.K_a):
+            speed_x_target -= 5
+        if key_hold(pygame.K_RIGHT) or key_hold(pygame.K_d):
+            speed_x_target += 5
+
+        self.__moveIntention__.x = speed_x_target
+        if speed_x_target > 0:
             self.image.flip = False
+        if speed_x_target < 0:
+            self.image.flip = True
 
-        if key_on_press(pygame.K_SPACE):
-            self.attack()
+        if self.fire_cooldown <= 0:
+            if key_on_press(pygame.K_SPACE) or key_on_press(pygame.K_j):
+                self.attack()
+                self.ammunition -= 1
+            if self.ammunition == 0:
+                self.fire_cooldown = 1
+                self.ammunition = 10
 
-        need_jump = key_hold(pygame.K_c)
+        if self.fire_cooldown > 0:
+            self.fire_cooldown -= args.elapsedSec
+
+        need_jump = key_hold(pygame.K_c) or key_hold(pygame.K_w)
         if need_jump:
             self.__jumpPressTime__ += args.elapsedSec
         else:
