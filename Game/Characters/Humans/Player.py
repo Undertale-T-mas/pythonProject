@@ -288,6 +288,17 @@ class Player(MovableEntity):
         shake_dir = 0.0
         if self.__inVoid__:
             shake_dir = 90.0
+            for i in range(3):
+                img_set = ImageSet(vec2(48, 48), vec2(48, 48), 'Effects\\Void\\0.png')
+                img_set.scale = 2.5 + i * 0.3
+                img_set.alpha = 1.0 - i * 0.3
+                instance_create(
+                    Animation(
+                        img_set,
+                        0.06 + i * 0.015, vec2(self.centre.x, GameState.__gsRenderOptions__.screenSize.y - 58 + i * 21),
+                        True, 'barrage'
+                    )
+                )
         else:
             shake_dir = Math.rand(0, 359)
             img_set = ImageSet(vec2(48, 48), vec2(48, 48), 'Effects\\Blood\\0.png')
