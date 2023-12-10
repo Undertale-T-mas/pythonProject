@@ -11,6 +11,7 @@ class Sounds:
     player_damaged: Sound = None
     robot_damaged: Sound = None
     recharge: Sound = None
+    robot_died: Sound = None
 
     @staticmethod
     def initialize():
@@ -21,3 +22,4 @@ class Sounds:
         Sounds.died = load_sound('died.wav')
         Sounds.player_damaged = load_sound('player_damaged.wav')
         Sounds.robot_damaged = load_sound('robot_damaged.wav')
+        Sounds.robot_died = load_sound('robot_died.wav')

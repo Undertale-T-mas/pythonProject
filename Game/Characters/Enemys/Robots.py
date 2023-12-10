@@ -90,6 +90,7 @@ class MeleeRobot(LandRobot):
             pos = args[0]
         else:
             pos = vec2((TILE_LENGTH + 0.5) * args[0], TILE_LENGTH * args[1] - 48.0)
+
         super().__init__(
             pos,
             MultiImageSet(vec2(128, 128), vec2(128, 128), 'Characters\\Enemys\\Robot1'),
@@ -97,11 +98,15 @@ class MeleeRobot(LandRobot):
         )
         self.__killed__ = False
         self.image.scale = 1.45
+        self.attacking = False
+        self.stage_timer = 0.0
+        self.stage = 0
+        self.attacked_timer = 0.0
 
-    attacking: bool = False
-    stage_timer: float = 0.0
-    stage: int = 0
-    attacked_timer: float = 0.0
+    attacking: bool
+    stage_timer: float
+    stage: int
+    attacked_timer: float
 
     def on_collide(self, another):
         if not isinstance(another, PlayerBullet):
@@ -125,6 +130,7 @@ class MeleeRobot(LandRobot):
         img.imageSource = img.imageDict['Dead']
         img.indexX = 0
         instance_create(AlphaAnimation(img, 0.12, self.centre, 0.04))
+        instance_create(DelayedAction(0.04, Action(Sounds.robot_died.play)))
 
     def update(self, args: GameArgs):
         super().update(args)
@@ -186,6 +192,115 @@ class MeleeRobot(LandRobot):
                 self.stage_timer -= 0.125
 
                 if self.stage == 8:
+                    self.stage = 0
+
+            self.__multiImage__.imageSource = self.__multiImage__.imageDict['Walk']
+
+        self.image.indexX = self.stage
+
+
+class GunRobot(LandRobot):
+    def __init__(self, *args):
+        if len(args) == 1:
+            pos = args[0]
+        else:
+            pos = vec2((TILE_LENGTH + 0.5) * args[0], TILE_LENGTH * args[1] - 48.0)
+
+        super().__init__(
+            pos,
+            MultiImageSet(vec2(64, 96), vec2(96, 96), 'Characters\\Enemys\\Robot2'),
+            vec2(30, 48), vec2(60, 192 - 41)
+        )
+        self.__killed__ = False
+        self.image.scale = 1.45 * 1.5
+        self.attacking = False
+        self.stage_timer = 0.0
+        self.stage = 0
+        self.attacked_timer = 0.0
+        self.attack_timer = 2.0
+
+    attacking: bool
+    stage_timer: float
+    stage: int
+    attacked_timer: float
+    attack_timer: float
+
+    def on_collide(self, another):
+        if not isinstance(another, PlayerBullet):
+            raise Exception()
+        super().on_collide(another)
+        self.attacked_timer = 0.1
+        self.stage = 0
+        self.attacking = False
+        if another.centre.x < self.centre.x:
+            self.give_force(5)
+        else:
+            self.give_force(-5)
+        self.jump(1)
+        self.deal_damage(another.damage.damageLevel)
+
+    __killed__: bool
+
+    def died(self):
+        self.__killed__ = True
+        img = self.__multiImage__
+        img.imageSource = img.imageDict['Death']
+        img.indexX = 0
+        instance_create(AlphaAnimation(img, 0.12, self.centre, 0.04))
+        instance_create(DelayedAction(0.04, Action(Sounds.robot_died.play)))
+
+    def update(self, args: GameArgs):
+        super().update(args)
+
+        if self.__killed__:
+            self.dispose()
+            return
+        fr = self.front
+        if fr.collidable:
+            self.faceRight = self.image.flip
+        elif self.onGround:
+            fr_g = self.front_ground
+            if not fr_g.collidable:
+                self.faceRight = self.image.flip
+
+        if not self.attacking:
+            self.set_move_intention(vec2(2, 0) if self.faceRight else vec2(-2, 0))
+
+        self.move(args)
+
+        if self.attacked_timer > 0:
+            self.attacked_timer -= args.elapsedSec
+            return
+
+        dir_factor = 1 if self.faceRight else - 1
+        d = (self.playerTarget.centre.x - self.centre.x) * dir_factor
+        h = (self.playerTarget.centre.y - self.centre.y)
+
+        self.stage_timer += args.elapsedSec
+        self.attack_timer -= args.elapsedSec
+        if self.attack_timer <= 0:
+            self.attacking = True
+            self.attack_timer += 2.0
+
+        if self.attacking:
+            if self.stage_timer > 0.125:
+                self.stage += 1
+                self.stage_timer -= 0.125
+                if self.stage == 3:
+                    pass
+
+                if self.stage == 6:
+                    self.stage = 0
+                    self.attacking = False
+
+            self.__multiImage__.imageSource = self.__multiImage__.imageDict['Attack']
+
+        else:
+            if self.stage_timer > 0.125:
+                self.stage += 1
+                self.stage_timer -= 0.125
+
+                if self.stage == 6:
                     self.stage = 0
 
             self.__multiImage__.imageSource = self.__multiImage__.imageDict['Walk']

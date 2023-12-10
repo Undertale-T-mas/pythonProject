@@ -9,8 +9,8 @@ from Core.Render.SurfaceManager import SurfaceManager
 
 __gsGameArgs__ = GameArgs()
 __gsRenderArgs__ = RenderArgs()
-__gsScene__: Scene = None
-__gsSceneBuffer__: Scene = None
+__gsScene__: Scene | Any = None
+__gsSceneBuffer__: Scene | Any = None
 
 __gsSurfaceManager__: SurfaceManager
 __gsRenderOptions__: RenderOptions

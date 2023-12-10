@@ -20,13 +20,15 @@ class MoveState(Enum):
 
 class PlayerBullet(Barrage):
     rect: CollideRect
+    tiles: TileMap
 
-    def __init__(self, start: vec2, d: bool, damage: Damage):
+    def __init__(self, start: vec2, d: bool, damage: Damage, tiles: TileMap):
         super().__init__(damage)
         self.image = MultiImage('Characters\\Player\\Bullets')
         self.physicSurfName = 'pl_bullet'
         self.move(EasingGenerator.linear(start, vec2(-1100, 0) if d else vec2(1100, 0)))
         self.image.scale = 2
+        self.tiles = tiles
         self.image.flip = d
         self.autoDispose = True
         self.rect = CollideRect()
@@ -36,6 +38,8 @@ class PlayerBullet(Barrage):
     def update(self, args: GameArgs):
         self.rect.area.centre = self.centre
         super().update(args)
+        decx = int(self.centre.x // TILE_LENGTH)
+        decy = int(self.centre.y // TILE_LENGTH)
         pass
 
     def draw(self, render_args: RenderArgs):
@@ -57,13 +61,18 @@ class PlayerBullet(Barrage):
 
 
 class Weapon(Entity):
+    tiles: TileMap
+
     def __init__(self):
         super().__init__()
         self.image = MultiImage('Characters\\Player\\Weapons')
         self.image.scale = 2
+        self.tiles = None
 
     def update(self, args: GameArgs):
         super().update(args)
+        if self.tiles is None:
+            self.tiles = GameState.__gsScene__.__tileMap__
         self.idx = 0
         self.image.imageSource = self.image.imageList[0]
 
@@ -74,7 +83,7 @@ class Weapon(Entity):
         d = self.delta[self.idx]
         if self.image.flip:
             d = vec2(-d.x, d.y)
-        instance_create(PlayerBullet(self.centre + d, self.image.flip, damage))
+        instance_create(PlayerBullet(self.centre + d, self.image.flip, damage, self.tiles))
 
     idx = 0
     delta: List[vec2] = [
@@ -111,6 +120,7 @@ class MoveSmoke(Entity):
 
 class PlayerHand(Entity):
     def __init__(self, follow):
+        super().__init__()
         self.__follow__ = follow
         self.image = MultiImage('Characters\\Player\\Hands')
         self.image.scale = 2

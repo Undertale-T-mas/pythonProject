@@ -204,9 +204,7 @@ class MovableEntity(Entity, Collidable):
                     self.__groundTile__ = tile
                     return True
 
-        self.__onGround__ = (self.physicArea.area.bottom > 450)
-        if self.__onGround__:
-            self.__inGroundDistance__ = self.physicArea.area.bottom - 450
+        self.__onGround__ = False
         return self.__onGround__
 
     def jump(self, speed: float):
