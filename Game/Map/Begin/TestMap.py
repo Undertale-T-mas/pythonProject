@@ -24,6 +24,10 @@ class MapTEST0(TileMap):
     def __init__(self):
         super().__init__()
         self.worldPos = vec2(-1, -1)
+
+        if TileMap.in_initialize:
+            return
+
         self.set_tile(0, 5, Tile(TileLibrary.grass))
         self.set_tile(1, 5, Tile(TileLibrary.grass))
         self.set_tile(4, 5, Tile(TileLibrary.grass))

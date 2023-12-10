@@ -150,8 +150,9 @@ class MeleeRobot(LandRobot):
 
         dir_factor = 1 if self.faceRight else - 1
         d = (self.playerTarget.centre.x - self.centre.x) * dir_factor
+        h = (self.playerTarget.centre.y - self.centre.y)
 
-        if 0 < d < 60:
+        if 0 < d < 65 and -40 < h < 85:
             # in attack range:
             if not self.attacking:
                 self.attacking = True

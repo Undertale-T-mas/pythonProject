@@ -30,7 +30,7 @@ def initialize(render_options: RenderOptions):
 
 
 def instance_create(obj: GameObject):
-    __gsScene__.instance_create(obj)
+    __gsSceneBuffer__.instance_create(obj)
 
 
 def change_scene(scene: Scene):

@@ -6,8 +6,8 @@ from Game.Map.Framework.TileMap import *
 
 class TileMapScene(Scene):
     tileMap: TileMap
-    __difficulty__: Savable[int]
-    __diffDynamic__: Savable[float]
+    __difficulty__: int
+    __diffDynamic__: float
     tileChanged: bool
 
     def __init__(self):
@@ -16,12 +16,8 @@ class TileMapScene(Scene):
 
     def set_tiles(self, tile_map: TileMap):
         self.tileMap = tile_map
-        self.__difficulty__ = Savable[int]('global\\mode.diff.meta')
-        self.__diffDynamic__ = Savable[float]('global\\mode.diff.dyna')
-        if self.__difficulty__.value is None:
-            self.__difficulty__.value = 0
-        if self.__diffDynamic__.value is None:
-            self.__diffDynamic__.value = 0
+        self.__difficulty__ = WorldData.get_difficulty()
+        self.__diffDynamic__ = WorldData.get_difficulty_adjust()
         ProfileIO.save()
         self.instance_create(self.tileMap)
 
@@ -32,5 +28,5 @@ class TileMapScene(Scene):
 
     @property
     def scene_difficulty(self):
-        return self.__difficulty__.value
+        return self.__difficulty__
 

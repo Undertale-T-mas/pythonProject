@@ -83,7 +83,9 @@ def __memPathAnalyze__(path: str) -> Tuple[str, str]:
     return res[0], res[1]
 
 
-def __typGetVal__(inp: str):
+def __typGetVal__(inp):
+    if not isinstance(inp, str):
+        return inp
     sg = 1
     if inp[0] == '-':
         sg = -1

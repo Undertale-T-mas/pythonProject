@@ -93,9 +93,14 @@ __defaultEaseFuncs__ = {
 
 class EasingGenerator(Generic[T]):
     @staticmethod
-    def generate(_time: float, start: T, end: T, ease_type: EaseType = EaseType.linear):
+    def generate_in(_time: float, start: T, end: T, ease_type: EaseType = EaseType.linear):
         return Easing(_time, start, end, EasingFunc(
-            lambda args: start + (end - start) * __defaultEaseFuncs__[ease_type](args.time / time)))
+            lambda args: start + (end - start) * __defaultEaseFuncs__[ease_type](args.time / _time)))
+
+    @staticmethod
+    def generate_out(_time: float, start: T, end: T, ease_type: EaseType = EaseType.linear):
+        return Easing(_time, start, end, EasingFunc(
+            lambda args: start + (end - start) * (1 - __defaultEaseFuncs__[ease_type](1 - args.time / _time))))
 
     @staticmethod
     def stable(_time: float, val: T):
@@ -170,13 +175,13 @@ class EasingRunner(Generic[T]):
                 end = vec2(0, 0)
 
         if isinstance(ease_args, EaseType):
-            self.easings = [EasingGenerator.generate(_time, start, end, ease_args)]
+            self.easings = [EasingGenerator.generate_out(_time, start, end, ease_args)]
         else:
             self.easings = [ease_args]
 
     def to(self, _time: float, tar: T, ease_type: EaseType = EaseType.linear):
         front = self.easings[-1]
-        self.easings.append(EasingGenerator.generate(_time, front.end, tar, ease_type))
+        self.easings.append(EasingGenerator.generate_out(_time, front.end, tar, ease_type))
         return self
 
     def combine_y(self, easing: Easing, effect_from: int = 0, effect_to: int = -1):

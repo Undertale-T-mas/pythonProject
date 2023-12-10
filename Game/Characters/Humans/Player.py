@@ -1,3 +1,4 @@
+import Resources.ResourceLib
 from Core.Animation.Animation import *
 from Core.GameObject import *
 from Core.GameStates.GameState import *
@@ -242,9 +243,13 @@ class Player(MovableEntity):
         Sounds.shoot.set_volume(0.19)
         Sounds.shoot.play()
 
+    def dispose(self):
+        super().dispose()
+
     def died(self):
         instance_create(DelayedAction(0, Action(self.dispose)))
         GameState.__gsScene__.remove_player()
+        Sounds.died.play()
         return
 
     def deal_damage(self, damage: Damage):

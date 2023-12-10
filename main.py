@@ -8,6 +8,7 @@ from Core.Render.RenderOptions import *
 from Game.Scenes.Start import *
 from Game.TestScene import *
 from pygame import Vector2 as vec2
+from Game.Map.Framework.WorldManager import *
 
 # pygame setup
 pygame.init()
@@ -20,7 +21,7 @@ running = True
 dt = 0
 
 GameState.initialize(render_options)
-GameState.change_scene(TestScene())
+WorldManager.respawn()
 # GameStates.change_scene(Start())
 
 flipped = False

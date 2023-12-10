@@ -11,7 +11,7 @@ class ObjectManager:
     __idx__: Set[int]
     __idx_list__: List[int]
 
-    __idx_cnt__ = 0
+    __idx_cnt__: int
 
     def __init__(self):
         self.__idx__ = set()

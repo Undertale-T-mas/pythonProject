@@ -1,11 +1,12 @@
 from Core.GameStates.ObjectManager import *
+from Core.Render.RenderOptions import RenderOptions
 from Core.Render.SurfaceManager import *
 from Core.GameStates import GameState
 from Core.Render.SurfaceManager import SurfaceManager
 
 
 class Scene:
-    __objManager__ = ObjectManager()
+    __objManager__: ObjectManager
     __render_args__ = RenderArgs()
     __render_options__: RenderOptions
     __initialized__: bool
@@ -22,6 +23,8 @@ class Scene:
         pass
 
     def __init__(self):
+        self.__objManager__ = ObjectManager()
+        self.__camera__ = None
         self.__initialized__ = False
         self.__render_options__ = GameState.__gsRenderOptions__
 
@@ -38,7 +41,7 @@ class Scene:
                 if obj.visible:
                     manager.draw_insert(obj)
 
-        if self.__camera__ == None:
+        if self.__camera__ is None:
             self.__render_args__.camera_delta = vec2(0, 0)
         else:
             self.__render_args__.camera_delta = self.__camera__.centre - manager.__renderOptions__.screenSize * 0.5

@@ -59,14 +59,18 @@ class FightScene(TileMapScene):
     def __move_player__(self):
         self.__player__.centre = vec2(-1000, -1000)
 
+    def __respawn_scene__(self):
+        raise Exception()
+
     def remove_player(self):
         self.__player__.dispose()
         self.instance_create(DelayedAction(0, Action(self.__move_player__)))
         self.__player__.image.imageSource = self.player.__image_set__.imageDict['Punk_death']
         self.instance_create(DeathAnimation(self.__player__.image, self.__player__, vec2(20, 30), vec2(40, 77)))
+        self.instance_create(DelayedAction(0.6, Action(self.__respawn_scene__)))
 
-    def create_player(self):
-        self.__player__ = Player()
+    def create_player(self, pos: vec2 = (24, 0), speed: vec2 = vec2(0, 0)):
+        self.__player__ = Player(pos, speed)
         instance_create(self.__player__)
         self.__camera__ = FightCameraObj(self.__player__, self.tileMap)
 

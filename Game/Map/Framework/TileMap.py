@@ -6,6 +6,8 @@ from Game.Map.Framework.WorldData import WorldData
 
 
 class TileMap(Entity):
+    in_initialize: bool = False
+
     __worldPos__: vec2
 
     @property
