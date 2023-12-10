@@ -205,7 +205,7 @@ class Player(MovableEntity):
 
     def __init__(self, position: vec2 = vec2(24, 0), speed: vec2 = vec2(0, 0)):
         super().__init__()
-        self.ammunition = 10
+        self.ammunition = 5
         self.fire_cooldown = 1
         s = MultiImageSet(vec2(32, 48), vec2(48, 48), 'Characters\\Player')
         self.__hand__ = PlayerHand(self)
