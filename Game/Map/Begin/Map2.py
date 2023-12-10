@@ -20,7 +20,7 @@ from Game.Characters.Enemys.Robots import MeleeRobot
 from Game.Map.Framework.TileMap import *
 
 
-class MapTEST0(TileMap):
+class MapTEST2(TileMap):
     def __init__(self):
         super().__init__()
         self.worldPos = vec2(1, -1)

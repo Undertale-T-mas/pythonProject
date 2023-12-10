@@ -3,6 +3,7 @@ import importlib.util
 from Core.GameStates import GameState
 from Core.GameStates.GameState import *
 from Core.Profile.Savable import *
+from Game.Characters.Humans.Player import PlayerData
 from Game.Map.Framework.TileMap import TileMap
 from Game.Map.Framework.Tiles import TILE_LENGTH
 from Game.Map.Framework.WorldData import WorldData
@@ -29,7 +30,7 @@ if __worldRoomY__.value is None:
 if __worldPlayerPosX__.value is None:
     __worldPlayerPosX__.value = 24.0
 if __worldPlayerPosY__.value is None:
-    __worldPlayerPosY__.value = 0.0
+    __worldPlayerPosY__.value = 48.0
 if __worldRespawnTime__.value is None:
     __worldRespawnTime__.value = 0
 
@@ -79,9 +80,11 @@ class RespawnScene(Scene):
     def __respawn__(self):
         WorldManager.respawn(True)
 
-    def start(self):
-        EasingRunner(0.7, self.bottom, 0, EaseType.quart).run(self.set_bottom)
+    def __ease_out__(self):
+        EasingRunner(0.65, self.bottom, 0, EaseType.cubic).run(self.set_bottom)
 
+    def start(self):
+        instance_create(DelayedAction(0.05, Action(self.__ease_out__)))
         instance_create(DelayedAction(0.7, Action(self.__respawn__)))
 
     def update(self, game_args: GameArgs):
@@ -102,6 +105,7 @@ class DefaultFightScene(FightScene):
     __playerSpeedRemain__: vec2
     __bottom__: float
     __fade_in__: bool
+    __playerData__: PlayerData
 
     def __recover_fade__(self):
         self.__fade_in__ = False
@@ -109,20 +113,36 @@ class DefaultFightScene(FightScene):
     def __set_bottom__(self, val: float):
         self.__bottom__ = val
 
-    def __init__(self, tile_map: TileMap, player_pos: vec2, speed_remain: vec2, fade_in: bool = False):
+    def __init__(self,
+                 tile_map: TileMap,
+                 player_pos: vec2,
+                 speed_remain: vec2,
+                 fade_in: bool = False,
+                 data: PlayerData = PlayerData()
+                 ):
         super().__init__()
         self.__fade_in__ = fade_in
         self.__playerPos__ = player_pos
         self.__tileMap__ = tile_map
+        self.__playerData__ = data
         self.__playerSpeedRemain__ = speed_remain
 
     def start(self):
         if self.__fade_in__:
             instance_create(DelayedAction(0.7, Action(self.__recover_fade__)))
             self.__bottom__ = GameState.__gsRenderOptions__.screenSize.y
-            EasingRunner(0.7, self.__bottom__, 0, EaseType.quart).run(self.__set_bottom__)
+            EasingRunner(0.7, self.__bottom__, 0, EaseType.quint).run(self.__set_bottom__)
         self.set_tiles(self.__tileMap__)
-        self.create_player(self.__playerPos__, self.__playerSpeedRemain__)
+        self.create_player(self.__playerPos__, self.__playerSpeedRemain__, self.__playerData__)
+        teleport_pos = self.__playerPos__
+
+        if teleport_pos.x <= 0:
+            teleport_pos.x = self.__tileMap__.width * TILE_LENGTH + teleport_pos.x
+        if teleport_pos.y <= 0:
+            teleport_pos.y = self.__tileMap__.height * TILE_LENGTH + teleport_pos.y
+
+        self.__player__.teleport(teleport_pos)
+
         for obj in self.tileMap.get_objects():
             instance_create(obj)
 
@@ -136,10 +156,16 @@ class DefaultFightScene(FightScene):
         speed = vec2(self.player.__lastSpeedX__, self.player.__ySpeed__)
         if self.__player__.areaRect.x >= self.tileMap.width * TILE_LENGTH:
             pos = self.tileMap.worldPos
-            WorldManager.change_map(int(pos.x + 1), int(pos.y), vec2(24, self.player.centre.y), speed)
+            WorldManager.change_map(
+                int(pos.x + 1), int(pos.y),
+                vec2(24, self.player.centre.y), speed, False, self.player.data
+            )
         elif self.player.areaRect.x <= 0:
             pos = self.tileMap.worldPos
-            WorldManager.change_map(int(pos.x - 1), int(pos.y), vec2(-24, self.player.centre.y), speed)
+            WorldManager.change_map(
+                int(pos.x - 1), int(pos.y),
+                vec2(-24, self.player.centre.y), speed, False, self.player.data
+            )
 
     def draw(self, surface_manager: SurfaceManager):
         if not self.__fade_in__:
@@ -184,12 +210,13 @@ class WorldManager:
         return WorldData.get_map(x, y)
 
     @staticmethod
-    def change_map(x: int, y: int, pos: vec2, speed_remain: vec2, fade_in: bool = False):
+    def change_map(x: int, y: int, pos: vec2, speed_remain: vec2, fade_in: bool = False, data: PlayerData = PlayerData()):
         change_scene(DefaultFightScene(
             WorldData.get_map(x, y),
             pos,
             speed_remain,
-            fade_in
+            fade_in,
+            data
         ))
 
     @staticmethod
@@ -214,4 +241,5 @@ class WorldManager:
             vec2(0, 0),
             fade_in
         )
+        __worldRespawnTime__.value += 1
         ProfileIO.save()

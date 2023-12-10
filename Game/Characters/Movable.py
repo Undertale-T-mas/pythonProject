@@ -56,6 +56,9 @@ class MovableEntity(Entity, Collidable):
     __scene__: TileMapScene
     __initialized__: bool
 
+    def teleport(self, pos: vec2):
+        self.centre = pos
+
     def __init__(self):
         super().__init__()
         self.physicArea = CollideRect()
@@ -63,6 +66,15 @@ class MovableEntity(Entity, Collidable):
         self.physicSurfName = 'enemy'
         self.__moveIntention__ = vec2(0, 0)
         self.__lastSpeedX__ = 0
+        self.__inVoid__ = False
+        self.__ySpeed__ = 0.0
+        self.__gravity__ = 0.0
+        self.__boundAnchor__ = None
+        self.__collision__ = True
+        self.__onGround__ = False
+        self.__groundTile__ = None
+        self.__jumpIntention__ = False
+        self.__fractionLock__ = False
 
     def __start__(self):
         self.__initialized__ = True
@@ -92,17 +104,18 @@ class MovableEntity(Entity, Collidable):
             raise Exception()
         return self.physicArea.area
 
+    __inVoid__: bool
     __moveIntention__: vec2
-    __jumpIntention__: bool = False
-    __groundTile__: Tile | None = None
-    __fractionLock__: bool = False
+    __jumpIntention__: bool
+    __groundTile__: Tile | None
+    __fractionLock__: bool
 
-    __onGround__: bool = False
+    __onGround__: bool
 
-    __boundAnchor__: vec2 | None = None
-    __ySpeed__: float = 0.0
-    __gravity__: float = 0.0
-    __collision__: bool = True
+    __boundAnchor__: vec2 | None
+    __ySpeed__: float
+    __gravity__: float
+    __collision__: bool
 
     @property
     def fractionLock(self) -> bool:
@@ -205,6 +218,11 @@ class MovableEntity(Entity, Collidable):
                     return True
 
         self.__onGround__ = False
+
+        if self.physicArea.area.top > max(self.__tileMap__.height, 12) * TILE_LENGTH:
+            self.__inVoid__ = True
+            self.died()
+
         return self.__onGround__
 
     def jump(self, speed: float):
@@ -353,9 +371,9 @@ class MovableEntity(Entity, Collidable):
 
 
 class Damage:
-    source: Entity
+    source: Entity | None
     damageLevel: int
 
-    def __init__(self, source: Entity, damage_level: int):
+    def __init__(self, source: Entity | None = None, damage_level: int = 1):
         self.source = source
         self.damageLevel = damage_level

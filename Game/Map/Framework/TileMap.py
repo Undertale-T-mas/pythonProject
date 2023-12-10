@@ -17,7 +17,7 @@ class TileMap(Entity):
     @worldPos.setter
     def worldPos(self, val: vec2):
         self.__worldPos__ = val
-        WorldData.insert(self, int(self.worldPos.x), int(self.worldPos.y))
+        WorldData.insert(self, int(self.__worldPos__.x), int(self.__worldPos__.y))
 
     __objects__: List[GameObject]
 

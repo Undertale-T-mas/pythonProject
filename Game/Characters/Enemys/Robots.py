@@ -10,6 +10,33 @@ from Game.Characters.Humans.Player import Player, PlayerBullet
 from Game.Characters.Movable import *
 
 
+class RobotBullet(Barrage):
+    rect: CollideRect
+
+    def __init__(self, path: str, start: vec2, flip: bool, speed: vec2, damage: Damage):
+        super().__init__(damage)
+        self.image = SingleImage(path)
+        self.move(EasingGenerator.linear(start, speed))
+        self.image.scale = 2
+        self.image.flip = flip
+        self.autoDispose = True
+        self.physicSurfName = 'barrage'
+        self.rect = CollideRect()
+        img_sz = self.image.imageSource.get_size()
+        self.rect.area = FRect(0, 0, max(1, img_sz[0] - 7), max(1, img_sz[1] - 7))
+        self.physicArea = self.rect
+
+    def update(self, args: GameArgs):
+        self.rect.area.centre = self.centre
+        super().update(args)
+
+    def draw(self, render_args: RenderArgs):
+        self.image.draw_self(render_args, self.centre)
+
+    def on_collide(self, another):
+        super().on_collide(another)
+
+
 class LandRobot(MovableEntity):
     __multiImage__: MultiImageSet
     __hp__: float
@@ -200,7 +227,10 @@ class MeleeRobot(LandRobot):
 
 
 class GunRobot(LandRobot):
+    __shootInterval__: float
+
     def __init__(self, *args):
+        self.shoot_interval = 2.0
         if len(args) == 1:
             pos = args[0]
         else:
@@ -217,7 +247,15 @@ class GunRobot(LandRobot):
         self.stage_timer = 0.0
         self.stage = 0
         self.attacked_timer = 0.0
-        self.attack_timer = 2.0
+        self.attack_timer = self.shoot_interval
+
+    @property
+    def shoot_interval(self):
+        return self.__shootInterval__
+
+    @shoot_interval.setter
+    def shoot_interval(self, val: float):
+        self.__shootInterval__ = val
 
     attacking: bool
     stage_timer: float
@@ -248,6 +286,15 @@ class GunRobot(LandRobot):
         img.indexX = 0
         instance_create(AlphaAnimation(img, 0.12, self.centre, 0.04))
         instance_create(DelayedAction(0.04, Action(Sounds.robot_died.play)))
+
+    def attack(self):
+        d = vec2(-50, 24) if self.image.flip else vec2(50, 24)
+        instance_create(RobotBullet(
+            'Objects\\Barrage\\Robot2_bullet.png', self.centre + d,
+            self.image.flip,
+            vec2(-800, 0) if self.image.flip else vec2(800, 0),
+            Damage(self, 1)
+        ))
 
     def update(self, args: GameArgs):
         super().update(args)
@@ -280,14 +327,15 @@ class GunRobot(LandRobot):
         self.attack_timer -= args.elapsedSec
         if self.attack_timer <= 0:
             self.attacking = True
-            self.attack_timer += 2.0
+            self.attack_timer += self.shoot_interval
+            self.stage = 0
 
         if self.attacking:
             if self.stage_timer > 0.125:
                 self.stage += 1
                 self.stage_timer -= 0.125
                 if self.stage == 3:
-                    pass
+                    self.attack()
 
                 if self.stage == 6:
                     self.stage = 0

@@ -8,9 +8,14 @@ class Animation(Entity):
     __interval__: float
     __autoDispose__: bool
 
-    def __init__(self, img: ImageSetBase, interval: float, centre: vec2, auto_dispose: bool = True):
+    def __init__(self,
+                 img: ImageSetBase, interval: float,
+                 centre: vec2, auto_dispose: bool = True,
+                 surf_name: str = 'default'
+                 ):
         super().__init__()
         self.image = img
+        self.surfaceName = surf_name
         self.image.indexX = 0
         self.__interval__ = interval
         self.centre = centre

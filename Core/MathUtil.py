@@ -12,6 +12,14 @@ class Math:
         return math.sin(val)
 
     @staticmethod
+    def sin_deg(val: float) -> float:
+        return math.sin(val * math.pi / 180.0)
+
+    @staticmethod
+    def cos_deg(val: float) -> float:
+        return math.cos(val * math.pi / 180.0)
+
+    @staticmethod
     def abs(val: float) -> float:
         if val > 0:
             return val
@@ -28,6 +36,10 @@ class Math:
     @staticmethod
     def rand(l: int, r: int):
         return rander.randint(l, r)
+
+    @staticmethod
+    def vec2_polar(dist: float, deg: float):
+        return vec2(Math.cos_deg(deg) * dist, Math.sin_deg(deg) * dist)
 
 
 class FRect:

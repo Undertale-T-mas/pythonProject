@@ -9,7 +9,10 @@ class WorldData:
 
     @staticmethod
     def insert(single_map: Entity, x: int, y: int):
-        __map_array__[((x + 10) << 10) + y] = single_map
+        pos = ((x + 10) << 10) + y
+        if pos in __map_array__.keys():
+            return
+        __map_array__[pos] = single_map
         pass
 
     @staticmethod

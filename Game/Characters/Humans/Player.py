@@ -40,7 +40,11 @@ class PlayerBullet(Barrage):
         super().update(args)
         decx = int(self.centre.x // TILE_LENGTH)
         decy = int(self.centre.y // TILE_LENGTH)
-        pass
+        tar = self.tiles.get_tile(decx, decy)
+        if tar.uuid == 0:
+            return
+        if tar.collidable:
+            self.dispose()
 
     def draw(self, render_args: RenderArgs):
         self.image.draw_self(render_args, self.centre)
@@ -70,7 +74,6 @@ class Weapon(Entity):
         self.tiles = None
 
     def update(self, args: GameArgs):
-        super().update(args)
         if self.tiles is None:
             self.tiles = GameState.__gsScene__.__tileMap__
         self.idx = 0
@@ -186,7 +189,7 @@ class PlayerHand(Entity):
 
         self.centre = self.__follow__.centre + d
         self.__weapon__.centre = self.centre + wd
-        pass
+        self.__weapon__.update(args)
 
     def draw(self, render_args: RenderArgs):
         if not isinstance(self.image, MultiImage):
@@ -196,6 +199,17 @@ class PlayerHand(Entity):
         self.image.draw_self(render_args, self.centre)
 
 
+class PlayerData:
+    def __init__(self, ammunition: int = 7, fire_cooldown: float = 0.0, hp: float = 999.0):
+        self.ammunition = ammunition
+        self.fire_cooldown = fire_cooldown
+        self.hp = hp
+
+    ammunition: int
+    fire_cooldown: float
+    hp: float
+
+
 class Player(MovableEntity):
     __state__: MoveState = MoveState.idle
     __image_set__: MultiImageSet
@@ -203,15 +217,16 @@ class Player(MovableEntity):
     ammunition: int
     fire_cooldown: float
 
-    def __init__(self, position: vec2 = vec2(24, 0), speed: vec2 = vec2(0, 0)):
+    def __init__(self, position: vec2 = vec2(24, 0), speed: vec2 = vec2(0, 0), data: PlayerData = PlayerData()):
         super().__init__()
-        self.ammunition = 5
-        self.fire_cooldown = 1
+        self.ammunition = data.ammunition
+        self.fire_cooldown = data.fire_cooldown
         s = MultiImageSet(vec2(32, 48), vec2(48, 48), 'Characters\\Player')
         self.__hand__ = PlayerHand(self)
         self.__image_set__ = s
         self.image = s
         self.hp = HPBar(self)
+        self.hp.__hp__ = min(data.hp, self.hp.hp_max)
         self.fractionLock = False
         self.gravity = 9.8
         self.size = vec2(40, 96 - 24)
@@ -219,13 +234,23 @@ class Player(MovableEntity):
         self.centre = position
         self.__ySpeed__ = speed.y
         self.__lastSpeedX__ = speed.x
+        self.__dead__ = False
         s.scale = 2.0
         s.imageSource = s.imageDict['Punk_run']
         self.physicSurfName = 'player'
 
+    def on_collide(self, another):
+        if not isinstance(another, Barrage):
+            raise Exception()
+        self.deal_damage(another.damage)
+
     def draw(self, render_args: RenderArgs):
         self.__hand__.draw(render_args)
         self.image.draw_self(render_args, centre=self.centre)
+
+    @property
+    def data(self) -> PlayerData:
+        return PlayerData(self.ammunition, self.fire_cooldown, self.hp.__hp__)
 
     __x_moving__: bool = False
     __step_timing__: float = 0.0
@@ -256,10 +281,26 @@ class Player(MovableEntity):
     def dispose(self):
         super().dispose()
 
+    __dead__: bool
+
     def died(self):
         instance_create(DelayedAction(0, Action(self.dispose)))
-        GameState.__gsScene__.remove_player()
+        shake_dir = 0.0
+        if self.__inVoid__:
+            shake_dir = 90.0
+        else:
+            shake_dir = Math.rand(0, 359)
+            img_set = ImageSet(vec2(48, 48), vec2(48, 48), 'Effects\\Blood\\0.png')
+            img_set.scale = 2.0
+            instance_create(
+                Animation(
+                    img_set,
+                    0.08, self.centre + vec2(8, 16), True, 'barrage'
+                )
+            )
+        GameState.__gsScene__.remove_player(shake_dir)
         Sounds.died.play()
+        self.__dead__ = True
         return
 
     def deal_damage(self, damage: Damage):
@@ -328,6 +369,8 @@ class Player(MovableEntity):
             self.gravity = 9.8
 
         d = self.move(args)
+        if self.__dead__:
+            return
 
         if abs(d.x) > 1e-8:
             if self.onGround:
