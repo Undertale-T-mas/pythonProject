@@ -263,6 +263,12 @@ class Player(MovableEntity):
 
         Sounds.player_damaged.play()
 
+    def recharge(self):
+        self.fire_cooldown = 0.7
+        self.ammunition = 7
+
+        instance_create(DelayedAction(0.15, Action(Sounds.recharge.play)))
+
     def update(self, args: GameArgs):
         speed_x_target = 0
         if key_hold(pygame.K_LEFT) or key_hold(pygame.K_a):
@@ -276,13 +282,15 @@ class Player(MovableEntity):
         if speed_x_target < 0:
             self.image.flip = True
 
+        if key_on_press(pygame.K_r) and self.fire_cooldown <= 0:
+            self.recharge()
+
         if self.fire_cooldown <= 0:
             if key_on_press(pygame.K_SPACE) or key_on_press(pygame.K_j):
                 self.attack()
                 self.ammunition -= 1
             if self.ammunition == 0:
-                self.fire_cooldown = 1
-                self.ammunition = 10
+                self.recharge()
 
         if self.fire_cooldown > 0:
             self.fire_cooldown -= args.elapsedSec

@@ -10,9 +10,11 @@ class Sounds:
     died: Sound = None
     player_damaged: Sound = None
     robot_damaged: Sound = None
+    recharge: Sound = None
 
     @staticmethod
     def initialize():
+        Sounds.recharge = load_sound('recharge.wav')
         Sounds.startGame = load_sound('start.wav')
         Sounds.shoot = load_sound('shoot.wav')
         Sounds.laser = load_sound('laser.wav')

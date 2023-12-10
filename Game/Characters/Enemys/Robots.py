@@ -123,6 +123,7 @@ class MeleeRobot(LandRobot):
         self.__killed__ = True
         img = self.__multiImage__
         img.imageSource = img.imageDict['Dead']
+        img.indexX = 0
         instance_create(AlphaAnimation(img, 0.12, self.centre, 0.04))
 
     def update(self, args: GameArgs):

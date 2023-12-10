@@ -11,6 +11,7 @@ class Animation(Entity):
     def __init__(self, img: ImageSetBase, interval: float, centre: vec2, auto_dispose: bool = True):
         super().__init__()
         self.image = img
+        self.image.indexX = 0
         self.__interval__ = interval
         self.centre = centre
         self.tot = 0
