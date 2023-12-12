@@ -4,6 +4,7 @@ from Core.GameStates import GameState
 from Core.GameStates.GameState import *
 from Core.Profile.Savable import *
 from Game.Characters.Humans.Player import PlayerData
+from Game.Map.Framework.MapGenerate import AutoTileMap
 from Game.Map.Framework.TileMap import TileMap
 from Game.Map.Framework.Tiles import TILE_LENGTH
 from Game.Map.Framework.WorldData import WorldData
@@ -55,7 +56,7 @@ def get_all_subclasses(folder_path, base_class):
 
             # 检查模块中的类
             for _name, obj in inspect.getmembers(module):
-                if inspect.isclass(obj) and issubclass(obj, base_class) and obj != base_class:
+                if inspect.isclass(obj) and issubclass(obj, base_class) and obj != base_class and _name != 'AutoTileMap':
                     derived_classes.append(obj)
 
         elif entry.is_dir():
@@ -154,7 +155,7 @@ class DefaultFightScene(FightScene):
         if self.__player__ is None:
             return
         speed = vec2(self.player.__lastSpeedX__, self.player.__ySpeed__)
-        if self.__player__.areaRect.x >= self.tileMap.width * TILE_LENGTH:
+        if self.__player__.areaRect.x + 32 >= self.tileMap.width * TILE_LENGTH:
             pos = self.tileMap.worldPos
             WorldManager.change_map(
                 int(pos.x + 1), int(pos.y),
@@ -181,16 +182,15 @@ class DefaultFightScene(FightScene):
         )
         surface_manager.screen.blit(
             surface_manager.get_surface('default'),
-            dest=rec,
+            dest=vec2(0, 48 + rec.y),
             area=rec,
         )
         if surface_manager.exist_surface('barrage'):
             surface_manager.screen.blit(
                 surface_manager.get_surface('barrage'),
-                dest=rec,
+                dest=vec2(0, 48 + rec.y),
                 area=rec,
             )
-
 
 
 class WorldManager:

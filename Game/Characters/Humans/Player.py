@@ -87,6 +87,22 @@ class Weapon(Entity):
         if self.image.flip:
             d = vec2(-d.x, d.y)
         instance_create(PlayerBullet(self.centre + d, self.image.flip, damage, self.tiles))
+        ani_img = ImageSet(vec2(48, 48), vec2(48, 48), 'Effects\\Gun\\0.png')
+        ani_img.flip = self.image.flip
+        ani_img.scale = 2.0
+        ani_img.alpha = 0.7
+        anim = Animation(
+            ani_img,
+            0.03,
+            self.centre + vec2(-68 if self.image.flip else 68, -2)
+        )
+        instance_create(anim)
+
+        def follow():
+            anim.image.flip = self.image.__flip__
+            anim.centre = self.centre + vec2(-68 if self.image.flip else 68, -2)
+
+        instance_create(StableAction(0.4, Action(follow)))
 
     idx = 0
     delta: List[vec2] = [
@@ -295,7 +311,7 @@ class Player(MovableEntity):
                 instance_create(
                     Animation(
                         img_set,
-                        0.06 + i * 0.015, vec2(self.centre.x, GameState.__gsRenderOptions__.screenSize.y - 58 + i * 21),
+                        0.06 + i * 0.015, vec2(self.centre.x, GameState.__gsRenderOptions__.screenSize.y - 58 - 72 + i * 21),
                         True, 'barrage'
                     )
                 )

@@ -121,7 +121,7 @@ class MeleeRobot(LandRobot):
         super().__init__(
             pos,
             MultiImageSet(vec2(128, 128), vec2(128, 128), 'Characters\\Enemys\\Robot1'),
-            vec2(30, 48), vec2(60, 192 - 52)
+            vec2(30, 48 - 20), vec2(60, 192 - 52 - 20)
         )
         self.__killed__ = False
         self.image.scale = 1.45
@@ -239,7 +239,7 @@ class GunRobot(LandRobot):
         super().__init__(
             pos,
             MultiImageSet(vec2(64, 96), vec2(96, 96), 'Characters\\Enemys\\Robot2'),
-            vec2(30, 48), vec2(60, 192 - 41)
+            vec2(30, 48 - 20), vec2(60, 192 - 20 - 41)
         )
         self.__killed__ = False
         self.image.scale = 1.45 * 1.5

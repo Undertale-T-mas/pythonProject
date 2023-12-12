@@ -14,31 +14,54 @@ class FightCameraObj(Entity):
     __player__: Entity
     __map__: TileMap
 
+    __cur_x__: float | None
+    __x_min__: float
+    __x_max__: float
+
+    __cur_y__: float | None
+    __y_min__: float
+    __y_max__: float
+
     def __init__(self, player: Entity, _map: TileMap):
         super().__init__()
         self.__player__ = player
         self.__map__ = _map
         self.centre = GameState.__gsRenderOptions__.screenSize / 2
+        self.__cur_x__ = None
+        self.__x_min__ = self.centre.x
+        self.__x_max__ = _map.width * TILE_LENGTH - self.__x_min__
+        self.__cur_y__ = None
+        self.__y_min__ = self.centre.y - 24
+        self.__y_max__ = _map.height * TILE_LENGTH - self.__y_min__ + 24
 
-    def calc_x(self):
+    def calc_x(self, lerp_scale: float):
         screen_x = GameState.__gsRenderOptions__.screenSize.x
         map_w = self.__map__.width * TILE_LENGTH
         if map_w <= screen_x:
             return screen_x / 2
         else:
-            raise Exception()
+            if self.__cur_x__ is None:
+                self.__cur_x__ = self.__player__.centre.x
+            self.__cur_x__ = self.__cur_x__ * (1 - lerp_scale) + self.__player__.centre.x * lerp_scale
+            self.__cur_x__ = min(max(self.__cur_x__, self.__x_min__), self.__x_max__)
+            return self.__cur_x__
 
-    def calc_y(self):
-        screen_y = GameState.__gsRenderOptions__.screenSize.y
+    def calc_y(self, lerp_scale: float):
+        screen_y = GameState.__gsRenderOptions__.screenSize.y - 72
         map_h = self.__map__.height * TILE_LENGTH
         if map_h <= screen_y:
             return screen_y / 2
         else:
-            raise Exception()
+            if self.__cur_y__ is None:
+                self.__cur_y__ = self.__player__.centre.y
+            self.__cur_y__ = self.__cur_y__ * (1 - lerp_scale) + self.__player__.centre.y * lerp_scale
+            self.__cur_y__ = min(max(self.__cur_y__, self.__y_min__), self.__y_max__)
+            return self.__cur_y__
 
     def update(self, args: GameArgs):
-        self.centre.x = self.calc_x()
-        self.centre.y = self.calc_y()
+        lerp_s = min(1.0, args.elapsedSec * 12.0)
+        self.centre.x = self.calc_x(lerp_s)
+        self.centre.y = self.calc_y(lerp_s)
 
     def draw(self, render_args: RenderArgs):
         pass
@@ -57,7 +80,7 @@ class Shaker(GameObject):
         self.fix_p = self.camera.centre
         self.direction = direction
 
-        intensity = 12.0
+        intensity = 24.0
         ease = EasingRunner(0.04, vec2(0, 0), Math.vec2_polar(intensity, direction), EaseType.cubic)
         for i in range(6):
             intensity *= 0.76
@@ -120,21 +143,23 @@ class FightScene(TileMapScene):
 
     def draw(self, surface_manager: SurfaceManager):
         super().draw(surface_manager)
-        rec = pygame.rect.Rect(0, 0, self.__render_options__.screenSize.x, self.__render_options__.screenSize.y)
+        rec = pygame.rect.Rect(0, 0, self.__render_options__.screenSize.x, self.__render_options__.screenSize.y - 0)
         surface_manager.screen.blit(
             surface_manager.get_surface('bg'),
             dest=rec,
             area=rec,
         )
+        rec = pygame.rect.Rect(0, 0, self.__render_options__.screenSize.x, self.__render_options__.screenSize.y - 48)
         surface_manager.screen.blit(
             surface_manager.get_surface('default'),
-            dest=rec,
+            dest=vec2(0, 48),
             area=rec,
         )
+        rec = pygame.rect.Rect(0, 0, self.__render_options__.screenSize.x, self.__render_options__.screenSize.y - 48)
         if surface_manager.exist_surface('barrage'):
             surface_manager.screen.blit(
                 surface_manager.get_surface('barrage'),
-                dest=rec,
+                dest=vec2(0, 48),
                 area=rec,
             )
 

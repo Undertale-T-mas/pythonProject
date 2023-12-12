@@ -78,11 +78,26 @@ class TileLibrary(Enum):
     iron_inner = TileInfo('Factory\\IronInner.png', size=FRect(0, 0, 1, 1), _id=12)
     purple_pure = TileInfo('Factory\\PurePurple.png', size=FRect(0, 0, 1, 1), _id=13)
     purple_streak = TileInfo('Factory\\StreakPurple.png', size=FRect(0, 0, 1, 1), _id=14)
-    warn_cl = TileInfo('Factory\\WarnCL.png', size=FRect(0, 0, 1, 1), _id=7)
-    warn_cr = TileInfo('Factory\\WarnCR.png', size=FRect(0, 0, 1, 1), _id=8)
-    warn_t = TileInfo('Factory\\WarnT.png', size=FRect(0, 0, 1, 1), _id=9)
-    warn_l = TileInfo('Factory\\WarnL.png', size=FRect(0, 0, 1, 1), _id=10)
-    warn_r = TileInfo('Factory\\WarnR.png', size=FRect(0, 0, 1, 1), _id=11)
+    warn_cl = TileInfo('Factory\\WarnCL.png', size=FRect(0, 0, 1, 1), _id=15)
+    warn_cr = TileInfo('Factory\\WarnCR.png', size=FRect(0, 0, 1, 1), _id=16)
+    warn_bl = TileInfo('Factory\\WarnBL.png', size=FRect(0, 0, 1, 1), _id=17)
+    warn_br = TileInfo('Factory\\WarnBR.png', size=FRect(0, 0, 1, 1), _id=18)
+    warn_b = TileInfo('Factory\\WarnB.png', size=FRect(0, 0, 1, 1), _id=19)
+    warn_t = TileInfo('Factory\\WarnT.png', size=FRect(0, 0, 1, 1), _id=20)
+    warn_l = TileInfo('Factory\\WarnL.png', size=FRect(0, 0, 1, 1), _id=21)
+    warn_r = TileInfo('Factory\\WarnR.png', size=FRect(0, 0, 1, 1), _id=22)
+    scaffold = TileInfo('Factory\\Scaffold.png', size=FRect(0, 0, 1, 1), _id=23)
+    scaffold_big = TileInfo('Factory\\ScaffoldBig.png', size=FRect(0, 0, 1, 1), _id=24)
+
+    iron_ttl = TileInfo('Factory\\IronTTL.png', size=FRect(0, 0, 1, 1), _id=26)
+    iron_ttr = TileInfo('Factory\\IronTTR.png', size=FRect(0, 0, 1, 1), _id=27)
+    iron_tbl = TileInfo('Factory\\IronTBL.png', size=FRect(0, 0, 1, 1), _id=28)
+    iron_tbr = TileInfo('Factory\\IronTBR.png', size=FRect(0, 0, 1, 1), _id=29)
+
+    warn_ttl = TileInfo('Factory\\WarnTTL.png', size=FRect(0, 0, 1, 1), _id=36)
+    warn_ttr = TileInfo('Factory\\WarnTTR.png', size=FRect(0, 0, 1, 1), _id=37)
+    warn_tbl = TileInfo('Factory\\WarnTBL.png', size=FRect(0, 0, 1, 1), _id=38)
+    warn_tbr = TileInfo('Factory\\WarnTBR.png', size=FRect(0, 0, 1, 1), _id=39)
 
 
 class Tile(Entity, Collidable):
@@ -139,4 +154,4 @@ class Tile(Entity, Collidable):
 
     def draw(self, render_args: RenderArgs):
         if self.image is not None:
-            self.image.draw_self(render_args, self.centre)
+            self.image.draw_self(render_args, self.centre + vec2(0, 48))

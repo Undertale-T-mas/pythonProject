@@ -62,6 +62,8 @@ class ImageSetBase:
 
     @flip.setter
     def flip(self, val: bool):
+        if val == self.__flip__:
+            return
         self.__flip__ = val
         self.__imageUpdated__ = True
 
@@ -82,11 +84,10 @@ class ImageSetBase:
         self.indexX = 0
         self.indexY = 0
         self.scale = 1.0
-        self.flip = False
+        self.__flip__ = False
         self.__alpha__ = 1.0
         self.__imageDraw__ = None
         self.__curScale__ = 1.0
-        self.__flip__ = False
         self.__idxXLast__ = 0
         self.__idxYLast__ = 0
         self.__imageUpdated__ = False
@@ -128,7 +129,7 @@ class ImageSetBase:
         v = centre - vec2(a.x * self.scale, a.y * self.scale)
 
         if not self.stable:
-            v += args.camera_delta
+            v -= args.camera_delta
 
         args.target_surface.blit(
             self.__imageDraw__,

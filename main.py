@@ -26,7 +26,7 @@ WorldManager.respawn()
 
 flipped = False
 
-speed = 1
+speed = 1e0
 
 while running:
     # poll for events
@@ -38,7 +38,24 @@ while running:
     GameState.update(dt)
     GameState.render()
 
-    # flip() the display to put your work on screen
+    if GameState.key_hold(pygame.K_0):
+        speed = 0.01
+    if GameState.key_hold(pygame.K_1):
+        speed = 0.025
+    if GameState.key_hold(pygame.K_2):
+        speed = 0.05
+    if GameState.key_hold(pygame.K_3):
+        speed = 0.1
+    if GameState.key_hold(pygame.K_4):
+        speed = 0.25
+
+    if GameState.key_hold(pygame.K_5):
+        speed = 0.5
+    if GameState.key_hold(pygame.K_6):
+        speed = 0.7
+    if GameState.key_hold(pygame.K_7):
+        speed = 1
+        # flip() the display to put your work on screen
     if not flipped:
         flipped = True
         pygame.display.flip()
