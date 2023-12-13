@@ -19,7 +19,7 @@ class TileBack(Entity):
             self.__follow__ = GameState.__gsScene__.camera
         full = GameState.__gsRenderOptions__.screenSize
         xc = full.x / 2
-        self.centre = vec2(xc + self.__moveXFactor__ * (self.__follow__.centre.x - xc), full.y * 0.5)
+        self.centre = vec2(xc - self.__moveXFactor__ * (self.__follow__.centre.x - xc), full.y * 0.5)
 
     def draw(self, render_args: RenderArgs):
         super().draw(render_args)

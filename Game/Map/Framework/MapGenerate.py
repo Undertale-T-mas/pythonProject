@@ -1,5 +1,6 @@
 from enum import Enum
 
+from Game.Map.Framework.MapObject import MapObject, ObjectInfo, ObjectLibrary
 from Game.Map.Framework.TileMap import TileMap
 from Game.Map.Framework.Tiles import *
 
@@ -152,7 +153,10 @@ class FactoryIron(TileGroup):
             TileLibrary.iron_t,
             TileLibrary.iron_l,
             TileLibrary.iron_r,
+            bottom=TileLibrary.iron_b,
             inner=TileLibrary.iron_inner,
+            bottom_l=TileLibrary.iron_bl,
+            bottom_r=TileLibrary.iron_br,
             turn_tl=TileLibrary.iron_ttl,
             turn_tr=TileLibrary.iron_ttr,
             turn_bl=TileLibrary.iron_tbl,
@@ -189,8 +193,11 @@ class AutoTileMap(TileMap):
     __bl__: bool
     __br__: bool
 
+    __tile_token__: Set[str]
+
     def __init__(self):
         super().__init__()
+        self.__tile_token__ = set()
         self.all_data = dict()
 
     def set_main(self, group: TileGroup):
@@ -209,6 +216,18 @@ class AutoTileMap(TileMap):
 
         self.ins_generator(token, generator)
 
+    def ins_obj(self, token: str, obj: ObjectInfo | ObjectLibrary):
+        if isinstance(obj, ObjectLibrary):
+            obj = obj.value
+
+        def generator(x, y):
+            self.add_object(MapObject(obj, x, y))
+
+        self.ins_generator(token, generator)
+
+    def is_tile(self, token: str) -> bool:
+        return token in self.__tile_token__
+
     def ins_group(self, token: str, group: TileGroup):
         def generator(x, y):
             self.set_tile(x, y, Tile(group.get_by_state(
@@ -222,6 +241,7 @@ class AutoTileMap(TileMap):
                 self.__br__
             )))
 
+        self.__tile_token__.add(token)
         self.ins_generator(token, generator)
 
     def generate(self, tiles: List[List[str]]):
@@ -238,41 +258,41 @@ class AutoTileMap(TileMap):
                 if x == 0:
                     l = False
                 else:
-                    l = '0' != tiles[y][x - 1]
+                    l = self.is_tile(tiles[y][x - 1])
                 if x == self.width - 1:
                     r = False
                 else:
-                    r = '0' != tiles[y][x + 1]
+                    r = self.is_tile(tiles[y][x + 1])
 
                 if y == 0:
                     t = False
                     tl = False
                     tr = False
                 else:
-                    t = '0' != tiles[y - 1][x]
+                    t = self.is_tile(tiles[y - 1][x])
                     if x == 0:
                         tl = False
                     else:
-                        tl = '0' != tiles[y - 1][x - 1]
+                        tl = self.is_tile(tiles[y - 1][x - 1])
                     if x == self.width - 1:
                         tr = False
                     else:
-                        tr = '0' != tiles[y - 1][x + 1]
+                        tr = self.is_tile(tiles[y - 1][x + 1])
 
                 if y == self.height - 1:
                     b = False
                     bl = False
                     br = False
                 else:
-                    b = '0' != tiles[y + 1][x]
+                    b = self.is_tile(tiles[y + 1][x])
                     if x == 0:
                         bl = False
                     else:
-                        bl = '0' != tiles[y + 1][x - 1]
+                        bl = self.is_tile(tiles[y + 1][x - 1])
                     if x == self.width - 1:
                         br = False
                     else:
-                        br = '0' != tiles[y + 1][x + 1]
+                        br = self.is_tile(tiles[y + 1][x + 1])
 
                 self.__l_exist__ = l
                 self.__r_exist__ = r

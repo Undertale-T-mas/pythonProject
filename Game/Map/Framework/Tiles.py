@@ -26,12 +26,13 @@ TILE_LENGTH = 48
 
 class TileInfo:
     imgPath: str
-    sizeX: int = 1
-    sizeY: int = 1
+    sizeX: int
+    sizeY: int
     bound: CollideRect
     uuid: int
+    imgScale: float | None
     onUpdate: Action | None
-    fraction: float = 0.5
+    fraction: float
     collidable: bool = True
     __img__: ImageSet | None
 
@@ -44,13 +45,16 @@ class TileInfo:
             mod = vec2(sz.x % 48, sz.y % 48)
             if mod.x != 0 or mod.y != 0:
                 if sz.y < 48:
-                    scale = 48 / sz.y
+                    if self.imgScale is not None:
+                        scale = self.imgScale
+                    else:
+                        scale = 48 / sz.y
                     self.__img__.__imageSource__ = pygame.transform.scale(
                         self.__img__.imageSource, vec2(scale * sz.x, scale * sz.y)
                     )
         return self.__img__
 
-    def __init__(self, path: str, size: FRect, _id: int, collidable: bool = True, on_update: Action = None):
+    def __init__(self, path: str, size: FRect, _id: int, collidable: bool = True, on_update: Action = None, fraction: float = 0.5, scale: float | None = 1.5):
         self.imgPath = path
         self.bound = CollideRect()
         self.bound.area = FRect(TILE_LENGTH * size.x, TILE_LENGTH * size.y, TILE_LENGTH * size.width, TILE_LENGTH * size.height)
@@ -58,13 +62,15 @@ class TileInfo:
         self.sizeY = int(size.bottom)
         self.uuid = _id
         self.__img__ = None
+        self.fraction = fraction
+        self.imgScale = scale
         self.collidable = collidable
         self.onUpdate = on_update
 
 
 class TileLibrary(Enum):
     empty = TileInfo('', size=FRect(0, 0, 1, 1), _id=0, collidable=False)
-    grass = TileInfo('Tutorial\\Grass.png', size=FRect(0, 0, 1, 1), _id=1)
+    grass = TileInfo('Tutorial\\Grass.png', size=FRect(0, 0, 1, 1), _id=1, scale=1.0)
     grass_cl = TileInfo('Tutorial\\GrassCL.png', size=FRect(0.1, 0, 0.9, 1), _id=2)
     grass_cr = TileInfo('Tutorial\\GrassCR.png', size=FRect(0, 0, 0.9, 1), _id=3)
     dirt = TileInfo('Tutorial\\Dirt.png', size=FRect(0, 0, 1, 1), _id=4)
@@ -88,11 +94,13 @@ class TileLibrary(Enum):
     warn_r = TileInfo('Factory\\WarnR.png', size=FRect(0, 0, 1, 1), _id=22)
     scaffold = TileInfo('Factory\\Scaffold.png', size=FRect(0, 0, 1, 1), _id=23)
     scaffold_big = TileInfo('Factory\\ScaffoldBig.png', size=FRect(0, 0, 1, 1), _id=24)
-
+    iron_b = TileInfo('Factory\\IronB.png', size=FRect(0, 0, 1, 1), _id=25)
     iron_ttl = TileInfo('Factory\\IronTTL.png', size=FRect(0, 0, 1, 1), _id=26)
     iron_ttr = TileInfo('Factory\\IronTTR.png', size=FRect(0, 0, 1, 1), _id=27)
     iron_tbl = TileInfo('Factory\\IronTBL.png', size=FRect(0, 0, 1, 1), _id=28)
     iron_tbr = TileInfo('Factory\\IronTBR.png', size=FRect(0, 0, 1, 1), _id=29)
+    iron_bl = TileInfo('Factory\\IronBL.png', size=FRect(0, 0, 1, 1), _id=30)
+    iron_br = TileInfo('Factory\\IronBR.png', size=FRect(0, 0, 1, 1), _id=31)
 
     warn_ttl = TileInfo('Factory\\WarnTTL.png', size=FRect(0, 0, 1, 1), _id=36)
     warn_ttr = TileInfo('Factory\\WarnTTR.png', size=FRect(0, 0, 1, 1), _id=37)

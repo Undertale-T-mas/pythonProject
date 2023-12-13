@@ -288,6 +288,7 @@ class Player(MovableEntity):
 
     __jumpPressTime__ = 0.0
     __walkEffectTime__ = 0.0
+    __leaveGroundTime__ = 0.0
 
     def attack(self):
         self.__hand__.shoot()
@@ -379,8 +380,14 @@ class Player(MovableEntity):
         else:
             self.__jumpPressTime__ = 0
 
-        if need_jump and self.onGround and self.__jumpPressTime__ < 0.1:
+        if self.onGround:
+            self.__leaveGroundTime__ = 0
+        else:
+            self.__leaveGroundTime__ += args.elapsedSec
+
+        if need_jump and self.__leaveGroundTime__ < 0.062 and self.__jumpPressTime__ < 0.222:
             self.jump(self.jump_speed)
+            self.__leaveGroundTime__ = 0.062
             self.state = MoveState.jump
 
             instance_create(MoveSmoke(
