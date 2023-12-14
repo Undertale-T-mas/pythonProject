@@ -1,4 +1,7 @@
+from os import PathLike
+
 from pygame import *
+from pygame.font import Font
 from pygame.mixer import Sound
 from typing import *
 
@@ -17,3 +20,6 @@ def load_image(path: str) -> Surface:
 def load_sound(path: str) -> Sound:
     return Sound('Resources\\Audio\\Sounds\\' + path)
 
+
+def load_font(path: str, size: int) -> Font:
+    return Font('Resources\\Fonts\\' + path, size)

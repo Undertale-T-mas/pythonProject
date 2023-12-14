@@ -41,6 +41,10 @@ class Math:
     def vec2_polar(dist: float, deg: float):
         return vec2(Math.cos_deg(deg) * dist, Math.sin_deg(deg) * dist)
 
+    @staticmethod
+    def clamp(val, min_v, max_v):
+        return max(min(val, max_v), min_v)
+
 
 class FRect:
     x: float

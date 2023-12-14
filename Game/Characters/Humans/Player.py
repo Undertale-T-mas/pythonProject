@@ -3,6 +3,7 @@ from Core.Animation.Animation import *
 from Core.GameObject import *
 from Core.GameStates.GameState import *
 import pygame
+from Core.GameStates.KeyIdentity import KeyIdentity as ki
 
 from Core.Physics.Collidable import *
 from Game.Barrage.Barrage import *
@@ -350,9 +351,9 @@ class Player(MovableEntity):
 
     def update(self, args: GameArgs):
         speed_x_target = 0
-        if key_hold(pygame.K_LEFT) or key_hold(pygame.K_a):
+        if key_hold(ki.left):
             speed_x_target -= 5
-        if key_hold(pygame.K_RIGHT) or key_hold(pygame.K_d):
+        if key_hold(ki.right):
             speed_x_target += 5
 
         self.__moveIntention__.x = speed_x_target
@@ -361,11 +362,11 @@ class Player(MovableEntity):
         if speed_x_target < 0:
             self.image.flip = True
 
-        if key_on_press(pygame.K_r) and self.fire_cooldown <= 0:
+        if key_on_press(ki.recharge) and self.fire_cooldown <= 0:
             self.recharge()
 
         if self.fire_cooldown <= 0:
-            if key_on_press(pygame.K_SPACE) or key_on_press(pygame.K_j):
+            if key_on_press(ki.shoot):
                 self.attack()
                 self.ammunition -= 1
             if self.ammunition == 0:
@@ -374,7 +375,7 @@ class Player(MovableEntity):
         if self.fire_cooldown > 0:
             self.fire_cooldown -= args.elapsedSec
 
-        need_jump = key_hold(pygame.K_c) or key_hold(pygame.K_w)
+        need_jump = key_hold(ki.jump)
         if need_jump:
             self.__jumpPressTime__ += args.elapsedSec
         else:

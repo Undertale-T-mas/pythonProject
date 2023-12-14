@@ -17,3 +17,4 @@ from Core.GameArgs import *
 from pygame import Vector2 as vec2
 from pygame import *
 from Core.Animation.Animation import *
+from Core.GameStates.KeyIdentity import KeyIdentity as ki

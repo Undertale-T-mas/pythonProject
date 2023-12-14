@@ -43,6 +43,7 @@ class SurfaceManager:
                 self.display = Core.GameStates.GameState.set_display(self.__renderOptions__)
             else:
                 self.screen = Core.GameStates.GameState.set_display(self.__renderOptions__)
+                self.display = self.screen
 
     def __init__(self, render_options: RenderOptions):
         self.__renderOptions__ = render_options

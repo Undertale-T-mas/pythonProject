@@ -1,6 +1,19 @@
+from pygame.font import Font
 from pygame.mixer import Sound
-
+from pygame import font
 from Resources.ResourceLoad import *
+
+
+class Fonts:
+    done_direct: Font = None
+    evil_empire: Font = None
+    kwark: Font = None
+
+    @staticmethod
+    def initialize():
+        Fonts.done_direct = load_font('DoneDirect.otf', 24)
+        Fonts.evil_empire = load_font('EvilEmpire.ttf', 72)
+        Fonts.kwark = load_font('Kwark.ttf', 72)
 
 
 class Sounds:

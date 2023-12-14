@@ -2,6 +2,7 @@ from pygame.key import *
 
 from Core.GameArgs import *
 from Core.GameObject import *
+from Core.GameStates.KeyIdentity import KeyIdentity
 from Core.GameStates.ObjectManager import *
 from Core.GameStates.Scene import *
 from typing import *
@@ -65,8 +66,20 @@ def current_scene() -> Scene:
 
 
 def key_hold(key_id):
-    return __gsKeyStates__[key_id]
+    if isinstance(key_id, KeyIdentity):
+        for _id in key_id.value:
+            if __gsKeyStates__[_id]:
+                return True
+        return False
+    else:
+        raise Exception()
 
 
-def key_on_press(key_id):
-    return __gsKeyStates__[key_id] and not __gsKeyLast__[key_id]
+def key_on_press(key_id: KeyIdentity):
+    if isinstance(key_id, KeyIdentity):
+        for _id in key_id.value:
+            if __gsKeyStates__[_id] and not __gsKeyLast__[_id]:
+                return True
+        return False
+    else:
+        raise Exception()

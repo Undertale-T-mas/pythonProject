@@ -42,8 +42,9 @@ class FightCameraObj(Entity):
         else:
             if self.__cur_x__ is None:
                 self.__cur_x__ = self.__player__.centre.x
-            self.__cur_x__ = self.__cur_x__ * (1 - lerp_scale) + self.__player__.centre.x * lerp_scale
-            self.__cur_x__ = min(max(self.__cur_x__, self.__x_min__), self.__x_max__)
+            tar = Math.clamp(self.__player__.centre.x, self.__x_min__ - 2.0, self.__x_max__ + 2.0)
+            self.__cur_x__ = self.__cur_x__ * (1 - lerp_scale) + tar * lerp_scale
+            self.__cur_x__ = Math.clamp(self.__cur_x__, self.__x_min__, self.__x_max__)
             return self.__cur_x__
 
     def calc_y(self, lerp_scale: float):
@@ -54,8 +55,9 @@ class FightCameraObj(Entity):
         else:
             if self.__cur_y__ is None:
                 self.__cur_y__ = self.__player__.centre.y
-            self.__cur_y__ = self.__cur_y__ * (1 - lerp_scale) + self.__player__.centre.y * lerp_scale
-            self.__cur_y__ = min(max(self.__cur_y__, self.__y_min__), self.__y_max__)
+            tar = Math.clamp(self.__player__.centre.y, self.__y_min__ - 2.0, self.__y_max__ + 2.0)
+            self.__cur_y__ = self.__cur_y__ * (1 - lerp_scale) + tar * lerp_scale
+            self.__cur_y__ = Math.clamp(self.__cur_y__, self.__y_min__, self.__y_max__)
             return self.__cur_y__
 
     def update(self, args: GameArgs):
