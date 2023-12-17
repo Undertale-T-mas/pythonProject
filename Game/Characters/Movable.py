@@ -177,8 +177,8 @@ class MovableEntity(Entity, Collidable):
             self.__onGround__ = False
             return False
 
-        l_limit += 3
-        r_limit -= 3
+        l_limit += 9
+        r_limit -= 9
 
         bdec = self.physicArea.area.i_bottom // TILE_LENGTH
         ldec = self.physicArea.area.i_left // TILE_LENGTH
@@ -212,6 +212,8 @@ class MovableEntity(Entity, Collidable):
                     if last_y - r.top > TILE_LENGTH / 3.2:
                         self.__onGround__ = False
                         return False
+                    if not self.__onGround__:
+                        self.on_land()
                     self.__onGround__ = True
                     self.__inGroundDistance__ = self.physicArea.area.bottom - r.top
                     self.__groundTile__ = tile
@@ -233,6 +235,9 @@ class MovableEntity(Entity, Collidable):
         self.__moveIntention__ = move_intention
 
     __lastSpeedX__: float
+
+    def on_land(self):
+        pass
 
     def give_force(self, speed_x: float):
         self.__lastSpeedX__ += speed_x
@@ -290,7 +295,7 @@ class MovableEntity(Entity, Collidable):
             bdec = int((self.physicArea.area.bottom - 5) // TILE_LENGTH)
             t_del = 2
             f_mode = False
-            if self.__ySpeed__ <= 0:
+            if self.__ySpeed__ <= 0.0:
                 t_del = -2
                 f_mode = True
             tdec = int((self.physicArea.area.top + t_del) // TILE_LENGTH)
@@ -302,6 +307,12 @@ class MovableEntity(Entity, Collidable):
                 if abs(move_del.x) > 1e-5 or f_mode:
                     l = self.physicArea.area.left
                     r = self.physicArea.area.right
+                    t = self.physicArea.area.top
+                    b = self.physicArea.area.bottom - 2
+                    if not self.onGround:
+                        b -= 5
+                    if self.__ySpeed__ < -0.00001:
+                        b -= 5
 
                     dx = 0
 
@@ -310,6 +321,8 @@ class MovableEntity(Entity, Collidable):
                         if tile.uuid == 0:
                             continue
                         if not tile.collidable:
+                            continue
+                        if tile.areaRect.bottom <= t or tile.areaRect.top >= b:
                             continue
                         if tile.areaRect.right + 0.00001 > l:
                             tmp_dx = tile.areaRect.right - l
@@ -327,6 +340,8 @@ class MovableEntity(Entity, Collidable):
                         if tile.uuid == 0:
                             continue
                         if not tile.collidable:
+                            continue
+                        if tile.areaRect.bottom <= t or tile.areaRect.top >= b:
                             continue
                         if tile.areaRect.left - 0.00001 < r:
                             tmp_dx = r - tile.areaRect.left

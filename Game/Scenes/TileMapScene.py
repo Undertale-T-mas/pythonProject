@@ -1,10 +1,12 @@
 from Core.GameStates.Scene import *
 from Core.Profile.ProfileIO import *
 from Core.Profile.Savable import Savable
+from Game.Characters.Humans.Data import PlayerData
 from Game.Map.Framework.TileMap import *
 
 
 class TileMapScene(Scene):
+    player_data: PlayerData
     tileMap: TileMap
     __difficulty__: int
     __diffDynamic__: float

@@ -4,6 +4,8 @@ from Core.Animation.ImageSetBase import *
 from Core.Animation.ImageSet import *
 from Core.GameStates.Scene import *
 import Core.GameStates.GameState
+from Core.GameStates import GameState
+from Core.GameStates.GameState import *
 from Core.GameStates.ObjectManager import *
 from Core.Physics.PhysicSurface import *
 from Core.Physics.PhysicManager import *
@@ -16,5 +18,7 @@ from Core.GameObject import *
 from Core.GameArgs import *
 from pygame import Vector2 as vec2
 from pygame import *
+import pygame.transform
 from Core.Animation.Animation import *
 from Core.GameStates.KeyIdentity import KeyIdentity as ki
+from Core.Physics.Easings import *

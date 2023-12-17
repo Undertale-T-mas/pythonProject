@@ -10,6 +10,40 @@ from Game.Map.Framework.TileMap import *
 from Game.Scenes.TileMapScene import *
 
 
+class UIPainter(Entity):
+
+    black_canvas: Surface
+
+    def __init__(self):
+        super().__init__()
+        self.surfaceName = 'bg'
+        self.black_canvas = Surface(vec2(GameState.__gsRenderOptions__.screenSize.x, 72)).convert_alpha()
+        self.black_canvas.fill([233, 255, 249, 233])
+        self.old_hp = self.old_cooldown = 0
+        self.old_cooldown = -1
+
+    old_hp: float
+    old_ammunition: int
+    old_cooldown: float
+
+    data: PlayerData
+
+    def update(self, args: GameArgs):
+        self.data = get_player_data()
+
+        if self.data.hp != self.old_hp or self.old_cooldown != self.data.fire_cooldown or self.old_ammunition != self.data.fire_cooldown:
+            self.old_hp = self.data.hp
+            self.old_ammunition = self.data.ammunition
+            self.old_cooldown = self.data.fire_cooldown
+
+            self.black_canvas.fill([233, 255, 249, 233])
+
+
+    def blit(self, sur: Surface, y_limit: float = 0.0):
+        sur.blit(self.black_canvas, vec2(0, y_limit),
+                 Rect(0, min(y_limit, 72.0), self.black_canvas.get_width(), min(72.0, GameState.__gsRenderOptions__.screenSize.y - y_limit)))
+
+
 class FightCameraObj(Entity):
     __player__: Entity
     __map__: TileMap
@@ -48,11 +82,12 @@ class FightCameraObj(Entity):
             return self.__cur_x__
 
     def calc_y(self, lerp_scale: float):
-        screen_y = GameState.__gsRenderOptions__.screenSize.y - 72
+        screen_y = GameState.__gsRenderOptions__.screenSize.y
         map_h = self.__map__.height * TILE_LENGTH
         if map_h <= screen_y:
-            return screen_y / 2
+            return screen_y / 2 - 24
         else:
+            screen_y -= 72
             if self.__cur_y__ is None:
                 self.__cur_y__ = self.__player__.centre.y
             tar = Math.clamp(self.__player__.centre.y, self.__y_min__ - 2.0, self.__y_max__ + 2.0)
@@ -99,6 +134,7 @@ class FightScene(TileMapScene):
 
     __phyManager__: PhysicManager
     __player__: Player
+    ui_painter: UIPainter
 
     @property
     def player(self):
@@ -106,6 +142,7 @@ class FightScene(TileMapScene):
 
     def __init__(self):
         super().__init__()
+        self.ui_painter = UIPainter()
         self.__phyManager__ = PhysicManager()
 
     def __move_player__(self):
@@ -130,6 +167,7 @@ class FightScene(TileMapScene):
 
     def update(self, game_args: GameArgs):
         super().update(game_args)
+        self.ui_painter.update(game_args)
         self.__phyManager__.update()
         self.__phyManager__.check('player', 'barrage')
         self.__phyManager__.check('pl_bullet', 'enemy')
@@ -164,4 +202,6 @@ class FightScene(TileMapScene):
                 dest=vec2(0, 48),
                 area=rec,
             )
+
+        self.ui_painter.blit(surface_manager.screen)
 

@@ -1,5 +1,6 @@
 import Game.Map.Begin.TestMap
 import Resources.ResourceLib
+from Resources import ResourceLib
 from Resources.ResourceLib import *
 from Core.MathUtil import *
 import random
@@ -39,6 +40,7 @@ class Start(Scene):
         self.text_2 = self.text_2.convert_alpha()
         self.text_1.set_colorkey([0, 0, 0])
         self.text_2.set_colorkey([0, 0, 0])
+        self.text_1_pos = vec2(-650, 88)
 
         self.text_start = Fonts.evil_empire.render(
             '> press z or enter to start <', False,
@@ -46,7 +48,6 @@ class Start(Scene):
             [0, 0, 0, 0]
         )
 
-        self.text_1_pos = vec2(-650, 88)
         w, h = self.text_start.get_size()
         self.text_start = pygame.transform.scale(self.text_start, vec2(w, h) * 0.666)
         self.text_start_pos = vec2((GameState.__gsRenderOptions__.screenSize.x - self.text_start.get_width()) / 2, 500)
@@ -84,18 +85,40 @@ class Start(Scene):
         set_alpha(0)
         self.centre_x = 0.0
         self.very_high_quality = True
+        self.on_start = False
         pass
 
     centre_x: float
     very_high_quality: bool
+    on_start: bool
+    start_cooldown: float
 
     def update(self, game_args: GameArgs):
         super().update(game_args)
         self.time_tot += game_args.elapsedSec
         self.centre_x = Math.sin_deg(self.time_tot * 25.0) * 428.0
 
-        if GameState.key_on_press(ki.confirm):
-            WorldManager.respawn()
+        if GameState.key_on_press(ki.confirm) and self.time_tot >= 1.6 and not self.on_start:
+            self.on_start = True
+            self.start_cooldown = 1.0
+            Sounds.startGame.set_volume(0.5)
+            Sounds.startGame.play()
+
+        if self.on_start:
+            self.start_cooldown -= game_args.elapsedSec
+            if self.start_cooldown <= -0.35:
+                WorldManager.respawn()
+
+            self.text_start = Fonts.evil_empire.render(
+                '> press z or enter to start <', False,
+                [244, 255, 244, 255],
+                [0, 0, 0, 0]
+            )
+
+            w, h = self.text_start.get_size()
+            self.text_start = pygame.transform.scale(self.text_start, vec2(w, h) * 0.666)
+            self.text_start = self.text_start.convert_alpha()
+            self.text_start.set_colorkey([0, 0, 0])
 
     def draw(self, surface_manager: SurfaceManager):
         super().draw(surface_manager)
@@ -112,7 +135,10 @@ class Start(Scene):
         surface_manager.buffers[0].blit(self.text_1, self.text_1_pos + vec2(self.centre_x * 0.05, 0))
         surface_manager.buffers[0].blit(self.text_2, self.text_1_pos + vec2(322 + self.centre_x * 0.05, 90))
         if self.time_tot >= 1.6:
-            if self.time_tot % 0.8 < 0.42:
+            if self.on_start:
+                if self.start_cooldown < 0 or self.start_cooldown % 0.2 > 0.11:
+                    surface_manager.buffers[0].blit(self.text_start, self.text_start_pos)
+            elif self.time_tot % 0.8 < 0.42:
                 surface_manager.buffers[0].blit(self.text_start, self.text_start_pos)
 
         surface_manager.screen.blit(surface_manager.buffers[1], vec2(0, 0))

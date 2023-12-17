@@ -1,16 +1,11 @@
-import Resources.ResourceLib
-from Core.Animation.Animation import *
-from Core.GameObject import *
-from Core.GameStates.GameState import *
-import pygame
-from Core.GameStates.KeyIdentity import KeyIdentity as ki
-
-from Core.Physics.Collidable import *
 from Game.Barrage.Barrage import *
+from Game.Characters.Humans.Data import PlayerData
 from Game.Characters.Humans.HPBar import HPBar
 from Game.Characters.Movable import *
 from Game.Tech.DataLib import TechData
 from Resources.ResourceLib import *
+
+from core import *
 
 
 class MoveState(Enum):
@@ -45,7 +40,24 @@ class PlayerBullet(Barrage):
         if tar.uuid == 0:
             return
         if tar.collidable:
-            self.dispose()
+            if not isinstance(self.physicArea, CollideRect):
+                raise Exception()
+            if self.physicArea.area.collide_rect(tar.areaRect):
+                self.dispose()
+
+                img = ImageSet(
+                    vec2(48, 48),
+                    vec2(48, 48),
+                    'Effects\\Sparks\\' + str(Math.rand(0, 2)) + '.png'
+                )
+                if self.image.flip:
+                    img.flip = True
+                img.scale = 1.5
+                instance_create(Animation(
+                    img,
+                    0.05,
+                    self.centre
+                ))
 
     def draw(self, render_args: RenderArgs):
         self.image.draw_self(render_args, self.centre)
@@ -216,17 +228,6 @@ class PlayerHand(Entity):
         self.image.draw_self(render_args, self.centre)
 
 
-class PlayerData:
-    def __init__(self, ammunition: int = 7, fire_cooldown: float = 0.0, hp: float = 999.0):
-        self.ammunition = ammunition
-        self.fire_cooldown = fire_cooldown
-        self.hp = hp
-
-    ammunition: int
-    fire_cooldown: float
-    hp: float
-
-
 class Player(MovableEntity):
     __state__: MoveState = MoveState.idle
     __image_set__: MultiImageSet
@@ -251,10 +252,16 @@ class Player(MovableEntity):
         self.centre = position
         self.__ySpeed__ = speed.y
         self.__lastSpeedX__ = speed.x
+        self.__jumpPressTime__ = 0.0
         self.__dead__ = False
         s.scale = 2.0
         s.imageSource = s.imageDict['Punk_run']
         self.physicSurfName = 'player'
+        self.__leaveGroundTime__ = 1.0
+        self.__walkEffectTime__ = 0.0
+        self.__step_timing__ = 0.0
+        self.jump_speed = 9.8
+        self.__x_moving__ = False
 
     def on_collide(self, another):
         if not isinstance(another, Barrage):
@@ -269,11 +276,11 @@ class Player(MovableEntity):
     def data(self) -> PlayerData:
         return PlayerData(self.ammunition, self.fire_cooldown, self.hp.__hp__)
 
-    __x_moving__: bool = False
-    __step_timing__: float = 0.0
+    __x_moving__: bool
+    __step_timing__: float
 
     hp: HPBar
-    jump_speed = 9.8
+    jump_speed: float
 
     @property
     def state(self) -> MoveState:
@@ -284,12 +291,12 @@ class Player(MovableEntity):
         if val == self.__state__:
             return
         self.__state__ = val
-        self.__step_timing__ = 0
+        self.__step_timing__ = 0.0
         self.image.indexX = 0
 
-    __jumpPressTime__ = 0.0
-    __walkEffectTime__ = 0.0
-    __leaveGroundTime__ = 0.0
+    __jumpPressTime__: float
+    __walkEffectTime__: float
+    __leaveGroundTime__: float
 
     def attack(self):
         self.__hand__.shoot()
@@ -306,6 +313,8 @@ class Player(MovableEntity):
         shake_dir = 0.0
         if self.__inVoid__:
             shake_dir = 90.0
+            Sounds.jumpLand.set_volume(1)
+            Sounds.jumpLand.play()
             for i in range(3):
                 img_set = ImageSet(vec2(48, 48), vec2(48, 48), 'Effects\\Void\\0.png')
                 img_set.scale = 2.5 + i * 0.3
@@ -341,13 +350,24 @@ class Player(MovableEntity):
         else:
             self.give_force(13)
 
-        Sounds.player_damaged.play()
+        Sounds.playerDamaged.play()
 
     def recharge(self):
         self.fire_cooldown = 0.7
         self.ammunition = 7
 
         instance_create(DelayedAction(0.15, Action(Sounds.recharge.play)))
+
+    def on_land(self):
+        Sounds.jumpLand.set_volume(min(1.0, pow(self.__ySpeed__ * 0.0375, 2.5)))
+        Sounds.jumpLand.play()
+
+        instance_create(MoveSmoke(
+            vec2(self.centre.x, self.areaRect.bottom - 36),
+            0,
+            'Characters\\Player\\Effect\\Jump\\0.png',
+            4
+        ))
 
     def update(self, args: GameArgs):
         speed_x_target = 0
@@ -389,6 +409,8 @@ class Player(MovableEntity):
         if need_jump and self.__leaveGroundTime__ < 0.062 and self.__jumpPressTime__ < 0.222:
             self.jump(self.jump_speed)
             self.__leaveGroundTime__ = 0.062
+            Sounds.jump.set_volume(0.1)
+            Sounds.jump.play()
             self.state = MoveState.jump
 
             instance_create(MoveSmoke(
@@ -458,4 +480,5 @@ class Player(MovableEntity):
                 self.image.indexX = 3
 
         self.__hand__.update(args)
+        self.data.update_data(self.ammunition, self.fire_cooldown, self.hp.__hp__, self.centre)
 

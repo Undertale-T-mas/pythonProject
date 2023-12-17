@@ -1,7 +1,6 @@
 from Core.GameStates.ObjectManager import *
 from Core.Render.RenderOptions import RenderOptions
 from Core.Render.SurfaceManager import *
-from Core.GameStates import GameState
 from Core.Render.SurfaceManager import SurfaceManager
 
 
@@ -26,7 +25,9 @@ class Scene:
         self.__objManager__ = ObjectManager()
         self.__camera__ = None
         self.__initialized__ = False
-        self.__render_options__ = GameState.__gsRenderOptions__
+
+    def __gsDataSend__(self, render_options: RenderOptions):
+        self.__render_options__ = render_options
 
     def update(self, game_args: GameArgs):
         if not self.__initialized__:

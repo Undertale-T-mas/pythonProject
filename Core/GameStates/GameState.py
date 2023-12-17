@@ -18,9 +18,7 @@ __gsRenderOptions__: RenderOptions
 __gsKeyStates__: ScancodeWrapper
 __gsKeyLast__: ScancodeWrapper
 
-
-def set_display(render_options: RenderOptions) -> Surface:
-    return pygame.display.set_mode(render_options.screenSize, render_options.surfaceFlag)
+__gsInsBuffer__: List[GameObject] = []
 
 
 def initialize(render_options: RenderOptions):
@@ -31,7 +29,11 @@ def initialize(render_options: RenderOptions):
 
 
 def instance_create(obj: GameObject):
-    __gsSceneBuffer__.instance_create(obj)
+    __gsScene__.instance_create(obj)
+
+
+def instance_prepare(obj: GameObject):
+    __gsInsBuffer__.append(obj)
 
 
 def change_scene(scene: Scene):
@@ -40,6 +42,7 @@ def change_scene(scene: Scene):
     __gsSceneBuffer__ = scene
     if __gsScene__ is None:
         __gsScene__ = __gsSceneBuffer__
+    __gsSceneBuffer__.__gsDataSend__(__gsRenderOptions__)
 
 
 def render():
@@ -57,6 +60,10 @@ def update(time_elapsed: float):
     __gsGameArgs__.update(time_elapsed)
     if not __gsSceneBuffer__ == __gsScene__:
         __gsScene__ = __gsSceneBuffer__
+
+    for obj in __gsInsBuffer__:
+        __gsScene__.instance_create(obj)
+    __gsInsBuffer__.clear()
     __gsScene__.update(__gsGameArgs__)
     __gsKeyLast__ = __gsKeyStates__
 

@@ -27,17 +27,23 @@ class SingleImage(ImageSetBase):
 class ImageSet(ImageSetBase):
     __blockDistance__: vec2
 
-    def __init__(self, block_size: vec2, block_distance: vec2, path: str):
+    def __init__(self, block_size: vec2, block_distance: vec2, path: str | Surface):
         super().__init__()
         self.blockSize = block_size
         self.__blockDistance__ = block_distance
         self.anchor = ACentre(self)
-        self.__imageSource__ = load_image(path)
+        if isinstance(path, str):
+            self.__imageSource__ = load_image(path)
+        else:
+            self.__imageSource__ = path
 
     def source_area(self):
         x = self.__blockDistance__.x * self.indexX
         y = self.__blockDistance__.y * self.indexY
         return Rect(x, y, self.blockSize.x, self.blockSize.y)
+
+    def copy(self):
+        return ImageSet(self.blockSize, self.__blockDistance__, self.imageSource)
 
 
 class MultiImageSet(ImageSetBase):

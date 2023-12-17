@@ -16,6 +16,9 @@ from Resources.ResourceLoad import *
 
 class ImageSetBase:
 
+    def copy(self):
+        raise NotImplementedError()
+
     def load(self, path: str):
         self.imageSource = load_image(path)
 
@@ -44,8 +47,22 @@ class ImageSetBase:
 
     indexX: int
     indexY: int
-    scale: float
+    __scale__: vec2
     stable: bool
+
+    @property
+    def scale(self) -> vec2 | float:
+        if self.__scale__.x == self.__scale__.y:
+            return self.__scale__.x
+        return self.__scale__
+
+    @scale.setter
+    def scale(self, val: float | vec2):
+        self.__imageUpdated__ = True
+        if isinstance(val, vec2):
+            self.__scale__ = val
+        else:
+            self.scale = vec2(val, val)
 
     @property
     def alpha(self) -> float:
@@ -77,7 +94,6 @@ class ImageSetBase:
     __idxYLast__: int
     __alpha__: float
     __flip__: bool
-    __curScale__: float
     __imageDraw__: Surface | None
 
     def __init__(self):
@@ -87,7 +103,6 @@ class ImageSetBase:
         self.__flip__ = False
         self.__alpha__ = 1.0
         self.__imageDraw__ = None
-        self.__curScale__ = 1.0
         self.__idxXLast__ = 0
         self.__idxYLast__ = 0
         self.__imageUpdated__ = False
@@ -98,9 +113,6 @@ class ImageSetBase:
             self.__imageUpdated__ = False
             return True
 
-        if Math.abs(self.scale - self.__curScale__) > 0.0001:
-            return True
-
         if self.__idxYLast__ != self.indexY or self.__idxXLast__ != self.indexX:
             return True
 
@@ -108,15 +120,14 @@ class ImageSetBase:
 
     def __create_img__(self):
         cur = self.imageSource.subsurface(self.source_area())
-        if Math.abs(self.scale - 1.0) > 0.0001:
-            cur = transform.scale(cur, vec2(self.scale * cur.get_width(), self.scale * cur.get_height()))
+        if Math.abs(self.__scale__.length_squared() - 1.0) > 0.0001:
+            cur = transform.scale(cur, vec2(self.__scale__.x * cur.get_width(), self.__scale__.y * cur.get_height()))
         if self.flip:
             cur = transform.flip(cur, True, False)
         if Math.abs(1 - self.alpha) > 0.0001:
             cur.set_alpha(int(self.alpha * 255))
 
         self.__imageDraw__ = cur
-        self.__curScale__ = self.scale
         self.__idxXLast__ = self.indexX
         self.__idxYLast__ = self.indexY
         self.__flipLast__ = self.flip
@@ -126,7 +137,7 @@ class ImageSetBase:
             self.__create_img__()
 
         a = self.anchor.get_anchor_pos()
-        v = centre - vec2(a.x * self.scale, a.y * self.scale)
+        v = centre - vec2(a.x * self.__scale__.x, a.y * self.__scale__.y)
 
         if not self.stable:
             v -= args.camera_delta

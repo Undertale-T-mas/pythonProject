@@ -21,6 +21,10 @@ class WorldData:
         return type(tar)()
 
     @staticmethod
+    def exist_map(x: int, y: int):
+        return ((x + 10) << 10) + y in __map_array__
+
+    @staticmethod
     def get_difficulty():
         return __world_difficulty__
 

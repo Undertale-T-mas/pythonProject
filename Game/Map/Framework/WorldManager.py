@@ -155,14 +155,16 @@ class DefaultFightScene(FightScene):
         if self.__player__ is None:
             return
         speed = vec2(self.player.__lastSpeedX__, self.player.__ySpeed__)
-        if self.__player__.areaRect.x + 32 >= self.tileMap.width * TILE_LENGTH:
+        if self.__player__.areaRect.x + 32 > self.tileMap.width * TILE_LENGTH:
             pos = self.tileMap.worldPos
             WorldManager.change_map(
                 int(pos.x + 1), int(pos.y),
                 vec2(24, self.player.centre.y), speed, False, self.player.data
             )
-        elif self.player.areaRect.x <= 0:
+        elif self.player.areaRect.x < 0:
             pos = self.tileMap.worldPos
+            if not WorldManager.exist_map(pos.x - 1, pos.y):
+                return
             WorldManager.change_map(
                 int(pos.x - 1), int(pos.y),
                 vec2(-24, self.player.centre.y), speed, False, self.player.data
@@ -191,6 +193,7 @@ class DefaultFightScene(FightScene):
                 dest=vec2(0, 48 + rec.y),
                 area=rec,
             )
+        self.ui_painter.blit(surface_manager.screen, rec.y)
 
 
 class WorldManager:
@@ -208,6 +211,10 @@ class WorldManager:
     @staticmethod
     def get_map(x: int, y: int) -> TileMap:
         return WorldData.get_map(x, y)
+
+    @staticmethod
+    def exist_map(x: int, y: int) -> bool:
+        return WorldData.exist_map(int(x), int(y))
 
     @staticmethod
     def change_map(x: int, y: int, pos: vec2, speed_remain: vec2, fade_in: bool = False, data: PlayerData = PlayerData()):

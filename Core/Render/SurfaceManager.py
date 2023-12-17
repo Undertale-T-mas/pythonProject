@@ -2,8 +2,6 @@ from typing import *
 
 import pygame
 
-import Core.GameStates.GameState
-from Core.GameStates.GameState import *
 from Core.Render.RenderOptions import *
 from Core.GameObject import *
 from pygame import Vector2 as vec2
@@ -20,6 +18,10 @@ class SurfaceManager:
     __renderOptions__: RenderOptions
     __ent_dict__: Dict[str, int] = dict()
     __ent_exist__: Set[int] = set()
+
+    @staticmethod
+    def set_display(render_options: RenderOptions) -> Surface:
+        return pygame.display.set_mode(render_options.screenSize, render_options.surfaceFlag)
 
     def exist_surface(self, _name: str) -> bool:
         if _name not in self.__ent_dict__:
@@ -40,9 +42,9 @@ class SurfaceManager:
 
             if self.__renderOptions__.extraBuffer:
                 self.screen = Surface(self.__renderOptions__.screenSize, self.__renderOptions__.surfaceFlag)
-                self.display = Core.GameStates.GameState.set_display(self.__renderOptions__)
+                self.display = SurfaceManager.set_display(self.__renderOptions__)
             else:
-                self.screen = Core.GameStates.GameState.set_display(self.__renderOptions__)
+                self.screen = SurfaceManager.set_display(self.__renderOptions__)
                 self.display = self.screen
 
     def __init__(self, render_options: RenderOptions):

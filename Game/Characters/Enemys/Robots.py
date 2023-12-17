@@ -99,7 +99,7 @@ class LandRobot(MovableEntity):
         self.image.draw_self(render_args, self.centre)
 
     def on_collide(self, another):
-        Sounds.robot_damaged.play()
+        Sounds.robotDamaged.play()
 
     def deal_damage(self, damage_level: int):
         self.__hp__ -= Math.damage(damage_level, self.__defense__)
@@ -157,7 +157,7 @@ class MeleeRobot(LandRobot):
         img.imageSource = img.imageDict['Dead']
         img.indexX = 0
         instance_create(AlphaAnimation(img, 0.12, self.centre, 0.04))
-        instance_create(DelayedAction(0.04, Action(Sounds.robot_died.play)))
+        instance_create(DelayedAction(0.04, Action(Sounds.robotDied.play)))
 
     def update(self, args: GameArgs):
         super().update(args)
@@ -285,7 +285,7 @@ class GunRobot(LandRobot):
         img.imageSource = img.imageDict['Death']
         img.indexX = 0
         instance_create(AlphaAnimation(img, 0.12, self.centre, 0.04))
-        instance_create(DelayedAction(0.04, Action(Sounds.robot_died.play)))
+        instance_create(DelayedAction(0.04, Action(Sounds.robotDied.play)))
 
     def attack(self):
         d = vec2(-50, 24) if self.image.flip else vec2(50, 24)

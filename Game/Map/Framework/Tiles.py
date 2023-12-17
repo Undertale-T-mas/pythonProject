@@ -1,24 +1,5 @@
-from enum import Enum
-
-from Core.Animation.Anchor import *
-from Core.Animation.AnchorBase import *
-from Core.Animation.ImageSetBase import *
-from Core.Animation.ImageSet import *
-from Core.GameStates.Scene import *
-import Core.GameStates.GameState
-from Core.GameStates.ObjectManager import *
-from Core.MathUtil import FRect
-from Core.Physics.PhysicSurface import *
-from Core.Physics.PhysicManager import *
-from Core.Physics.Collidable import *
-from Core.Physics.CollidingArea import *
-from Core.Render.RenderOptions import *
-from Core.Render.SurfaceManager import *
-from Core.Render.VSurface import *
-from Core.GameObject import *
-from Core.GameArgs import *
-from pygame import Vector2 as vec2
-from pygame import *
+from Game.Characters.Humans.Data import get_player_data
+from core import *
 
 
 TILE_LENGTH = 48
@@ -31,7 +12,8 @@ class TileInfo:
     bound: CollideRect
     uuid: int
     imgScale: float | None
-    onUpdate: Action | None
+    onUpdate: ArgAction | None
+    onCreate: ArgAction | None
     fraction: float
     collidable: bool = True
     __img__: ImageSet | None
@@ -39,11 +21,15 @@ class TileInfo:
     @property
     def img(self) -> ImageSet:
         if self.imgPath != '' and self.__img__ is None:
-            self.__img__ = ImageSet(vec2(TILE_LENGTH, TILE_LENGTH), vec2(TILE_LENGTH, TILE_LENGTH), 'Tiles\\' + self.imgPath)
+            self.__img__ = ImageSet(
+                vec2(TILE_LENGTH, TILE_LENGTH),
+                vec2(TILE_LENGTH, TILE_LENGTH),
+                'Tiles\\' + self.imgPath
+            )
             sz = self.__img__.imageSource.get_size()
             sz = vec2(sz[0], sz[1])
             mod = vec2(sz.x % 48, sz.y % 48)
-            if mod.x != 0 or mod.y != 0:
+            if mod.x != 0 or mod.y != 0 or self.imgScale != 1:
                 if sz.y < 48:
                     if self.imgScale is not None:
                         scale = self.imgScale
@@ -52,14 +38,27 @@ class TileInfo:
                     self.__img__.__imageSource__ = pygame.transform.scale(
                         self.__img__.imageSource, vec2(scale * sz.x, scale * sz.y)
                     )
+                else:
+                    if self.imgScale is not None:
+                        scale = self.imgScale
+                    else:
+                        raise NotImplementedError()
+                    self.__img__.__imageSource__ = pygame.transform.scale(
+                        self.__img__.imageSource, vec2(scale * sz.x, scale * sz.y)
+                    )
+                    tar = vec2(TILE_LENGTH, self.__img__.imageSource.get_height())
+                    self.__img__.__blockSize__ = tar
+                    self.__img__.__blockDistance__ = tar
+
         return self.__img__
 
-    def __init__(self, path: str, size: FRect, _id: int, collidable: bool = True, on_update: Action = None, fraction: float = 0.5, scale: float | None = 1.5):
+    def __init__(self, path: str, size: FRect, _id: int, collidable: bool = True, on_create: ArgAction = None, on_update: ArgAction = None, fraction: float = 0.5, scale: float | None = 1.5):
         self.imgPath = path
         self.bound = CollideRect()
         self.bound.area = FRect(TILE_LENGTH * size.x, TILE_LENGTH * size.y, TILE_LENGTH * size.width, TILE_LENGTH * size.height)
         self.sizeX = int(size.right)
         self.sizeY = int(size.bottom)
+        self.onCreate = on_create
         self.uuid = _id
         self.__img__ = None
         self.fraction = fraction
@@ -107,12 +106,44 @@ class TileLibrary(Enum):
     warn_tbl = TileInfo('Factory\\WarnTBL.png', size=FRect(0, 0, 1, 1), _id=38)
     warn_tbr = TileInfo('Factory\\WarnTBR.png', size=FRect(0, 0, 1, 1), _id=39)
 
+    pillar = TileInfo('Factory\\Pillar.png', size=FRect(0, 0, 1, 1), _id=40)
+    pillar_colored = TileInfo('Factory\\PillarColored.png', size=FRect(0, 0, 1, 1), _id=41)
+    pillar_top = TileInfo('Factory\\PillarTop.png', size=FRect(0, 0.25, 1, 0.75), _id=42)
 
+    @staticmethod
+    def __fac_entry_update__(door: Entity, args: GameArgs):
+        pd = get_player_data()
+        if door.__extra__ is None:
+            door.__extra__ = 0.0
+
+        if 1 <= door.image.indexX < 6:
+            door.__extra__ += args.elapsedSec
+            door.__collidable__ = False
+            if door.__extra__ >= 0.06:
+                door.__extra__ -= 0.06
+                door.image.indexX += 1
+
+        pos1 = pd.position
+        pos2 = door.centre
+        p = (pos1 - pos2).length()
+
+        if p < 150:
+            door.image.indexX = max(1, door.image.indexX)
+        pass
+
+    factory_door = TileInfo(
+        'Factory\\Door.png', size=FRect(0, 0, 1, 2), _id=301,
+        on_update=ArgAction(__fac_entry_update__)
+    )
+
+
+# noinspection PyMissingConstructor
 class Tile(Entity, Collidable):
     locX: int = 0
     locY: int = 0
 
     __areaRect__: FRect
+    __collidable__: bool
 
     @staticmethod
     def Empty():
@@ -128,7 +159,7 @@ class Tile(Entity, Collidable):
 
     @property
     def collidable(self):
-        return self.info.collidable
+        return self.__collidable__
 
     @property
     def fraction(self):
@@ -140,14 +171,16 @@ class Tile(Entity, Collidable):
         if isinstance(info, TileLibrary):
             info = info.value
         self.physicSurfName = 'tile'
+        self.__extra__ = None
         self.surfaceName = 'tile'
         self.info = info
+        self.__collidable__ = self.info.collidable
         self.surfaceName = 'bg'
         self.image = info.img
+        if self.image is not None:
+            self.image = self.image.copy()
 
     def update(self, args: GameArgs):
-        if self.info.onUpdate is not None:
-            self.info.onUpdate.act()
         if self.uuid != 0:
             self.centre = vec2((self.locX + 0.5) * TILE_LENGTH, (self.locY + 0.5) * TILE_LENGTH)
             s = CollideRect()
@@ -157,8 +190,17 @@ class Tile(Entity, Collidable):
                 self.info.bound.area.width,
                 self.info.bound.area.height
             )
+            if self.info.onCreate is not None:
+                self.info.onCreate.act(self, self.locX, self.locY)
             self.physicArea = s
             self.__areaRect__ = s.area
+            self.centre = vec2(
+                self.locX * TILE_LENGTH + (self.info.bound.area.x + self.info.bound.area.width) / 2,
+                self.locY * TILE_LENGTH + (self.info.bound.area.y + self.info.bound.area.height) / 2
+            )
+
+        if self.info.onUpdate is not None:
+            self.info.onUpdate.act(self, args)
 
     def draw(self, render_args: RenderArgs):
         if self.image is not None:

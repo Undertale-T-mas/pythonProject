@@ -67,6 +67,6 @@ while running:
     # limits FPS to 125
     # dt is delta time in seconds since last frame, used for frame rate
     # independent physics.
-    dt = min(clock.tick(125) / 1000, 0.04) * speed
+    dt = min(clock.tick(125) / 1000, 0.0333) * speed
 
 pygame.quit()

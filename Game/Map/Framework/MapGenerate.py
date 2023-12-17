@@ -177,7 +177,9 @@ class FactoryWarn(TileGroup):
             TileLibrary.warn_bl,
             TileLibrary.warn_br,
             turn_tl=TileLibrary.warn_ttl,
-            turn_tr=TileLibrary.warn_ttr
+            turn_tr=TileLibrary.warn_ttr,
+            turn_bl=TileLibrary.warn_tbl,
+            turn_br=TileLibrary.warn_tbr,
         )
 
 
@@ -206,6 +208,17 @@ class AutoTileMap(TileMap):
 
     def ins_generator(self, token: str, func):
         self.all_data[token] = func
+
+    def ins_tile(self, token: str, tile: TileInfo | TileLibrary, linkable: bool = True):
+        if isinstance(tile, TileLibrary):
+            tile = tile.value
+
+        def generator(x: int, y: int):
+            self.set_tile(x, y, Tile(tile))
+
+        self.ins_generator(token, generator)
+        if linkable:
+            self.__tile_token__.add(token)
 
     def ins_enemy(self, token: str, enemy: type):
         if isinstance(enemy, Entity):
