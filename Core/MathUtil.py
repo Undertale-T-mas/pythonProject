@@ -6,6 +6,75 @@ import random
 rander = random.Random()
 
 
+class Vector4:
+    x: float
+    y: float
+    z: float
+    w: float
+
+    @property
+    def r(self) -> float:
+        return self.x
+
+    @property
+    def g(self) -> float:
+        return self.y
+
+    @property
+    def b(self) -> float:
+        return self.z
+
+    @property
+    def a(self) -> float:
+        return self.w
+
+    def __index__(self, idx: int):
+        if idx == 0:
+            return self.x
+        if idx == 1:
+            return self.y
+        if idx == 2:
+            return self.z
+        if idx == 3:
+            return self.w
+        raise Exception()
+
+    def __init__(self, x: float, y: float, z: float = 0.0, w: float = 1.0):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.w = w
+
+    def __add__(self, other):
+        return Vector4(self.x + other.x, self.y + other.y, self.z + other.z, self.w + other.w)
+
+    def __sub__(self, other):
+        return Vector4(self.x - other.x, self.y - other.y, self.z - other.z, self.w - other.w)
+
+    def __mul__(self, other):
+        if isinstance(other, float):
+            return Vector4(self.x * other, self.y * other, self.z * other, self.w * other)
+        return Vector4(self.x * other.x, self.y * other.y, self.z * other.z, self.w * other.w)
+
+    @staticmethod
+    def lerp(a, b, scale: float):
+        return a * (1 - scale) + b * scale
+
+
+class ColorV4:
+    RED = Vector4(1.0, 0.0, 0.0)
+    LIME = Vector4(0.0, 1.0, 0.0)
+    BLUE = Vector4(0.0, 0.0, 1.0)
+    TRANSPARENT = Vector4(0.0, 0.0, 0.0, 0.0)
+    BLACK = Vector4(0.0, 0.0, 0.0)
+    WHITE = Vector4(1.0, 1.0, 1.0)
+    SILVER = Vector4(0.5, 0.5, 0.5)
+    GRAY = Vector4(0.25, 0.25, 0.25)
+    PURPLE = Vector4(1.0, 0.0, 1.0)
+    YELLOW = Vector4(1.0, 1.0, 0.0)
+    AQUA = Vector4(0.0, 1.0, 1.0)
+
+
 class Math:
     @staticmethod
     def sin(val: float) -> float:
