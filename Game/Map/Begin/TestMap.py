@@ -24,7 +24,7 @@ class MapTEST0(AutoTileMap):
         self.ins_obj('fr', ObjectLibrary.fence_r)
         self.ins_obj('s1', ObjectGenerate.make_sign('press arrow\nkey or A&D\nto move'))
         self.ins_obj('s2', ObjectGenerate.make_sign('press c or w or\nor UP to jump'))
-        self.ins_obj('s3', ObjectGenerate.make_sign('press spacebar\nto shoot'))
+        self.ins_obj('s3', ObjectGenerate.make_sign('press spacebar\nor j to shoot'))
         self.ins_enemy('g', GunRobot)
         self.ins_tile('b', TileLibrary.scaffold)
         self.ins_tile('pn', TileLibrary.pillar, False)

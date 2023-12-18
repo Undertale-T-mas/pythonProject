@@ -3,6 +3,7 @@ from os import PathLike
 from pygame import *
 from pygame.font import Font
 from pygame.mixer import Sound
+from pygame.mixer_music import *
 from typing import *
 
 

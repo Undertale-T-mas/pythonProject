@@ -1,9 +1,12 @@
 import builtins
 from enum import Enum
 from math import *
-
+from typing import *
+from pygame import Vector2 as vec2
 import Core.GameStates.GameState
+from Core.Entity import Entity
 from Core.GameObject import *
+from Core.MathUtil import Math
 
 T = TypeVar("T", bound=Union[float, vec2])
 

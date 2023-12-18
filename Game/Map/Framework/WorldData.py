@@ -2,7 +2,7 @@ __map_array__: dict = dict()
 __world_difficulty__: int = 0
 __world_difficulty_adjust__: float = 0.0
 
-from Core.GameObject import Entity
+from Core.Entity import Entity
 
 
 class WorldData:

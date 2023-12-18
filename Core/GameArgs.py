@@ -15,6 +15,7 @@ class GameArgs:
         self.totalSec += time_elapsed
 
 
+EXTREME_QUALITY = 3
 HIGH_QUALITY = 2
 MED_QUALITY = 1
 LOW_QUALITY = 0
@@ -22,7 +23,7 @@ LOW_QUALITY = 0
 
 class RenderArgs:
     def __init__(self):
-        self.quality = HIGH_QUALITY
+        self.quality = EXTREME_QUALITY
 
     target_surface: Surface
     quality: int

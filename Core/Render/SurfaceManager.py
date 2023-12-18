@@ -2,9 +2,11 @@ from typing import *
 
 import pygame
 
+from Core.Entity import Entity
+from Core.GameArgs import RenderArgs
 from Core.Render.RenderOptions import *
 from Core.GameObject import *
-from pygame import Vector2 as vec2
+from pygame import Vector2 as vec2, Surface
 
 BUFFER_COUNT = 6
 

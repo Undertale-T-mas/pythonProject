@@ -1,6 +1,6 @@
 from Core.Animation.ImageSetBase import ImageSetBase
 from Core.GameArgs import GameArgs
-from Core.GameObject import Entity
+from Core.Entity import Entity
 from pygame import Vector2 as vec2
 
 

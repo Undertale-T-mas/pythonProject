@@ -4,6 +4,7 @@ from Resources import ResourceLib
 from Resources.ResourceLib import *
 from Core.MathUtil import *
 import random
+from Resources.Music import *
 from Core.Physics.Easings import *
 
 import pygame.draw_py
@@ -34,6 +35,12 @@ class Start(Scene):
 
     def start(self):
         self.time_tot = 0
+
+        def p():
+            play_music('Darkness Beyond.mp3', 1.0, 1.0)
+
+        self.instance_create(DelayedAction(1.6, Action(p)))
+
         self.text_1 = Fonts.kwark.render('Machine', False, [255, 222, 255, 255], [0, 0, 0, 0]) # .convert_alpha()
         self.text_2 = Fonts.kwark.render('Rebel', False, [255, 222, 255, 255], [0, 0, 0, 0]) # .convert_alpha()
         self.text_1 = self.text_1.convert_alpha()
@@ -79,7 +86,7 @@ class Start(Scene):
                 s = tar_y / h
                 self.back_images[i] = pygame.transform.scale(
                     self.back_images[i],
-                    vec2(w * s, h * s)
+                    vec2(w * s * 1.1, h * s)
                 )
 
         set_alpha(0)
@@ -129,7 +136,7 @@ class Start(Scene):
             surface_manager.buffers[1].fill([0, 0, 0, 0])
             for i in range(len(self.back_images)):
                 surface_manager.buffers[1].blit(
-                    self.back_images[i], vec2(self.centre_x * self.back_scale[i] * 0.6, 0)
+                    self.back_images[i], vec2(self.centre_x * self.back_scale[i] * 1.0 - 40, 0)
                 )
 
         surface_manager.buffers[0].blit(self.text_1, self.text_1_pos + vec2(self.centre_x * 0.05, 0))

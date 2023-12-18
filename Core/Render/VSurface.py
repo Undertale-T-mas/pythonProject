@@ -1,4 +1,7 @@
 from pygame import *
+
+from Core.Entity import Entity
+from Core.GameArgs import RenderArgs
 from Core.GameObject import *
 from typing import *
 

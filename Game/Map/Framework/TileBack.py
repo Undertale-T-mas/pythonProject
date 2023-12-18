@@ -1,3 +1,4 @@
+from Core.Entity import *
 from Core.GameObject import *
 from Core.GameStates import GameState
 

@@ -7,6 +7,7 @@ import Core.GameStates.GameState
 from Core.GameStates import GameState
 from Core.GameStates.GameState import *
 from Core.GameStates.ObjectManager import *
+from Core.Entity import *
 from Core.Physics.PhysicSurface import *
 from Core.Physics.PhysicManager import *
 from Core.Physics.Collidable import *

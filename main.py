@@ -1,3 +1,5 @@
+import sys
+
 import pygame
 
 import Game.TestScene
@@ -12,7 +14,9 @@ from pygame import Vector2 as vec2
 from Game.Map.Framework.WorldManager import *
 
 # pygame setup
+
 pygame.init()
+pygame.display.set_caption('Machine Rebel')
 pygame.mixer.pre_init(44100, 16, 2, 4096)
 Resources.ResourceLib.Sounds.initialize()
 Resources.ResourceLib.Fonts.initialize()
@@ -70,3 +74,4 @@ while running:
     dt = min(clock.tick(125) / 1000, 0.0333) * speed
 
 pygame.quit()
+sys.exit()
