@@ -124,10 +124,12 @@ class Shader:
 
 class EffectLib:
     motion_blur: Shader
+    overlay: Shader
 
     @staticmethod
     def init():
         EffectLib.motion_blur = Shader('Shaders\\Effects\\motion_blur.glsl')
+        EffectLib.overlay = Shader('Shaders\\Effects\\overlay.glsl')
 
 
 class DefaultShaderLib:

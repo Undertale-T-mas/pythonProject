@@ -34,7 +34,15 @@ class UIPainter(Entity):
             self.old_ammunition = self.data.ammunition
             self.old_cooldown = self.data.fire_cooldown
 
-            self.black_canvas.clear(vec4(233, 255, 249, 233))
+            self.black_canvas.clear(vec4(0.6, 0.6, 0.6, 0.97))
+
+            glColor3f(0.2, 0.160, 0.2)
+            glLoadIdentity()
+            glLineWidth(5)
+            glBegin(GL_LINES)
+            glVertex2f(-1, -0.768)
+            glVertex2f(1, -0.768)
+            glEnd()
 
     def blit(self, sur: RenderTarget, y_limit: float = 0.0):
         sur.blit(self.black_canvas, vec2(0, y_limit),
@@ -202,7 +210,7 @@ class FightScene(TileMapScene):
 
     def draw(self, surface_manager: SurfaceManager):
         if self.__a_camera__ is not None:
-            surface_manager.set_visible('bg', self.__a_camera__.__changed__ or self.__on_kill__)
+            surface_manager.set_visible('bg', self.__a_camera__.__changed__ or self.__on_kill__ or self.tileChanged)
 
         super().draw(surface_manager)
         rec = FRect(0, 0, self.__render_options__.screenSize.x, self.__render_options__.screenSize.y - 0)
@@ -224,5 +232,3 @@ class FightScene(TileMapScene):
                 vec2(0, 48),
                 area=rec,
             )
-
-        self.ui_painter.blit(surface_manager.screen)

@@ -74,6 +74,15 @@ class GamingGL:
         glDisable(GL_TEXTURE_2D)
 
 
+class BlendState:
+    factor_src: Any
+    factor_dst: Any
+
+    def __init__(self, src: Any, dst: Any):
+        self.factor_src = src
+        self.factor_dst = dst
+
+
 class RenderData:
     pos: vec2
     color: vec4 | None
@@ -82,10 +91,12 @@ class RenderData:
     anchor: vec2 | None
     rotation: float
     texBound: FRect
+    blend: BlendState | None
 
     def __init__(self, pos: vec2, color: vec4 | None = None,
                  scale: vec2 = vec2(1, 1), flip: bool = False,
-                 anchor: vec2 = None, rotation: float = 0.0, bound: FRect = None):
+                 anchor: vec2 = None, rotation: float = 0.0, bound: FRect = None,
+                 blend: BlendState | None = None):
         self.pos = pos
         if color is not None:
             if color != vec4(1, 1, 1, 1):
@@ -96,6 +107,7 @@ class RenderData:
             self.color = None
         self.scale = scale
         self.flip = flip
+        self.blend = blend
         self.anchor = anchor
         self.rotation = rotation
         self.texBound = bound
@@ -207,6 +219,10 @@ class Texture(IDrawable):
 
         x, y = render_data.pos.x, render_data.pos.y
 
+        if render_data.blend is not None:
+            glEnable(GL_BLEND)
+            glBlendFunc(render_data.blend.factor_src, render_data.blend.factor_dst)
+
         color_enable = render_data.color is not None
         coord_list = __glTexCoordList__
         bound = render_data.texBound
@@ -278,6 +294,9 @@ class Texture(IDrawable):
         if not mode:
             glEnd()
 
+        if render_data.blend is not None:
+            glDisable(GL_BLEND)
+
         glUseProgram(0)
         DefaultShaderLib.blend.reset()
 
@@ -343,6 +362,8 @@ class RenderTarget(IRenderTarget, Texture):
     def copy_to(self, target: IRenderTarget):
         src_fbo = self._fbo_id
         dst_fbo = target._fbo_id
+        if src_fbo == dst_fbo:
+            return
 
         glBindFramebuffer(GL_READ_FRAMEBUFFER, src_fbo)
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dst_fbo)

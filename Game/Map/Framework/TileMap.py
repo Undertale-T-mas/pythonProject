@@ -7,6 +7,7 @@ from Game.Map.Framework.WorldData import WorldData
 
 class TileMap(Entity):
     in_initialize: bool = False
+    overlay_image: Texture | None
 
     __worldPos__: vec2
 
@@ -44,6 +45,7 @@ class TileMap(Entity):
 
     def __init__(self):
         super().__init__()
+        self.overlay_image = None
         self.__objects__ = []
         self.surfaceName = 'bg'
         self.__initialized__ = False
@@ -117,7 +119,7 @@ class TileMap(Entity):
         for obj in self.__backGrounds__:
             obj.draw(args)
 
-        if args.quality <= MED_QUALITY:
+        if args.quality <= 111:
             self.tileChanged = False
         y = -1
         for i in self.tiles:

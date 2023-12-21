@@ -128,6 +128,8 @@ class TileLibrary(Enum):
 
         if p < 150:
             door.image.indexX = max(1, door.image.indexX)
+        if p < 250:
+            GameState.__gsScene__.tileChanged = True
         pass
 
     factory_door = TileInfo(

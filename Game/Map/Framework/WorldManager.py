@@ -110,6 +110,7 @@ class DefaultFightScene(FightScene):
     __fade_in__: bool
     __playerData__: PlayerData
     __timeElapsed__: float
+    timer: float
 
     def __recover_fade__(self):
         self.__fade_in__ = False
@@ -125,6 +126,8 @@ class DefaultFightScene(FightScene):
                  data: PlayerData = PlayerData()
                  ):
         super().__init__()
+        self.timer = 0.0
+        self.__bottom__ = 0.0
         self.__timeElapsed__ = 0.0
         self.__fade_in__ = fade_in
         self.__playerPos__ = player_pos
@@ -157,6 +160,7 @@ class DefaultFightScene(FightScene):
     def update(self, game_args: GameArgs):
         super().update(game_args)
         self.__timeElapsed__ = game_args.elapsedSec
+        self.timer += game_args.elapsedSec
         if self.__player__ is None:
             return
         speed = vec2(self.player.__lastSpeedX__, self.player.__ySpeed__)
@@ -198,16 +202,17 @@ class DefaultFightScene(FightScene):
                     vec2(0, 48 + rec.y),
                     area=rec,
                 )
-            self.ui_painter.blit(surface_manager.screen, rec.y)
 
+        src = surface_manager.screen
+        dst = surface_manager.buffers[6]
+        sz = surface_manager.__renderOptions__.screenSize
         # do motion blur:
         if GameState.__gsRenderOptions__.motionBlurEnabled:
             GamingGL.default_transform()
-            surface_manager.buffers[6].set_target_self()
-            sz = surface_manager.__renderOptions__.screenSize
+            dst.set_target_self()
 
             EffectLib.motion_blur.apply()
-            scale = Math.clamp(self.__timeElapsed__ * 100, 0.01, 1.0)
+            scale = Math.clamp(self.__timeElapsed__ * 200, 0.01, 1.0)
             EffectLib.motion_blur.set_arg('scale', scale)
             EffectLib.motion_blur.set_arg('sampler', surface_manager.screen)
             EffectLib.motion_blur.set_arg('sampler_old', surface_manager.buffers[7])
@@ -223,12 +228,45 @@ class DefaultFightScene(FightScene):
 
             glEnd()
 
-            glUseProgram(0)
-            glBindTexture(GL_TEXTURE_2D, 0)
             EffectLib.motion_blur.reset()
+            src, dst = dst, src
 
-            surface_manager.buffers[6].copy_to(surface_manager.screen)
-            surface_manager.buffers[6].copy_to(surface_manager.buffers[7])
+        if self.tileMap.overlay_image is not None:
+            GamingGL.default_transform()
+            dst.set_target_self()
+
+            EffectLib.overlay.apply()
+            EffectLib.overlay.set_arg('iIntensity', 0.25)
+            EffectLib.overlay.set_arg('sampler', surface_manager.screen)
+            # EffectLib.overlay.set_arg('iWarn', 0.2 + Math.sin(self.timer) * 0.2)
+            EffectLib.overlay.set_arg('iTime', self.timer)
+            EffectLib.overlay.set_arg('iCamPos', (self.__camera__.centre - vec2(200, 0)) * 1 + vec2(
+                Math.sin(self.timer * 0.54) * 47,
+                Math.sin(self.timer * 0.42 + 0.7) * 26 + 26
+            ))
+            EffectLib.overlay.set_arg('sampler_overlay', self.tileMap.overlay_image)
+            EffectLib.overlay.set_arg('screen_size', sz)
+
+            glBegin(GL_QUADS)
+
+            data = [vec4(0, 0, 0, 0), vec4(sz.x, 0, 1, 0),
+                    vec4(sz.x, sz.y, 1, 1), vec4(0, sz.y, 0, 1)]
+            for i in range(4):
+                glVertex4f(data[i].x, data[i].y, data[i].z, data[i].w)
+                glTexCoord2f(data[i].z, data[i].w)
+
+            glEnd()
+
+            EffectLib.overlay.reset()
+            src, dst = dst, src
+
+        glUseProgram(0)
+        glBindTexture(GL_TEXTURE_2D, 0)
+
+        self.ui_painter.blit(src, self.__bottom__)
+
+        src.copy_to(surface_manager.screen)
+        src.copy_to(surface_manager.buffers[7])
 
 
 class WorldManager:

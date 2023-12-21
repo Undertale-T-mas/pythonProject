@@ -48,3 +48,4 @@ class MapTEST0(AutoTileMap):
         self.add_background('City\\2.png', 0.012, 0.87)
         self.add_background('City\\3.png', 0.036, 0.87)
         self.add_background('City\\4.png', 0.08, 0.87)
+        self.overlay_image = Texture(load_image('Effects\\Overlay\\purple.png'))

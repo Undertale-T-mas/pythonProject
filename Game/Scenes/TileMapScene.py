@@ -24,9 +24,10 @@ class TileMapScene(Scene):
         self.instance_create(self.tileMap)
 
     def update(self, game_args: GameArgs):
+        self.tileChanged = False
         super().update(game_args)
-        self.tileChanged = self.tileMap.tileChanged
-        self.tileMap.visible = self.tileChanged
+        if self.tileMap.tileChanged:
+            self.tileChanged = True
 
     @property
     def scene_difficulty(self):
