@@ -3,17 +3,17 @@ from pygame.mixer import Sound
 from pygame import font
 from Resources.ResourceLoad import *
 
-__font_sizes__: Dict[Font, int] = dict()
+__font_sizes__: Dict[GLFont, int] = dict()
 
 
 class Fonts:
-    done_direct: Font = None
-    evil_empire: Font = None
-    kwark: Font = None
-    glitch_goblin: Font = None
+    done_direct: GLFont = None
+    evil_empire: GLFont = None
+    kwark: GLFont = None
+    glitch_goblin: GLFont = None
 
     @staticmethod
-    def init_font(path, size) -> Font:
+    def init_font(path, size) -> GLFont:
         res = load_font(path, size)
         __font_sizes__[res] = size
         return res
@@ -26,7 +26,7 @@ class Fonts:
         Fonts.kwark = Fonts.init_font('Kwark.ttf', 72)
 
     @staticmethod
-    def seek_size(f: Font) -> int:
+    def seek_size(f: GLFont) -> int:
         return __font_sizes__[f]
 
 

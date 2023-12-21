@@ -6,12 +6,14 @@ from Core.GameStates import GameState
 class TileBack(Entity):
     __moveXFactor__: float
     __follow__: Entity
+    __alp__: float
 
-    def __init__(self, move_x_factor, img: ImageSetBase):
+    def __init__(self, move_x_factor, img: ImageSetBase, alp: float):
         super().__init__()
         self.__moveXFactor__ = move_x_factor
         self.image = img
         self.image.stable = True
+        self.__alp__ = alp
         self.__follow__ = None
         self.image.scale = GameState.__gsRenderOptions__.screenSize.y / self.image.imageSource.get_height()
 
@@ -23,4 +25,5 @@ class TileBack(Entity):
         self.centre = vec2(xc - self.__moveXFactor__ * (self.__follow__.centre.x - xc), full.y * 0.5)
 
     def draw(self, render_args: RenderArgs):
+        self.image.alpha = self.__alp__
         super().draw(render_args)

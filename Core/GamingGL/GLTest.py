@@ -19,6 +19,8 @@ t = 0.0
 render_target = RenderTarget(800, 600)
 screen_target = RenderTarget(800, 600, True)
 
+GamingGL.init(vec2(800, 600))
+
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

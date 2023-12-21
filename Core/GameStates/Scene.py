@@ -1,4 +1,5 @@
 from Core.GameStates.ObjectManager import *
+from Core.GamingGL.GLBase import GamingGL
 from Core.Render.RenderOptions import RenderOptions
 from Core.Render.SurfaceManager import *
 from Core.Render.SurfaceManager import SurfaceManager
@@ -53,4 +54,5 @@ class Scene:
         self.__objManager__.instance_create(obj)
 
     def draw(self, surface_manager: SurfaceManager):
+        GamingGL.default_transform(surface_manager.__renderOptions__.screenSize)
         self.__get_surfaces__(surface_manager)

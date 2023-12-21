@@ -60,7 +60,7 @@ class TileMap(Entity):
     def add_background(self, path: str, factor_x: float, alpha: float = 1.0):
         img = SingleImage('BackGrounds\\' + path)
         img.alpha = alpha
-        self.__backGrounds__.append(TileBack(factor_x, img))
+        self.__backGrounds__.append(TileBack(factor_x, img, alpha))
 
     def __extend__(self, x: int, y: int):
         while y >= self.__height__:

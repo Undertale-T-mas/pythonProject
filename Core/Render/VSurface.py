@@ -5,10 +5,13 @@ from Core.GameArgs import RenderArgs
 from Core.GameObject import *
 from typing import *
 
+from Core.GamingGL.GLBase import RenderTarget
+
 
 class VSurface:
     name: str
-    surf: Surface
+    surf: RenderTarget
+    visible: bool
 
     __objs__: List[Entity]
 
@@ -19,10 +22,13 @@ class VSurface:
         self.__objs__.append(ent)
 
     def draw(self, render_args: RenderArgs):
+        if not isinstance(self.surf, RenderTarget):
+            raise ValueError()
         render_args.target_surface = self.surf
         for ent in self.__objs__:
             ent.draw(render_args)
 
-    def __init__(self, name: str, surf: surface):
+    def __init__(self, name: str, surf: RenderTarget):
         self.name = name
+        self.visible = True
         self.surf = surf

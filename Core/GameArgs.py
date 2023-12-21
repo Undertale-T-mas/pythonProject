@@ -2,6 +2,8 @@ from Core import GameStates
 from pygame import *
 from pygame import Vector2 as vec2
 
+from Core.GamingGL.GLBase import RenderTarget
+
 
 class GameArgs:
     elapsedSec = 0.0
@@ -25,6 +27,6 @@ class RenderArgs:
     def __init__(self):
         self.quality = EXTREME_QUALITY
 
-    target_surface: Surface
+    target_surface: RenderTarget
     quality: int
     camera_delta: vec2

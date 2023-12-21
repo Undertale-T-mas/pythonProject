@@ -180,7 +180,7 @@ class MovableEntity(Entity, Collidable):
         l_limit += 9
         r_limit -= 9
 
-        bdec = self.physicArea.area.i_bottom // TILE_LENGTH
+        bdec = (self.physicArea.area.i_bottom + 4) // TILE_LENGTH
         ldec = self.physicArea.area.i_left // TILE_LENGTH
         rdec = self.physicArea.area.i_right // TILE_LENGTH
         xpos = int(self.centre.x) // TILE_LENGTH
@@ -207,7 +207,7 @@ class MovableEntity(Entity, Collidable):
 
                 r = tile.physicArea.area
 
-                if r.top < self.physicArea.area.bottom + 0.001:
+                if r.top < self.physicArea.area.bottom + 0.1:
                     last_y = self.physicArea.area.bottom - self.__ySpeed__
                     if last_y - r.top > TILE_LENGTH / 3.2:
                         self.__onGround__ = False

@@ -10,6 +10,7 @@ from pygame.transform import rotate
 import Resources.ResourceLoad
 from Core.Animation.AnchorBase import Anchor
 from Core.GameArgs import *
+from Core.GamingGL.GLBase import *
 from Core.MathUtil import Math
 from Resources.ResourceLoad import *
 
@@ -20,7 +21,7 @@ class ImageSetBase:
         raise NotImplementedError()
 
     def load(self, path: str):
-        self.imageSource = load_image(path)
+        self.imageSource = Texture(load_image(path))
 
     __blockSize__: vec2
 
@@ -32,14 +33,14 @@ class ImageSetBase:
     def blockSize(self, size: vec2):
         self.__blockSize__ = size
 
-    __imageSource__: Surface
+    __imageSource__: Texture
 
     @property
-    def imageSource(self) -> Surface:
+    def imageSource(self) -> Texture:
         return self.__imageSource__
 
     @imageSource.setter
-    def imageSource(self, surf: Surface):
+    def imageSource(self, surf: Texture):
         if surf is self.__imageSource__:
             return
         self.__imageSource__ = surf
@@ -86,7 +87,7 @@ class ImageSetBase:
 
     anchor: Anchor
 
-    def source_area(self) -> Rect:
+    def source_area(self) -> FRect:
         raise NotImplementedError()
 
     __imageUpdated__: bool
@@ -94,7 +95,7 @@ class ImageSetBase:
     __idxYLast__: int
     __alpha__: float
     __flip__: bool
-    __imageDraw__: Surface | None
+    __imageDraw__: Texture | None
 
     def __init__(self):
         self.indexX = 0
@@ -108,41 +109,23 @@ class ImageSetBase:
         self.__imageUpdated__ = False
         self.stable = False
 
-    def __need_refresh__(self) -> bool:
-        if self.__imageDraw__ is None or self.__imageUpdated__:
-            self.__imageUpdated__ = False
-            return True
-
-        if self.__idxYLast__ != self.indexY or self.__idxXLast__ != self.indexX:
-            return True
-
-        return False
-
-    def __create_img__(self):
-        cur = self.imageSource.subsurface(self.source_area())
-        if Math.abs(self.__scale__.length_squared() - 1.0) > 0.0001:
-            cur = transform.scale(cur, vec2(self.__scale__.x * cur.get_width(), self.__scale__.y * cur.get_height()))
-        if self.flip:
-            cur = transform.flip(cur, True, False)
-        if Math.abs(1 - self.alpha) > 0.0001:
-            cur.set_alpha(int(self.alpha * 255))
-
-        self.__imageDraw__ = cur
-        self.__idxXLast__ = self.indexX
-        self.__idxYLast__ = self.indexY
-        self.__flipLast__ = self.flip
+    def __get_color__(self):
+        if self.__alpha__ >= 0.999999:
+            return cv4.WHITE
+        return vec4(1, 1, 1, self.__alpha__)
 
     def draw_self(self, args: RenderArgs, centre: vec2):
-        if self.__need_refresh__():
-            self.__create_img__()
-
         a = self.anchor.get_anchor_pos()
-        v = centre - vec2(a.x * self.__scale__.x, a.y * self.__scale__.y)
+        v = vec2(centre.x, centre.y)
 
         if not self.stable:
             v -= args.camera_delta
 
-        args.target_surface.blit(
+        self.__imageDraw__ = self.__imageSource__
+        if self.__alpha__ <= 0.00001:
+            return
+        args.target_surface.blit_data(
             self.__imageDraw__,
-            v
+            RenderData(v, scale=self.__scale__, flip=self.__flip__, color=self.__get_color__(),
+                       anchor=self.anchor.get_anchor_pos(), bound=self.source_area())
         )

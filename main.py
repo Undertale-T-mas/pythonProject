@@ -41,8 +41,10 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+    GamingGL.begin()
     GameState.update(dt)
     GameState.render()
+    GamingGL.end()
 
     if GameState.key_hold(ki.speed_0):
         speed = 0.01
@@ -71,7 +73,7 @@ while running:
     # limits FPS to 125
     # dt is delta time in seconds since last frame, used for frame rate
     # independent physics.
-    dt = min(clock.tick(125) / 1000, 0.0333) * speed
+    dt = min(clock.tick(1000) / 1000, 0.0333) * speed
 
 pygame.quit()
 sys.exit()

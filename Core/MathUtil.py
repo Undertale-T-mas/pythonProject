@@ -1,5 +1,5 @@
 import math
-from pygame import Vector2 as vec2
+from pygame import Vector2 as vec2, Color
 import pygame.rect
 import random
 
@@ -28,6 +28,10 @@ class Vector4:
     def a(self) -> float:
         return self.w
 
+    @staticmethod
+    def from_color(col: Color):
+        return Vector4(col.r / 255.0, col.g / 255.0, col.b / 255.0, col.a / 255.0)
+
     def __index__(self, idx: int):
         if idx == 0:
             return self.x
@@ -52,9 +56,15 @@ class Vector4:
         return Vector4(self.x - other.x, self.y - other.y, self.z - other.z, self.w - other.w)
 
     def __mul__(self, other):
-        if isinstance(other, float):
+        if isinstance(other, float) or isinstance(other, int):
             return Vector4(self.x * other, self.y * other, self.z * other, self.w * other)
         return Vector4(self.x * other.x, self.y * other.y, self.z * other.z, self.w * other.w)
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y and self.z == other.z and self.w == other.w
+
+    def __ne__(self, other):
+        return self.x != other.x or self.y != other.y or self.z != other.z or self.w != other.w
 
     @staticmethod
     def lerp(a, b, scale: float):

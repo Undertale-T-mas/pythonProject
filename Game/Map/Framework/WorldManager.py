@@ -2,6 +2,8 @@ import importlib.util
 
 from Core.GameStates import GameState
 from Core.GameStates.GameState import *
+from Core.GamingGL.GLShader import *
+from Core.MathUtil import FRect
 from Core.Profile.Savable import *
 from Game.Characters.Humans.Player import PlayerData
 from Game.Map.Framework.MapGenerate import AutoTileMap
@@ -67,12 +69,12 @@ def get_all_subclasses(folder_path, base_class):
 
 
 class RespawnScene(Scene):
-    old_image: Surface
+    old_image: RenderTarget
     bottom: float
 
     def __init__(self):
         super().__init__()
-        self.old_image = GameState.__gsSurfaceManager__.screen.copy()
+        self.old_image = GameState.__gsSurfaceManager__.screen.copy_to(GameState.__gsSurfaceManager__.buffers[7])
         self.bottom = GameState.__gsRenderOptions__.screenSize.y
 
     def set_bottom(self, val: float):
@@ -96,7 +98,7 @@ class RespawnScene(Scene):
         surface_manager.screen.blit(
             self.old_image,
             vec2(0, 0),
-            Rect(0, 0, surface_manager.__curSize__.x, self.bottom)
+            FRect(0, 0, surface_manager.__curSize__.x, self.bottom)
         )
 
 
@@ -107,6 +109,7 @@ class DefaultFightScene(FightScene):
     __bottom__: float
     __fade_in__: bool
     __playerData__: PlayerData
+    __timeElapsed__: float
 
     def __recover_fade__(self):
         self.__fade_in__ = False
@@ -122,6 +125,7 @@ class DefaultFightScene(FightScene):
                  data: PlayerData = PlayerData()
                  ):
         super().__init__()
+        self.__timeElapsed__ = 0.0
         self.__fade_in__ = fade_in
         self.__playerPos__ = player_pos
         self.__tileMap__ = tile_map
@@ -152,6 +156,7 @@ class DefaultFightScene(FightScene):
 
     def update(self, game_args: GameArgs):
         super().update(game_args)
+        self.__timeElapsed__ = game_args.elapsedSec
         if self.__player__ is None:
             return
         speed = vec2(self.player.__lastSpeedX__, self.player.__ySpeed__)
@@ -173,27 +178,57 @@ class DefaultFightScene(FightScene):
     def draw(self, surface_manager: SurfaceManager):
         if not self.__fade_in__:
             super().draw(surface_manager)
-            return
-        self.__get_surfaces__(surface_manager)
-        size = self.__render_options__.screenSize
-        rec = pygame.rect.Rect(0, self.__bottom__, size.x, size.y - self.__bottom__)
-        surface_manager.screen.blit(
-            surface_manager.get_surface('bg'),
-            dest=rec,
-            area=rec,
-        )
-        surface_manager.screen.blit(
-            surface_manager.get_surface('default'),
-            dest=vec2(0, 48 + rec.y),
-            area=rec,
-        )
-        if surface_manager.exist_surface('barrage'):
+        else:
+            self.__get_surfaces__(surface_manager)
+            size = self.__render_options__.screenSize
+            rec = FRect(0, self.__bottom__, size.x, size.y - self.__bottom__)
             surface_manager.screen.blit(
-                surface_manager.get_surface('barrage'),
-                dest=vec2(0, 48 + rec.y),
+                surface_manager.get_surface('bg'),
+                vec2(0, self.__bottom__),
                 area=rec,
             )
-        self.ui_painter.blit(surface_manager.screen, rec.y)
+            surface_manager.screen.blit(
+                surface_manager.get_surface('default'),
+                vec2(0, 48 + rec.y),
+                area=rec,
+            )
+            if surface_manager.exist_surface('barrage'):
+                surface_manager.screen.blit(
+                    surface_manager.get_surface('barrage'),
+                    vec2(0, 48 + rec.y),
+                    area=rec,
+                )
+            self.ui_painter.blit(surface_manager.screen, rec.y)
+
+        # do motion blur:
+        if GameState.__gsRenderOptions__.motionBlurEnabled:
+            GamingGL.default_transform()
+            surface_manager.buffers[6].set_target_self()
+            sz = surface_manager.__renderOptions__.screenSize
+
+            EffectLib.motion_blur.apply()
+            scale = Math.clamp(self.__timeElapsed__ * 100, 0.01, 1.0)
+            EffectLib.motion_blur.set_arg('scale', scale)
+            EffectLib.motion_blur.set_arg('sampler', surface_manager.screen)
+            EffectLib.motion_blur.set_arg('sampler_old', surface_manager.buffers[7])
+            EffectLib.motion_blur.set_arg('screen_size', sz)
+
+            glBegin(GL_QUADS)
+
+            data = [vec4(0, 0, 0, 0), vec4(sz.x, 0, 1, 0),
+                    vec4(sz.x, sz.y, 1, 1), vec4(0, sz.y, 0, 1)]
+            for i in range(4):
+                glVertex4f(data[i].x, data[i].y, data[i].z, data[i].w)
+                glTexCoord2f(data[i].z, data[i].w)
+
+            glEnd()
+
+            glUseProgram(0)
+            glBindTexture(GL_TEXTURE_2D, 0)
+            EffectLib.motion_blur.reset()
+
+            surface_manager.buffers[6].copy_to(surface_manager.screen)
+            surface_manager.buffers[6].copy_to(surface_manager.buffers[7])
 
 
 class WorldManager:

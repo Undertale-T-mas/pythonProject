@@ -7,7 +7,7 @@ from core import *
 
 # noinspection PyMissingConstructor,PyTypeChecker
 class Readable(Entity):
-    __font__: Font
+    __font__: GLFont
     __color__: Color
     __alpha__: float
     __updated__: bool
@@ -16,6 +16,7 @@ class Readable(Entity):
     __defaultFontSize__: int
     __strSurfs__: List[Surface]
     __lineDistance__: float
+    __scale__: float
 
     def base_height(self) -> float:
         return self.__font__.get_height()
@@ -26,16 +27,24 @@ class Readable(Entity):
 
         for obj in l:
             res.y += self.lineDistance + self.__font__.get_height()
-            res.x = max(res.x, self.__font__.size(obj)[0])
+            res.x = max(res.x, self.__font__.measure_string(obj).x)
 
         return res
 
-    def __init__(self, pos: vec2, _font: Font):
+    @property
+    def scale(self) -> float:
+        return self.__scale__
+
+    @scale.setter
+    def scale(self, val: float):
+        self.__scale__ = val
+
+    def __init__(self, pos: vec2, _font: GLFont):
         super().__init__()
         self.__font__ = _font
+        self.__scale__ = 1.0
         self.centre = pos
         self.__color__ = Color(255, 255, 255)
-        self.__strSurfs__ = [None]
         self.__updated__ = True
         self.__strLines__ = ['']
         self.__alpha__ = 0.0
@@ -43,7 +52,6 @@ class Readable(Entity):
         self.__fontSize__ = self.__defaultFontSize__ = Fonts.seek_size(self.__font__)
 
     def clear(self):
-        self.__strSurfs__ = [None]
         self.__strLines__ = ['']
         self.__updated__ = True
 
@@ -63,9 +71,13 @@ class Readable(Entity):
         return self.__color__
 
     @color.setter
-    def color(self, val: Color):
-        self.__color__ = val
-        self.__updated__ = True
+    def color(self, val: Color | vec4):
+        if isinstance(val, vec4):
+            self.__color__ = Color(int(val.r / 255), int(val.g / 255), int(val.b / 255), int(val.a / 255))
+            self.__updated__ = True
+        else:
+            self.__color__ = val
+            self.__updated__ = True
 
     @property
     def alpha(self):
@@ -94,38 +106,23 @@ class Readable(Entity):
             return
 
         if len(res) == 0:
-            self.__strSurfs__.append(None)
             self.__strLines__.append('')
             return
 
         self.__strLines__[-1] += res[0]
         for i in range(1, len(res)):
             self.__strLines__.append(res[i])
-            self.__strSurfs__.append(None)
 
     def draw(self, render_args: RenderArgs):
-        if self.__updated__:
-            for i in range(len(self.__strSurfs__)):
-                self.__strSurfs__[i] = self.__font__.render(self.__strLines__[i], False, self.__color__, [0, 0, 0, 0])
-
-            if self.__fontSize__ != self.__defaultFontSize__:
-                for i in range(len(self.__strSurfs__)):
-                    self.__strSurfs__[i] = pygame.transform.scale(
-                        self.__strSurfs__[i], self.__fontSize__ / self.__defaultFontSize__
-                    )
-
-            if abs(self.alpha - 1.0) > 0.01:
-                for i in range(len(self.__strSurfs__)):
-                    self.__strSurfs__[i].set_alpha(self.alpha * 255)
-
-            for i in range(len(self.__strSurfs__)):
-                self.__strSurfs__[i] = self.__strSurfs__[i].convert_alpha()
-                self.__strSurfs__[i].set_colorkey([0, 0, 0, 0])
 
         h = self.__font__.get_height()
         cur = vec2(self.centre.x, self.centre.y) - render_args.camera_delta
-        for surf in self.__strSurfs__:
-            render_args.target_surface.blit(surf, cur - vec2(surf.get_width() / 2, surf.get_height() / 2))
+        for line in self.__strLines__:
+            self.__font__.blit(
+                render_args.target_surface, line,
+                cur, col=vec4.from_color(self.__color__) * self.__alpha__,
+                scale=self.scale
+            )
             cur.y += self.lineDistance + h
 
 

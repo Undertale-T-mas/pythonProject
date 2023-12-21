@@ -11,14 +11,12 @@ from Game.Scenes.TileMapScene import *
 
 
 class UIPainter(Entity):
-
-    black_canvas: Surface
+    black_canvas: RenderTarget
 
     def __init__(self):
         super().__init__()
         self.surfaceName = 'bg'
-        self.black_canvas = Surface(vec2(GameState.__gsRenderOptions__.screenSize.x, 72)).convert_alpha()
-        self.black_canvas.fill([233, 255, 249, 233])
+        self.black_canvas = RenderTarget(GameState.__gsRenderOptions__.screenSize.x, 72)
         self.old_hp = self.old_cooldown = 0
         self.old_cooldown = -1
 
@@ -36,17 +34,18 @@ class UIPainter(Entity):
             self.old_ammunition = self.data.ammunition
             self.old_cooldown = self.data.fire_cooldown
 
-            self.black_canvas.fill([233, 255, 249, 233])
+            self.black_canvas.clear(vec4(233, 255, 249, 233))
 
-
-    def blit(self, sur: Surface, y_limit: float = 0.0):
+    def blit(self, sur: RenderTarget, y_limit: float = 0.0):
         sur.blit(self.black_canvas, vec2(0, y_limit),
-                 Rect(0, min(y_limit, 72.0), self.black_canvas.get_width(), min(72.0, GameState.__gsRenderOptions__.screenSize.y - y_limit)))
+                 FRect(0, min(y_limit, 72.0), self.black_canvas.get_width(),
+                       Math.clamp(72.0 - y_limit, 0, 72)))
 
 
 class FightCameraObj(Entity):
     __player__: Entity
     __map__: TileMap
+    __changed__: bool
 
     __cur_x__: float | None
     __x_min__: float
@@ -55,11 +54,16 @@ class FightCameraObj(Entity):
     __cur_y__: float | None
     __y_min__: float
     __y_max__: float
+    __old_p__: vec2
+    __tim__: float
 
     def __init__(self, player: Entity, _map: TileMap):
         super().__init__()
         self.__player__ = player
         self.__map__ = _map
+        self.__changed__ = True
+        self.__tim__ = 0.21
+        self.__old_p__ = vec2(-1, -1)
         self.centre = GameState.__gsRenderOptions__.screenSize / 2
         self.__cur_x__ = None
         self.__x_min__ = self.centre.x
@@ -97,8 +101,19 @@ class FightCameraObj(Entity):
 
     def update(self, args: GameArgs):
         lerp_s = min(1.0, args.elapsedSec * 12.0)
+
         self.centre.x = self.calc_x(lerp_s)
         self.centre.y = self.calc_y(lerp_s)
+
+        if (self.centre - self.__old_p__).length_squared() > 0.1:
+            self.__old_p__ = self.centre.copy()
+            self.__changed__ = True
+        else:
+            self.__changed__ = False
+
+        if self.__tim__ > 0:
+            self.__tim__ -= args.elapsedSec
+            self.__changed__ = True
 
     def draw(self, render_args: RenderArgs):
         pass
@@ -131,10 +146,11 @@ class Shaker(GameObject):
 
 
 class FightScene(TileMapScene):
-
     __phyManager__: PhysicManager
     __player__: Player
+    __a_camera__: FightCameraObj
     ui_painter: UIPainter
+    __on_kill__: bool
 
     @property
     def player(self):
@@ -143,6 +159,7 @@ class FightScene(TileMapScene):
     def __init__(self):
         super().__init__()
         self.ui_painter = UIPainter()
+        self.__on_kill__ = False
         self.__phyManager__ = PhysicManager()
 
     def __move_player__(self):
@@ -155,6 +172,7 @@ class FightScene(TileMapScene):
         self.instance_create(Shaker(self.__camera__, shake_dir))
         self.__camera__.dispose()
         self.__player__.dispose()
+        self.__on_kill__ = True
         self.instance_create(DelayedAction(0, Action(self.__move_player__)))
         self.__player__.image.imageSource = self.player.__image_set__.imageDict['Punk_death']
         self.instance_create(DeathAnimation(self.__player__.image, self.__player__, vec2(20, 30), vec2(40, 77)))
@@ -163,7 +181,8 @@ class FightScene(TileMapScene):
     def create_player(self, pos: vec2 = (24, 0), speed: vec2 = vec2(0, 0), data: PlayerData = PlayerData()):
         self.__player__ = Player(pos, speed, data)
         instance_create(self.__player__)
-        self.__camera__ = FightCameraObj(self.__player__, self.tileMap)
+        self.__a_camera__ = FightCameraObj(self.__player__, self.tileMap)
+        self.__camera__ = self.__a_camera__
 
     def update(self, game_args: GameArgs):
         super().update(game_args)
@@ -182,26 +201,28 @@ class FightScene(TileMapScene):
             self.__phyManager__.insert_object(obj)
 
     def draw(self, surface_manager: SurfaceManager):
+        if self.__a_camera__ is not None:
+            surface_manager.set_visible('bg', self.__a_camera__.__changed__ or self.__on_kill__)
+
         super().draw(surface_manager)
-        rec = pygame.rect.Rect(0, 0, self.__render_options__.screenSize.x, self.__render_options__.screenSize.y - 0)
+        rec = FRect(0, 0, self.__render_options__.screenSize.x, self.__render_options__.screenSize.y - 0)
         surface_manager.screen.blit(
             surface_manager.get_surface('bg'),
-            dest=rec,
+            vec2(0, 0),
             area=rec,
         )
-        rec = pygame.rect.Rect(0, 0, self.__render_options__.screenSize.x, self.__render_options__.screenSize.y - 48)
+        rec = FRect(0, 0, self.__render_options__.screenSize.x, self.__render_options__.screenSize.y - 48)
         surface_manager.screen.blit(
             surface_manager.get_surface('default'),
-            dest=vec2(0, 48),
+            vec2(0, 48),
             area=rec,
         )
-        rec = pygame.rect.Rect(0, 0, self.__render_options__.screenSize.x, self.__render_options__.screenSize.y - 48)
+        rec = FRect(0, 0, self.__render_options__.screenSize.x, self.__render_options__.screenSize.y - 48)
         if surface_manager.exist_surface('barrage'):
             surface_manager.screen.blit(
                 surface_manager.get_surface('barrage'),
-                dest=vec2(0, 48),
+                vec2(0, 48),
                 area=rec,
             )
 
         self.ui_painter.blit(surface_manager.screen)
-

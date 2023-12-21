@@ -35,18 +35,17 @@ class TileInfo:
                         scale = self.imgScale
                     else:
                         scale = 48 / sz.y
-                    self.__img__.__imageSource__ = pygame.transform.scale(
-                        self.__img__.imageSource, vec2(scale * sz.x, scale * sz.y)
-                    )
+
+                    self.__img__.scale = scale
+                    self.__img__.blockSize = vec2(TILE_LENGTH / scale, TILE_LENGTH / scale)
+                    self.__img__.__blockDistance__ = self.__img__.blockSize
                 else:
                     if self.imgScale is not None:
                         scale = self.imgScale
                     else:
                         raise NotImplementedError()
-                    self.__img__.__imageSource__ = pygame.transform.scale(
-                        self.__img__.imageSource, vec2(scale * sz.x, scale * sz.y)
-                    )
-                    tar = vec2(TILE_LENGTH, self.__img__.imageSource.get_height())
+                    self.__img__.scale = scale
+                    tar = vec2(TILE_LENGTH / scale, self.__img__.imageSource.get_height())
                     self.__img__.__blockSize__ = tar
                     self.__img__.__blockDistance__ = tar
 

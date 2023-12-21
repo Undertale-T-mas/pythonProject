@@ -26,3 +26,5 @@ from Core.Physics.Easings import *
 from Core.MathUtil import Vector4 as vec4
 from Core.MathUtil import ColorV4 as cv4
 from Core.GamingGL.GLBase import *
+from Core.GameStates.KeyIdentity import KeyIdentity as ki
+from Core.GamingGL.GLShader import *

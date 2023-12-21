@@ -48,7 +48,8 @@ def change_scene(scene: Scene):
 def render():
     __gsScene__.draw(__gsSurfaceManager__)
     if __gsRenderOptions__.extraBuffer:
-        __gsSurfaceManager__.display.blit(__gsSurfaceManager__.screen, vec2(0, 0))
+        __gsSurfaceManager__.display.clear(cv4.TRANSPARENT)
+        __gsSurfaceManager__.screen.copy_to(__gsSurfaceManager__.display)
 
 
 def update(time_elapsed: float):
