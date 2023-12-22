@@ -1,11 +1,6 @@
-import Game.Map.Begin.TestMap
-from Core.MathUtil import *
-import random
+import Game.Map.Begin.MP_n1_n1
 
-import pygame.draw_py
-
-from Game.Characters.Humans.Player import *
-from Game.Scenes.FightScene import FightScene
+from Game.Scenes.FightScene.SceneMain import FightScene
 from Game.Characters.Enemys.Robots import *
 
 
@@ -16,7 +11,7 @@ class TestScene(FightScene):
         super().__init__()
 
     def start(self):
-        self.set_tiles(Game.Map.Begin.TestMap.MapTEST0())
+        self.set_tiles(Game.Map.Begin.MP_n1_n1.MapTEST0())
         self.create_player()
         for obj in self.tileMap.get_objects():
             instance_create(obj)

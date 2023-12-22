@@ -82,8 +82,8 @@ class GLFont:
             if ch == '\n':
                 raise ValueError()
             glyph = self.__glyph_set__.get_glyph(ch)
-            glyph.texture.draw(RenderData(loc, col, vec2(scale, scale), False, vec2(0, 0)))
-            loc.x += glyph.size.x
+            glyph.texture.draw(RenderData(loc, col, scale=vec2(scale, scale), flip=False, anchor=vec2(0, 0)))
+            loc.x += glyph.size.x * scale
 
     def __init__(self, font: Font):
         self.__font__ = font

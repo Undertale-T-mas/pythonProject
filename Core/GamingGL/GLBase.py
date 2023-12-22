@@ -188,6 +188,10 @@ class Texture(IDrawable):
     def get_size(self):
         return self.width, self.height
 
+    @property
+    def centre(self):
+        return vec2(self.width / 2, self.height / 2)
+
     def __init__(self, surface: Surface):
         self.width, self.height = surface.get_size()
 
@@ -237,7 +241,7 @@ class Texture(IDrawable):
 
         w, h = bound.width * render_data.scale.x, bound.height * render_data.scale.y
         if render_data.anchor is not None:
-            if render_data.anchor.length_squared() > 0.1:
+            if render_data.anchor.length_squared() > 0.001:
                 x -= render_data.anchor.x * render_data.scale.x
                 y -= render_data.anchor.y * render_data.scale.y
 
@@ -306,6 +310,9 @@ class Texture(IDrawable):
 # noinspection PyMissingConstructor
 class RenderTarget(IRenderTarget, Texture):
     _fbo_id: Any
+
+    def get_id(self):
+        return self._fbo_id
 
     def set_target_self(self):
         GamingGL.set_render_target(self._fbo_id)

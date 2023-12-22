@@ -1,5 +1,5 @@
 from Game.Barrage.Barrage import *
-from Game.Characters.Humans.Data import PlayerData
+from Game.Characters.Humans.Data import PlayerData, IPlayer
 from Game.Characters.Humans.HPBar import HPBar
 from Game.Characters.Movable import *
 from Game.Tech.DataLib import TechData
@@ -25,6 +25,7 @@ class PlayerBullet(Barrage):
         self.move(EasingGenerator.linear(start, vec2(-1100, 0) if d else vec2(1100, 0)))
         self.image.scale = 2
         self.tiles = tiles
+        self.centre = start
         self.image.flip = d
         self.autoDispose = True
         self.rect = CollideRect()
@@ -36,28 +37,31 @@ class PlayerBullet(Barrage):
         super().update(args)
         decx = int(self.centre.x // TILE_LENGTH)
         decy = int(self.centre.y // TILE_LENGTH)
-        tar = self.tiles.get_tile(decx, decy)
-        if tar.uuid == 0:
+        if self.tiles is None:
             return
-        if tar.collidable:
-            if not isinstance(self.physicArea, CollideRect):
-                raise Exception()
-            if self.physicArea.area.collide_rect(tar.areaRect):
-                self.dispose()
+        for i in range(3):
+            tar = self.tiles.get_tile(decx, decy + i - 1)
+            if tar.uuid == 0:
+                continue
+            if tar.collidable:
+                if not isinstance(self.physicArea, CollideRect):
+                    raise Exception()
+                if self.physicArea.area.collide_rect(tar.areaRect):
+                    self.dispose()
 
-                img = ImageSet(
-                    vec2(48, 48),
-                    vec2(48, 48),
-                    'Effects\\Sparks\\' + str(Math.rand(0, 2)) + '.png'
-                )
-                if self.image.flip:
-                    img.flip = True
-                img.scale = 1.5
-                instance_create(Animation(
-                    img,
-                    0.05,
-                    self.centre
-                ))
+                    img = ImageSet(
+                        vec2(48, 48),
+                        vec2(48, 48),
+                        'Effects\\Sparks\\' + str(Math.rand(0, 2)) + '.png'
+                    )
+                    if self.image.flip:
+                        img.flip = True
+                    img.scale = 1.5
+                    instance_create(Animation(
+                        img,
+                        0.05,
+                        self.centre - vec2(0, 10)
+                    ))
 
     def draw(self, render_args: RenderArgs):
         self.image.draw_self(render_args, self.centre)
@@ -228,7 +232,7 @@ class PlayerHand(Entity):
         self.image.draw_self(render_args, self.centre)
 
 
-class Player(MovableEntity):
+class Player(MovableEntity, IPlayer):
     __state__: MoveState = MoveState.idle
     __image_set__: MultiImageSet
     __hand__: PlayerHand
@@ -352,8 +356,11 @@ class Player(MovableEntity):
 
         Sounds.playerDamaged.play()
 
+    def recharge_time(self):
+        return 0.7
+
     def recharge(self):
-        self.fire_cooldown = 0.7
+        self.fire_cooldown = self.recharge_time()
         self.ammunition = 7
 
         instance_create(DelayedAction(0.15, Action(Sounds.recharge.play)))
@@ -406,7 +413,7 @@ class Player(MovableEntity):
         else:
             self.__leaveGroundTime__ += args.elapsedSec
 
-        if need_jump and self.__leaveGroundTime__ < 0.062 and self.__jumpPressTime__ < 0.222:
+        if need_jump and self.__leaveGroundTime__ < 0.062 and self.__jumpPressTime__ < 0.166:
             self.jump(self.jump_speed)
             self.__leaveGroundTime__ = 0.062
             Sounds.jump.set_volume(0.1)
@@ -480,5 +487,5 @@ class Player(MovableEntity):
                 self.image.indexX = 3
 
         self.__hand__.update(args)
-        self.data.update_data(self.ammunition, self.fire_cooldown, self.hp.__hp__, self.centre)
+        self.data.update_data(self.ammunition, self.fire_cooldown, self.hp.__hp__, self.centre, self.hp.__difficulty__, self)
 

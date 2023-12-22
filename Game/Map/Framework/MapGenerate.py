@@ -209,12 +209,15 @@ class AutoTileMap(TileMap):
     def ins_generator(self, token: str, func):
         self.all_data[token] = func
 
-    def ins_tile(self, token: str, tile: TileInfo | TileLibrary, linkable: bool = True):
+    def ins_tile(self, token: str, tile: TileInfo | TileLibrary, linkable: bool = True, back: bool = False):
         if isinstance(tile, TileLibrary):
             tile = tile.value
 
         def generator(x: int, y: int):
-            self.set_tile(x, y, Tile(tile))
+            if back:
+                self.set_tile_back(x, y, Tile(tile))
+            else:
+                self.set_tile(x, y, Tile(tile))
 
         self.ins_generator(token, generator)
         if linkable:
@@ -269,41 +272,41 @@ class AutoTileMap(TileMap):
                     continue
 
                 if x == 0:
-                    l = False
+                    l = True
                 else:
                     l = self.is_tile(tiles[y][x - 1])
                 if x == self.width - 1:
-                    r = False
+                    r = True
                 else:
                     r = self.is_tile(tiles[y][x + 1])
 
                 if y == 0:
-                    t = False
-                    tl = False
-                    tr = False
+                    t = True
+                    tl = True
+                    tr = True
                 else:
                     t = self.is_tile(tiles[y - 1][x])
                     if x == 0:
-                        tl = False
+                        tl = True
                     else:
                         tl = self.is_tile(tiles[y - 1][x - 1])
                     if x == self.width - 1:
-                        tr = False
+                        tr = True
                     else:
                         tr = self.is_tile(tiles[y - 1][x + 1])
 
                 if y == self.height - 1:
-                    b = False
-                    bl = False
-                    br = False
+                    b = True
+                    bl = True
+                    br = True
                 else:
                     b = self.is_tile(tiles[y + 1][x])
                     if x == 0:
-                        bl = False
+                        bl = True
                     else:
                         bl = self.is_tile(tiles[y + 1][x - 1])
                     if x == self.width - 1:
-                        br = False
+                        br = True
                     else:
                         br = self.is_tile(tiles[y + 1][x + 1])
 
@@ -316,4 +319,6 @@ class AutoTileMap(TileMap):
                 self.__bl__ = bl
                 self.__br__ = br
 
-                self.all_data[tiles[y][x]](x, y)
+                _all = tiles[y][x].split(',')
+                for u in _all:
+                    self.all_data[u](x, y)

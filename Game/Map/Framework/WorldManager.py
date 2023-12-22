@@ -6,11 +6,9 @@ from Core.GamingGL.GLShader import *
 from Core.MathUtil import FRect
 from Core.Profile.Savable import *
 from Game.Characters.Humans.Player import PlayerData
-from Game.Map.Framework.MapGenerate import AutoTileMap
 from Game.Map.Framework.TileMap import TileMap
 from Game.Map.Framework.Tiles import TILE_LENGTH
 from Game.Map.Framework.WorldData import WorldData
-from pygame import Vector2 as vec2
 from Core.Physics.Easings import *
 
 import inspect
@@ -24,21 +22,21 @@ __worldRoomX__ = Savable[int]('global\\loc.room.x')
 __worldRoomY__ = Savable[int]('global\\loc.room.y')
 __worldRespawnTime__ = Savable[int]('global\\stat.respawn')
 
-from Game.Scenes.FightScene import FightScene
+from Game.Scenes.FightScene.SceneMain import FightScene
 
 if __worldRoomX__.value is None:
     __worldRoomX__.value = -1
 if __worldRoomY__.value is None:
     __worldRoomY__.value = -1
 if __worldPlayerPosX__.value is None:
-    __worldPlayerPosX__.value = 24.0
+    __worldPlayerPosX__.value = 72.0
 if __worldPlayerPosY__.value is None:
-    __worldPlayerPosY__.value = 48.0
+    __worldPlayerPosY__.value = 192.0 + 48.0
 if __worldRespawnTime__.value is None:
     __worldRespawnTime__.value = 0
 
 if __difficulty__.value is None:
-    __difficulty__.value = 0
+    __difficulty__.value = 2
 if __diffDynamic__.value is None:
     __diffDynamic__.value = 0
 
@@ -111,6 +109,7 @@ class DefaultFightScene(FightScene):
     __playerData__: PlayerData
     __timeElapsed__: float
     timer: float
+    __overlay_pos__: vec2
 
     def __recover_fade__(self):
         self.__fade_in__ = False
@@ -127,10 +126,16 @@ class DefaultFightScene(FightScene):
                  ):
         super().__init__()
         self.timer = 0.0
+        self.__overlay_pos__ = vec2(0, 0)
         self.__bottom__ = 0.0
         self.__timeElapsed__ = 0.0
         self.__fade_in__ = fade_in
-        self.__playerPos__ = player_pos
+        if player_pos.y >= 0:
+            self.__playerPos__ = player_pos
+            self.__playerPos__.y = tile_map.height * TILE_LENGTH - self.__playerPos__.y
+        else:
+            self.__playerPos__ = player_pos
+            self.__playerPos__.y *= -1
         self.__tileMap__ = tile_map
         self.__playerData__ = data
         self.__playerSpeedRemain__ = speed_remain
@@ -146,6 +151,7 @@ class DefaultFightScene(FightScene):
 
         if teleport_pos.x <= 0:
             teleport_pos.x = self.__tileMap__.width * TILE_LENGTH + teleport_pos.x
+            self.__player__.image.flip = True
         if teleport_pos.y <= 0:
             teleport_pos.y = self.__tileMap__.height * TILE_LENGTH + teleport_pos.y
 
@@ -161,14 +167,23 @@ class DefaultFightScene(FightScene):
         super().update(game_args)
         self.__timeElapsed__ = game_args.elapsedSec
         self.timer += game_args.elapsedSec
+
         if self.__player__ is None:
             return
+
+        if not self.__player__.__dead__:
+            self.__overlay_pos__ = self.__camera__.centre - vec2(200, 0) + vec2(
+                Math.sin(self.timer * 0.54) * 47,
+                Math.sin(self.timer * 0.42 + 0.7) * 26 + 26
+            )
+
         speed = vec2(self.player.__lastSpeedX__, self.player.__ySpeed__)
+        map_h = self.tileMap.height * TILE_LENGTH
         if self.__player__.areaRect.x + 32 > self.tileMap.width * TILE_LENGTH:
             pos = self.tileMap.worldPos
             WorldManager.change_map(
                 int(pos.x + 1), int(pos.y),
-                vec2(24, self.player.centre.y), speed, False, self.player.data
+                vec2(24, map_h - self.player.centre.y), speed, False, self.player.data
             )
         elif self.player.areaRect.x < 0:
             pos = self.tileMap.worldPos
@@ -176,7 +191,23 @@ class DefaultFightScene(FightScene):
                 return
             WorldManager.change_map(
                 int(pos.x - 1), int(pos.y),
-                vec2(-24, self.player.centre.y), speed, False, self.player.data
+                vec2(-24, map_h - self.player.centre.y), speed, False, self.player.data
+            )
+        elif self.player.areaRect.y < -16:
+            pos = self.tileMap.worldPos
+            if not WorldManager.exist_map(pos.x, pos.y + 1):
+                return
+            WorldManager.change_map(
+                int(pos.x), int(pos.y + 1),
+                vec2(self.player.centre.x, 32), vec2(speed.x, speed.y / 2 - self.player.jump_speed / 2), False, self.player.data
+            )
+        elif self.player.areaRect.bottom > self.tileMap.height * TILE_LENGTH + 31:
+            pos = self.tileMap.worldPos
+            if not WorldManager.exist_map(pos.x, pos.y - 1):
+                return
+            WorldManager.change_map(
+                int(pos.x), int(pos.y - 1),
+                vec2(self.player.centre.x, -16), speed, False, self.player.data
             )
 
     def draw(self, surface_manager: SurfaceManager):
@@ -212,7 +243,7 @@ class DefaultFightScene(FightScene):
             dst.set_target_self()
 
             EffectLib.motion_blur.apply()
-            scale = Math.clamp(self.__timeElapsed__ * 200, 0.01, 1.0)
+            scale = Math.clamp(self.__timeElapsed__ * 167, 0.01, 1.0)
             EffectLib.motion_blur.set_arg('scale', scale)
             EffectLib.motion_blur.set_arg('sampler', surface_manager.screen)
             EffectLib.motion_blur.set_arg('sampler_old', surface_manager.buffers[7])
@@ -240,10 +271,7 @@ class DefaultFightScene(FightScene):
             EffectLib.overlay.set_arg('sampler', surface_manager.screen)
             # EffectLib.overlay.set_arg('iWarn', 0.2 + Math.sin(self.timer) * 0.2)
             EffectLib.overlay.set_arg('iTime', self.timer)
-            EffectLib.overlay.set_arg('iCamPos', (self.__camera__.centre - vec2(200, 0)) * 1 + vec2(
-                Math.sin(self.timer * 0.54) * 47,
-                Math.sin(self.timer * 0.42 + 0.7) * 26 + 26
-            ))
+            EffectLib.overlay.set_arg('iCamPos', self.__overlay_pos__)
             EffectLib.overlay.set_arg('sampler_overlay', self.tileMap.overlay_image)
             EffectLib.overlay.set_arg('screen_size', sz)
 

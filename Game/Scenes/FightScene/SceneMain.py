@@ -8,46 +8,7 @@ from Game.Characters.Humans.Player import Player, PlayerData
 from Game.Characters.Movable import DeathAnimation
 from Game.Map.Framework.TileMap import *
 from Game.Scenes.TileMapScene import *
-
-
-class UIPainter(Entity):
-    black_canvas: RenderTarget
-
-    def __init__(self):
-        super().__init__()
-        self.surfaceName = 'bg'
-        self.black_canvas = RenderTarget(GameState.__gsRenderOptions__.screenSize.x, 72)
-        self.old_hp = self.old_cooldown = 0
-        self.old_cooldown = -1
-
-    old_hp: float
-    old_ammunition: int
-    old_cooldown: float
-
-    data: PlayerData
-
-    def update(self, args: GameArgs):
-        self.data = get_player_data()
-
-        if self.data.hp != self.old_hp or self.old_cooldown != self.data.fire_cooldown or self.old_ammunition != self.data.fire_cooldown:
-            self.old_hp = self.data.hp
-            self.old_ammunition = self.data.ammunition
-            self.old_cooldown = self.data.fire_cooldown
-
-            self.black_canvas.clear(vec4(0.6, 0.6, 0.6, 0.97))
-
-            glColor3f(0.2, 0.160, 0.2)
-            glLoadIdentity()
-            glLineWidth(5)
-            glBegin(GL_LINES)
-            glVertex2f(-1, -0.768)
-            glVertex2f(1, -0.768)
-            glEnd()
-
-    def blit(self, sur: RenderTarget, y_limit: float = 0.0):
-        sur.blit(self.black_canvas, vec2(0, y_limit),
-                 FRect(0, min(y_limit, 72.0), self.black_canvas.get_width(),
-                       Math.clamp(72.0 - y_limit, 0, 72)))
+from Game.Scenes.FightScene.UIPaint import *
 
 
 class FightCameraObj(Entity):
@@ -180,6 +141,7 @@ class FightScene(TileMapScene):
         self.instance_create(Shaker(self.__camera__, shake_dir))
         self.__camera__.dispose()
         self.__player__.dispose()
+        self.ui_painter.dead()
         self.__on_kill__ = True
         self.instance_create(DelayedAction(0, Action(self.__move_player__)))
         self.__player__.image.imageSource = self.player.__image_set__.imageDict['Punk_death']
@@ -189,6 +151,9 @@ class FightScene(TileMapScene):
     def create_player(self, pos: vec2 = (24, 0), speed: vec2 = vec2(0, 0), data: PlayerData = PlayerData()):
         self.__player__ = Player(pos, speed, data)
         instance_create(self.__player__)
+        wp = self.tileMap.__worldPos__
+        if WorldData.exist_map(int(wp.x), int(wp.y - 1)):
+            self.__player__.dropDead = False
         self.__a_camera__ = FightCameraObj(self.__player__, self.tileMap)
         self.__camera__ = self.__a_camera__
 

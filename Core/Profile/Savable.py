@@ -19,6 +19,8 @@ class Savable(Generic[T]):
 
     @property
     def value(self) -> T:
+        if self.__val__ is None:
+            self.__val__ = ProfileIO.get(self.path_with_obj)
         return self.__val__
 
     @value.setter

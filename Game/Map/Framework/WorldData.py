@@ -1,8 +1,10 @@
-__map_array__: dict = dict()
-__world_difficulty__: int = 0
-__world_difficulty_adjust__: float = 0.0
-
 from Core.Entity import Entity
+from Core.Profile.Savable import Savable
+
+
+__map_array__: dict = dict()
+__world_difficulty__ = Savable[int]('global\\mode.diff.meta')
+__world_difficulty_adjust__ = Savable[float]('global\\mode.diff.dyna')
 
 
 class WorldData:
@@ -26,8 +28,8 @@ class WorldData:
 
     @staticmethod
     def get_difficulty():
-        return __world_difficulty__
+        return __world_difficulty__.value
 
     @staticmethod
     def get_difficulty_adjust():
-        return __world_difficulty_adjust__
+        return __world_difficulty_adjust__.value

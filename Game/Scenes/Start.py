@@ -1,4 +1,4 @@
-import Game.Map.Begin.TestMap
+import Game.Map.Begin.MP_n1_n1
 import Resources.ResourceLib
 from Resources import ResourceLib
 from Resources.ResourceLib import *
@@ -107,7 +107,9 @@ class Start(Scene):
     def update(self, game_args: GameArgs):
         super().update(game_args)
         self.time_tot += game_args.elapsedSec
-        self.centre_x = Math.sin_deg(self.time_tot * 25.0) * 428.0
+
+        if not self.on_start:
+            self.centre_x = Math.sin_deg(self.time_tot * 25.0) * 428.0
 
         if GameState.key_on_press(ki.confirm) and self.time_tot >= 1.6 and not self.on_start:
             self.on_start = True

@@ -82,10 +82,16 @@ class ColorV4:
     GRAY = Vector4(0.25, 0.25, 0.25)
     PURPLE = Vector4(1.0, 0.0, 1.0)
     YELLOW = Vector4(1.0, 1.0, 0.0)
+    ORANGE = Vector4(1.0, 0.5, 0.0)
+    BROWN = Vector4(0.5, 0.2, 0.05)
     AQUA = Vector4(0.0, 1.0, 1.0)
 
 
 class Math:
+    @staticmethod
+    def lerp(x, y, scale):
+        return x * (1 - scale) + y * scale
+
     @staticmethod
     def sin(val: float) -> float:
         return math.sin(val)

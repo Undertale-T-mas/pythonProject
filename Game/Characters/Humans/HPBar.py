@@ -11,6 +11,7 @@ class HPBar(GameObject):
     __scene__: TileMapScene
     __hp__: float
     __player__: MovableEntity
+    __difficulty__: int
 
     @property
     def hp_max(self):
@@ -20,6 +21,7 @@ class HPBar(GameObject):
         if not isinstance(GameState.__gsScene__, TileMapScene):
             raise Exception()
         self.__scene__ = GameState.__gsScene__
+        self.__difficulty__ = self.__scene__.scene_difficulty
         self.__player__ = player
         self.recover()
 

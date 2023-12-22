@@ -15,7 +15,8 @@ class TileInfo:
     onUpdate: ArgAction | None
     onCreate: ArgAction | None
     fraction: float
-    collidable: bool = True
+    collidable: bool
+    crossable: bool
     __img__: ImageSet | None
 
     @property
@@ -51,7 +52,7 @@ class TileInfo:
 
         return self.__img__
 
-    def __init__(self, path: str, size: FRect, _id: int, collidable: bool = True, on_create: ArgAction = None, on_update: ArgAction = None, fraction: float = 0.5, scale: float | None = 1.5):
+    def __init__(self, path: str, size: FRect, _id: int, collidable: bool = True, crossable: bool = False, on_create: ArgAction = None, on_update: ArgAction = None, fraction: float = 0.5, scale: float | None = 1.5):
         self.imgPath = path
         self.bound = CollideRect()
         self.bound.area = FRect(TILE_LENGTH * size.x, TILE_LENGTH * size.y, TILE_LENGTH * size.width, TILE_LENGTH * size.height)
@@ -61,6 +62,7 @@ class TileInfo:
         self.uuid = _id
         self.__img__ = None
         self.fraction = fraction
+        self.crossable = crossable
         self.imgScale = scale
         self.collidable = collidable
         self.onUpdate = on_update
@@ -99,6 +101,7 @@ class TileLibrary(Enum):
     iron_tbr = TileInfo('Factory\\IronTBR.png', size=FRect(0, 0, 1, 1), _id=29)
     iron_bl = TileInfo('Factory\\IronBL.png', size=FRect(0, 0, 1, 1), _id=30)
     iron_br = TileInfo('Factory\\IronBR.png', size=FRect(0, 0, 1, 1), _id=31)
+    rail = TileInfo('Factory\\Rail.png', size=FRect(0, 0, 1, 0.4), _id=32, crossable=True)
 
     warn_ttl = TileInfo('Factory\\WarnTTL.png', size=FRect(0, 0, 1, 1), _id=36)
     warn_ttr = TileInfo('Factory\\WarnTTR.png', size=FRect(0, 0, 1, 1), _id=37)
@@ -117,7 +120,8 @@ class TileLibrary(Enum):
 
         if 1 <= door.image.indexX < 6:
             door.__extra__ += args.elapsedSec
-            door.__collidable__ = False
+            if door.image.indexX >= 4:
+                door.__collidable__ = False
             if door.__extra__ >= 0.06:
                 door.__extra__ -= 0.06
                 door.image.indexX += 1
@@ -163,6 +167,10 @@ class Tile(Entity, Collidable):
         return self.__collidable__
 
     @property
+    def crossable(self):
+        return self.info.crossable
+
+    @property
     def fraction(self):
         return self.info.fraction
 
@@ -196,8 +204,8 @@ class Tile(Entity, Collidable):
             self.physicArea = s
             self.__areaRect__ = s.area
             self.centre = vec2(
-                self.locX * TILE_LENGTH + (self.info.bound.area.x + self.info.bound.area.width) / 2,
-                self.locY * TILE_LENGTH + (self.info.bound.area.y + self.info.bound.area.height) / 2
+                self.locX * TILE_LENGTH + max(48.0, (self.info.bound.area.x + self.info.bound.area.width)) / 2,
+                self.locY * TILE_LENGTH + max(48.0, (self.info.bound.area.y + self.info.bound.area.height)) / 2
             )
 
         if self.info.onUpdate is not None:
@@ -206,3 +214,6 @@ class Tile(Entity, Collidable):
     def draw(self, render_args: RenderArgs):
         if self.image is not None:
             self.image.draw_self(render_args, self.centre + vec2(0, 48))
+
+    def set_back(self):
+        self.image.color = cv4.GRAY

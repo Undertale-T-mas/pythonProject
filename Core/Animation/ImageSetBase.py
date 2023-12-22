@@ -46,6 +46,16 @@ class ImageSetBase:
         self.__imageSource__ = surf
         self.__imageUpdated__ = True
 
+    @property
+    def color(self):
+        return self.__col__
+
+    @color.setter
+    def color(self, val: vec4):
+        self.__col__ = val
+
+    __col__: vec4
+
     indexX: int
     indexY: int
     __scale__: vec2
@@ -100,6 +110,7 @@ class ImageSetBase:
     def __init__(self):
         self.indexX = 0
         self.indexY = 0
+        self.__col__ = vec4(1, 1, 1, 1)
         self.scale = 1.0
         self.__flip__ = False
         self.__alpha__ = 1.0
@@ -111,8 +122,8 @@ class ImageSetBase:
 
     def __get_color__(self):
         if self.__alpha__ >= 0.999999:
-            return cv4.WHITE
-        return vec4(1, 1, 1, self.__alpha__)
+            return self.__col__
+        return vec4(self.__col__.x, self.__col__.y, self.__col__.z, self.__alpha__ * self.__col__.w)
 
     def draw_self(self, args: RenderArgs, centre: vec2):
         a = self.anchor.get_anchor_pos()

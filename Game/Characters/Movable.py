@@ -74,6 +74,7 @@ class MovableEntity(Entity, Collidable):
         self.__onGround__ = False
         self.__groundTile__ = None
         self.__jumpIntention__ = False
+        self.__dropDead__ = True
         self.__fractionLock__ = False
 
     def __start__(self):
@@ -86,6 +87,16 @@ class MovableEntity(Entity, Collidable):
 
         self.__scene__ = s
         self.__tileMap__ = s.tileMap
+
+    __dropDead__: bool
+
+    @property
+    def dropDead(self):
+        return self.__dropDead__
+
+    @dropDead.setter
+    def dropDead(self, val: bool):
+        self.__dropDead__ = val
 
     def died(self):
         self.dispose()
@@ -209,7 +220,7 @@ class MovableEntity(Entity, Collidable):
 
                 if r.top < self.physicArea.area.bottom + 0.1:
                     last_y = self.physicArea.area.bottom - self.__ySpeed__
-                    if last_y - r.top > TILE_LENGTH / 3.2:
+                    if last_y - r.top > min(TILE_LENGTH, r.height) / 4 + 14:
                         self.__onGround__ = False
                         return False
                     if not self.__onGround__:
@@ -223,7 +234,8 @@ class MovableEntity(Entity, Collidable):
 
         if self.physicArea.area.top > max(self.__tileMap__.height, 12) * TILE_LENGTH:
             self.__inVoid__ = True
-            self.died()
+            if self.__dropDead__:
+                self.died()
 
         return self.__onGround__
 
@@ -298,11 +310,11 @@ class MovableEntity(Entity, Collidable):
             if self.__ySpeed__ <= 0.0:
                 t_del = -2
                 f_mode = True
-            tdec = int((self.physicArea.area.top + t_del) // TILE_LENGTH)
+            tdec = max(0, int((self.physicArea.area.top + t_del) // TILE_LENGTH))
             ldec = self.physicArea.area.i_left // TILE_LENGTH
             rdec = self.physicArea.area.i_right // TILE_LENGTH
 
-            if bdec >= 0 and tdec >= 0 and ldec >= 0 and rdec >= 0:
+            if bdec >= 0 and ldec >= 0 and rdec >= 0:
                 # check left and right:
                 if abs(move_del.x) > 1e-5 or f_mode:
                     l = self.physicArea.area.left
@@ -310,15 +322,15 @@ class MovableEntity(Entity, Collidable):
                     t = self.physicArea.area.top
                     b = self.physicArea.area.bottom - 2
                     if not self.onGround:
-                        b -= 5
-                    if self.__ySpeed__ < -0.00001:
-                        b -= 5
+                        b -= 17
 
                     dx = 0
 
                     for ydec in range(tdec, bdec + 1):
                         tile = self.__tileMap__.get_tile(ldec, ydec)
                         if tile.uuid == 0:
+                            continue
+                        if tile.crossable:
                             continue
                         if not tile.collidable:
                             continue
@@ -338,6 +350,8 @@ class MovableEntity(Entity, Collidable):
                     for ydec in range(tdec, bdec + 1):
                         tile = self.__tileMap__.get_tile(rdec, ydec)
                         if tile.uuid == 0:
+                            continue
+                        if tile.crossable:
                             continue
                         if not tile.collidable:
                             continue
@@ -364,6 +378,8 @@ class MovableEntity(Entity, Collidable):
                     for i in range(ldec, rdec + 1):
                         tile = self.__tileMap__.get_tile(i, tdec)
                         if tile.uuid == 0:
+                            continue
+                        if tile.crossable:
                             continue
                         if not tile.collidable:
                             continue

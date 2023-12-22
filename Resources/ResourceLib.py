@@ -11,6 +11,7 @@ class Fonts:
     evil_empire: GLFont = None
     kwark: GLFont = None
     glitch_goblin: GLFont = None
+    pix0: GLFont = None
 
     @staticmethod
     def init_font(path, size) -> GLFont:
@@ -22,6 +23,7 @@ class Fonts:
     def initialize():
         Fonts.done_direct = Fonts.init_font('DoneDirect.otf', 40)
         Fonts.glitch_goblin = Fonts.init_font('GlitchGoblin.ttf', 16)
+        Fonts.pix0 = Fonts.init_font('Pix0.ttf', 32)
         Fonts.evil_empire = Fonts.init_font('EvilEmpire.ttf', 72)
         Fonts.kwark = Fonts.init_font('Kwark.ttf', 72)
 

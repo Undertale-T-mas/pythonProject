@@ -10,6 +10,8 @@ class TileMap(Entity):
     overlay_image: Texture | None
 
     __worldPos__: vec2
+    __backs__: Set[Tile]
+    __backupd__: Set[Tile]
 
     @property
     def worldPos(self):
@@ -48,9 +50,11 @@ class TileMap(Entity):
         self.overlay_image = None
         self.__objects__ = []
         self.surfaceName = 'bg'
+        self.__backupd__ = set()
         self.__initialized__ = False
         self.actived = []
         self.updatable = []
+        self.__backs__ = set()
         self.__width__ = 0
         self.tiles = []
         self.__backGrounds__ = []
@@ -79,6 +83,17 @@ class TileMap(Entity):
                 for i in range(x - self.__width__ + 1):
                     self.tiles[y].append(Tile(TileLibrary.empty))
             self.__width__ = x
+
+    def set_tile_back(self, x: int, y: int, tile: Tile):
+        tile.locX = x
+        tile.locY = y
+        tile.set_back()
+        self.width = max(self.width, x + 1)
+        self.height = max(self.height, y + 1)
+        self.tileChanged = True
+        if tile.info.onUpdate is not None:
+            self.__backupd__.add(tile)
+        self.__backs__.add(tile)
 
     def set_tile(self, x: int, y: int, tile: Tile):
         self.__extend__(x, y)
@@ -112,11 +127,17 @@ class TileMap(Entity):
                 for j in self.actived[y]:
                     i[j].update(args)
 
+        for obj in self.__backupd__:
+            obj.update(args)
+
         for obj in self.__backGrounds__:
             obj.update(args)
 
     def draw(self, args: RenderArgs):
         for obj in self.__backGrounds__:
+            obj.draw(args)
+
+        for obj in self.__backs__:
             obj.draw(args)
 
         if args.quality <= 111:
