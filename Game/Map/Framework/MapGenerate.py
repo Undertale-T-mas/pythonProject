@@ -1,6 +1,6 @@
 from enum import Enum
 
-from Game.Map.Framework.MapObject import MapObject, ObjectInfo, ObjectLibrary
+from Game.Map.Framework.MapObject import MapObject, ObjectInfo, ObjectLibrary, ObjectGenerate
 from Game.Map.Framework.TileMap import TileMap
 from Game.Map.Framework.Tiles import *
 
@@ -195,10 +195,12 @@ class AutoTileMap(TileMap):
     __bl__: bool
     __br__: bool
 
+    _obj_id: int
     __tile_token__: Set[str]
 
     def __init__(self):
         super().__init__()
+        self._obj_id = 0
         self.__tile_token__ = set()
         self.all_data = dict()
 
@@ -208,6 +210,9 @@ class AutoTileMap(TileMap):
 
     def ins_generator(self, token: str, func):
         self.all_data[token] = func
+
+    def ins_save(self, token: str):
+        self.ins_savable_obj(token, ArgAction(ObjectGenerate.make_crystal))
 
     def ins_tile(self, token: str, tile: TileInfo | TileLibrary, linkable: bool = True, back: bool = False):
         if isinstance(tile, TileLibrary):
@@ -229,6 +234,14 @@ class AutoTileMap(TileMap):
 
         def generator(x: int, y: int):
             self.add_object(enemy(x, y))
+
+        self.ins_generator(token, generator)
+
+    def ins_savable_obj(self, token: str, generate: ArgAction):
+        def generator(x, y):
+            self._obj_id += 1
+            info = generate.act(self.__worldPos__, self._obj_id)
+            self.add_object(MapObject(info, x, y))
 
         self.ins_generator(token, generator)
 

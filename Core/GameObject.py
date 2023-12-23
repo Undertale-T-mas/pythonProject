@@ -1,3 +1,5 @@
+from typing import Any
+
 from Core.GameArgs import GameArgs
 
 
@@ -17,8 +19,8 @@ class ArgAction:
     def __init__(self, fun):
         self.__fun__ = fun
 
-    def act(self, *args):
-        self.__fun__(*args)
+    def act(self, *args) -> Any:
+        return self.__fun__(*args)
 
 
 class GameObject:

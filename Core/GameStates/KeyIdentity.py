@@ -4,7 +4,7 @@ import pygame
 
 
 class KeyIdentity(Enum):
-    confirm = [pygame.K_z, pygame.K_KP_ENTER, pygame.KSCAN_KP_ENTER]
+    confirm = [pygame.K_z, pygame.K_KP_ENTER, pygame.KSCAN_KP_ENTER, pygame.K_RETURN]
     shoot = [pygame.K_SPACE, pygame.K_j]
     recharge = [pygame.K_r]
 

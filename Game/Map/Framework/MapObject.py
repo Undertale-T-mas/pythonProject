@@ -1,5 +1,7 @@
 import core
 from Core.GameStates import GameState
+from Game.Map.Objects.Crystal import *
+from Game.Map.Objects.ObjectBase import *
 from core import *
 
 from Game.Components.Readable import *
@@ -93,6 +95,9 @@ class ObjectGenerate:
         def set_text(self, pos: vec2, text: str):
             self.ins = PanelText(text, pos)
 
+    class ObjectTempData:
+        ins: MapObjectFuncBase
+
     @staticmethod
     def make_sign(info: str):
         u = ObjectGenerate.PanelData()
@@ -112,3 +117,19 @@ class ObjectGenerate:
             instance_prepare(u.ins)
 
         return ObjectInfo('Sign.png', on_create=ArgAction(sign_create), on_update=EntityEvent(sign_test))
+
+    @staticmethod
+    def make_crystal(map_world_pos: vec2, uuid: int):
+        u = ObjectGenerate.ObjectTempData()
+        u.ins = SaveCrystal(map_world_pos, uuid)
+
+        def on_update(obj1: Entity):
+            u.ins.on_update(obj1)
+
+        def on_create(x: int, y: int):
+            u.ins.on_create(x, y)
+            instance_prepare(u.ins)
+
+        return ObjectInfo('SaveCrystal.png', on_create=ArgAction(on_create), on_update=EntityEvent(on_update),
+                          img_cnt=8, unit_size=vec2(32, 32))
+
