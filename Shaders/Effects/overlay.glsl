@@ -1,9 +1,9 @@
 #version 330 core
 
 in vec2 fragTexCoord;
-uniform sampler2D sampler;
 uniform sampler2D sampler_overlay;
 uniform vec2 screen_size;
+uniform sampler2D sampler;
 
 uniform float iTime;
 

@@ -20,7 +20,6 @@ class TileMapScene(Scene):
         self.tileMap = tile_map
         self.__difficulty__ = WorldData.get_difficulty()
         self.__diffDynamic__ = WorldData.get_difficulty_adjust()
-        ProfileIO.save()
         self.instance_create(self.tileMap)
 
     def update(self, game_args: GameArgs):

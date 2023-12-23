@@ -204,6 +204,8 @@ class MovableEntity(Entity, Collidable):
             order.append(i)
 
         for xdec in order:
+            if xdec < 0:
+                continue
             tile = self.__tileMap__.get_tile(xdec, bdec)
             if tile.uuid != 0:
                 if not isinstance(tile.physicArea, CollideRect):

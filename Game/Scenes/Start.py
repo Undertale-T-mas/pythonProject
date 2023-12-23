@@ -22,7 +22,9 @@ class Start(Scene):
     text_1_pos: vec2
     text_start_pos: vec2
     back_alpha: float
+    start_tot: float
 
+    shader_time: float
     time_tot: float
 
     back_scale: List[float] = [0.0, 0.005, 0.015, 0.035, 0.067]
@@ -33,7 +35,8 @@ class Start(Scene):
 
     def start(self):
         self.back_alpha = 0.0
-        self.time_tot = 0
+        self.time_tot = -0.000001
+        self.shader_time = 0.0
 
         def p():
             play_music('Darkness Beyond.mp3', 1.0, 0.5)
@@ -47,6 +50,7 @@ class Start(Scene):
         text_1.set_colorkey([0, 0, 0])
         text_2.set_colorkey([0, 0, 0])
 
+        self.start_tot = 0.0
         self.text_1_pos = vec2(-650, 88)
 
         text_start = Fonts.evil_empire.base_font.render(
@@ -103,13 +107,17 @@ class Start(Scene):
     very_high_quality: bool
     on_start: bool
     start_cooldown: float
+    __timeElapsed__: float
+
+    grid_sz = 0.39
 
     def update(self, game_args: GameArgs):
         super().update(game_args)
+        self.__timeElapsed__ = game_args.elapsedSec
         self.time_tot += game_args.elapsedSec
 
         if not self.on_start:
-            self.centre_x = Math.sin_deg(self.time_tot * 25.0) * 428.0
+            self.centre_x = Math.sin_deg(self.time_tot * 55.0) * 428.0
 
         if GameState.key_on_press(ki.confirm) and self.time_tot >= 1.6 and not self.on_start:
             self.on_start = True
@@ -120,13 +128,16 @@ class Start(Scene):
 
         if self.on_start:
             self.start_cooldown -= game_args.elapsedSec
+            self.start_tot = Math.lerp(self.start_tot, 1.0, self.__timeElapsed__ * 3.5)
             if self.start_cooldown <= -0.35:
                 WorldManager.respawn()
+
+        self.shader_time += self.__timeElapsed__ * (1 - self.start_tot)
 
     def draw(self, surface_manager: SurfaceManager):
         super().draw(surface_manager)
 
-        surface_manager.buffers[0].clear(cv4.TRANSPARENT)
+        surface_manager.screen.clear(cv4.TRANSPARENT)
 
         if self.very_high_quality:
             surface_manager.buffers[1].clear(cv4.TRANSPARENT)
@@ -136,16 +147,50 @@ class Start(Scene):
                     RenderData(vec2(self.centre_x * self.back_scale[i] * 1.0 - 40, 0), color=cv4.WHITE * self.back_alpha)
                 )
 
-        surface_manager.buffers[0].blit(self.text_1, self.text_1_pos + vec2(self.centre_x * 0.05, 0))
-        surface_manager.buffers[0].blit(self.text_2, self.text_1_pos + vec2(322 + self.centre_x * 0.05, 90))
+        src = surface_manager.buffers[1]
+        dst = surface_manager.buffers[6]
+        sz = surface_manager.__renderOptions__.screenSize
+        # do motion blur:
+        if GameState.__gsRenderOptions__.motionBlurEnabled:
+            GamingGL.default_transform()
+            dst.set_target_self()
+
+            EffectLib.grid.apply()
+            EffectLib.grid.set_arg('sampler', src)
+            EffectLib.grid.set_arg('iTime', self.shader_time + 0.000001)
+            EffectLib.grid.set_arg(
+                'iBlendColor',
+                Math.lerp(
+                    Math.lerp(Vector3(0.7, 0.53, 0.9), Vector3(0.79, 0.45, 0.87), sin(self.time_tot) * 0.5 + 0.5),
+                    Vector3(1, 1, 1),
+                    self.start_tot
+                )
+            )
+            EffectLib.grid.set_arg('iDotSize', 0.39)
+            EffectLib.grid.set_arg('screen_size', sz)
+
+            glBegin(GL_QUADS)
+
+            data = [vec4(0, 0, 0, 0), vec4(sz.x, 0, 1, 0),
+                    vec4(sz.x, sz.y, 1, 1), vec4(0, sz.y, 0, 1)]
+            for i in range(4):
+                glVertex4f(data[i].x, data[i].y, data[i].z, data[i].w)
+                glTexCoord2f(data[i].z, data[i].w)
+
+            glEnd()
+
+            EffectLib.grid.reset()
+            src, dst = dst, src
+
+        src.copy_to(surface_manager.screen)
+        surface_manager.screen.blit(surface_manager.buffers[0], vec2(0, 0))
+
+        surface_manager.screen.blit(self.text_1, self.text_1_pos + vec2(self.centre_x * 0.05, 0))
+        surface_manager.screen.blit(self.text_2, self.text_1_pos + vec2(322 + self.centre_x * 0.05, 90))
         if self.time_tot >= 1.6:
             if self.on_start:
                 if self.start_cooldown < 0 or self.start_cooldown % 0.2 > 0.11:
-                    surface_manager.buffers[0].blit(self.text_start, self.text_start_pos)
+                    surface_manager.screen.blit(self.text_start, self.text_start_pos)
             elif self.time_tot % 0.8 < 0.42:
-                surface_manager.buffers[0].blit(self.text_start, self.text_start_pos)
-
-        surface_manager.screen.blit(surface_manager.buffers[1], vec2(0, 0))
-        surface_manager.screen.blit(surface_manager.buffers[0], vec2(0, 0))
-
+                surface_manager.screen.blit(self.text_start, self.text_start_pos)
 

@@ -7,6 +7,8 @@ from numpy import uintc
 from pygame import Vector2 as vec2, Surface, Color
 import numpy as np
 from ctypes import *
+
+from Core.GamingGL import GLShader
 from Core.GamingGL.GLShader import *
 from Core.MathUtil import Vector4 as vec4
 from Core.MathUtil import ColorV4 as cv4
@@ -25,6 +27,8 @@ class GamingGL:
     @staticmethod
     def init(viewport_default: vec2):
         global __glVAO__, __glVBO__
+
+        GLShader.__glsScreenSize__ = viewport_default
 
         GamingGL.__viewport__ = viewport_default
         DefaultShaderLib.init()

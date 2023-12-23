@@ -44,6 +44,15 @@ if __diffDynamic__.value is None:
 __worldCurRoom__: TileMap
 
 
+def __wmSave__(player_pos: vec2):
+
+    __worldRoomX__.value = int(__worldCurRoom__.worldPos.x)
+    __worldRoomY__.value = int(__worldCurRoom__.worldPos.y)
+    __worldPlayerPosX__.value = player_pos.x
+    __worldPlayerPosY__.value = player_pos.y
+    ProfileIO.save()
+
+
 def get_all_subclasses(folder_path, base_class):
     derived_classes = []
 
@@ -199,7 +208,7 @@ class DefaultFightScene(FightScene):
                 return
             WorldManager.change_map(
                 int(pos.x), int(pos.y + 1),
-                vec2(self.player.centre.x, 32), vec2(speed.x, speed.y / 2 - self.player.jump_speed / 2), False, self.player.data
+                vec2(self.player.centre.x, 32), vec2(speed.x, speed.y / 1.7 - self.player.jump_speed / 1.7), False, self.player.data
             )
         elif self.player.areaRect.bottom > self.tileMap.height * TILE_LENGTH + 31:
             pos = self.tileMap.worldPos
@@ -209,6 +218,9 @@ class DefaultFightScene(FightScene):
                 int(pos.x), int(pos.y - 1),
                 vec2(self.player.centre.x, -16), speed, False, self.player.data
             )
+
+    def on_save(self):
+        __wmSave__(vec2(self.player.centre.x, self.tileMap.height * TILE_LENGTH - self.player.centre.y))
 
     def draw(self, surface_manager: SurfaceManager):
         if not self.__fade_in__:
@@ -303,11 +315,7 @@ class WorldManager:
 
     @staticmethod
     def save(player_pos: vec2):
-        __worldRoomX__.value = int(__worldCurRoom__.worldPos.x)
-        __worldRoomY__.value = int(__worldCurRoom__.worldPos.y)
-        __worldPlayerPosX__.value = player_pos.x
-        __worldPlayerPosY__.value = player_pos.y
-        ProfileIO.save()
+        __wmSave__(player_pos)
 
     @staticmethod
     def get_map(x: int, y: int) -> TileMap:

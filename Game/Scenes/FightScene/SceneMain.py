@@ -168,6 +168,9 @@ class FightScene(TileMapScene):
                 return
             self.__camera__.update(game_args)
 
+    def on_save(self):
+        raise NotImplementedError()
+
     def instance_create(self, obj: GameObject):
         super().instance_create(obj)
         if isinstance(obj, Collidable):

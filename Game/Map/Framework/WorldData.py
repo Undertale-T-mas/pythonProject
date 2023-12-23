@@ -6,6 +6,11 @@ __map_array__: dict = dict()
 __world_difficulty__ = Savable[int]('global\\mode.diff.meta')
 __world_difficulty_adjust__ = Savable[float]('global\\mode.diff.dyna')
 
+__worldPlayerPosX__ = Savable[float]('global\\loc.ppos.x')
+__worldPlayerPosY__ = Savable[float]('global\\loc.ppos.y')
+__worldRoomX__ = Savable[int]('global\\loc.room.x')
+__worldRoomY__ = Savable[int]('global\\loc.room.y')
+
 
 class WorldData:
 

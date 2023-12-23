@@ -7,13 +7,14 @@ from OpenGL.GL import shaders
 from OpenGL.GL.shaders import compileShader
 from OpenGL.GLUT import *
 from numpy import uintc
-from pygame import Vector2 as vec2, Surface, Color
+from pygame import Vector2 as vec2, Surface, Color, Vector3
 from Core.MathUtil import Vector4 as vec4
 from Core.MathUtil import ColorV4 as cv4
 from Core.MathUtil import FRect
 
 
 __vertexDefault__: Any = None
+__glsScreenSize__: vec2 | None = None
 
 
 def __vertexCompile__():
@@ -31,10 +32,21 @@ class ITexture:
 
 class Shader:
 
+    def copy(self):
+        res = type(self)()
+        res.shader_uid = self.shader_uid
+        res.program_uid = self.program_uid
+        res.__uniform_loc__ = self.__uniform_loc__
+        return res
+
     __tex_id__: int
     shader_uid: Any
     program_uid: Any
     __uniform_loc__: Dict[str, Any]
+
+    @property
+    def screen_size(self):
+        return __glsScreenSize__
 
     @staticmethod
     def print_log(shader):
@@ -46,7 +58,10 @@ class Shader:
             glGetShaderInfoLog(shader, length, byref(length), log)
             print(sys.stderr, log.value)
 
-    def __init__(self, source_path: str):
+    def __init__(self, source_path: str | None = None):
+        if source_path is None:
+            return
+
         global __vertexDefault__
         if __vertexDefault__ is None:
             __vertexCompile__()
@@ -84,6 +99,9 @@ class Shader:
 
         elif isinstance(arg, vec2):
             glUniform2f(uniform_loc, arg.x, arg.y)
+
+        elif isinstance(arg, Vector3):
+            glUniform3f(uniform_loc, arg.x, arg.y, arg.z)
 
         elif isinstance(arg, vec4):
             glUniform4f(uniform_loc, arg.x, arg.y, arg.z, arg.w)
@@ -125,11 +143,13 @@ class Shader:
 class EffectLib:
     motion_blur: Shader
     overlay: Shader
+    grid: Shader
 
     @staticmethod
     def init():
         EffectLib.motion_blur = Shader('Shaders\\Effects\\motion_blur.glsl')
         EffectLib.overlay = Shader('Shaders\\Effects\\overlay.glsl')
+        EffectLib.grid = Shader('Shaders\\Effects\\grid.glsl')
 
 
 class DefaultShaderLib:

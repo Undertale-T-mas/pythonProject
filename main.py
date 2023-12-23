@@ -70,10 +70,10 @@ while running:
     else:
         pygame.display.flip()
 
-    # limits FPS to 125
+    # limits FPS to 144
     # dt is delta time in seconds since last frame, used for frame rate
     # independent physics.
-    dt = min(clock.tick(1000) / 1000, 0.0333) * speed
+    dt = min(clock.tick(144) / 1000, 0.0333) * speed
 
 pygame.quit()
 sys.exit()
