@@ -11,16 +11,22 @@ T = TypeVar("T")
 
 class Savable(Generic[T]):
     path_with_obj: str
+    _defaultVal: Any
     __val__: Any = None
+    _unstable: bool
 
-    def __init__(self, path_with_obj):
+    def __init__(self, path_with_obj, default_val: Any = None, not_stable: bool = False):
         self.path_with_obj = path_with_obj
+        self._defaultVal = default_val
         self.__val__ = ProfileIO.get(self.path_with_obj)
+        self._unstable = not_stable
 
     @property
     def value(self) -> T:
-        if self.__val__ is None:
+        if self.__val__ is None or self._unstable:
             self.__val__ = ProfileIO.get(self.path_with_obj)
+            if self.__val__ is None:
+                self.__val__ = self._defaultVal
         return self.__val__
 
     @value.setter

@@ -357,5 +357,6 @@ class WorldManager:
             vec2(0, 0),
             fade_in
         )
+        ProfileIO.restore_old()
         __worldRespawnTime__.value += 1
         ProfileIO.save()

@@ -1,8 +1,10 @@
 import _io
+import copy
 import json
 import os.path
 from typing import *
 
+__valMemOld__: Dict[str, Any] | None = None
 __valMem__: Dict[str, Any] = dict()
 __memFileSeek__: Set[str] = set()
 
@@ -54,12 +56,27 @@ def __memBufferFetchAll__():
 
 def __memPushBuffer__():
     dir_dicts: Dict[str, Dict[str, Any]] = dict()
-    for key in __valMem__:
-        root = key.split('.', 1)[0]
-        if root not in dir_dicts.keys():
-            dir_dicts[root] = dict()
-        dir_dicts[root][key] = __valMem__[key]
+    __fileChanged__: set[str] = set()
+    if __valMemOld__ is None:
+        for key in __valMem__:
+            root = key.split('.', 1)[0]
+            if root not in dir_dicts.keys():
+                dir_dicts[root] = dict()
+                __fileChanged__.add(root)
+            dir_dicts[root][key] = __valMem__[key]
+    else:
+        for key in __valMem__:
+            root = key.split('.', 1)[0]
+
+            if __valMem__[key] != __valMemOld__[key] and root not in __fileChanged__:
+                __fileChanged__.add(root)
+            if root not in dir_dicts.keys():
+                dir_dicts[root] = dict()
+            dir_dicts[root][key] = __valMem__[key]
+
     for d in dir_dicts:
+        if d not in __fileChanged__:
+            continue
         file = open('data\\' + d, 'wb')
         content = ''
         cur_d = dir_dicts[d]
@@ -74,6 +91,11 @@ def __memPushBuffer__():
         file.write(arr)
         file.close()
     print('Game Saved!')
+
+
+def __memStoreBuffer__():
+    global __valMem__, __valMemOld__
+    __valMemOld__ = copy.deepcopy(__valMem__)
 
 
 def __memPathAnalyze__(path: str) -> Tuple[str, str]:
@@ -98,7 +120,18 @@ def __typGetVal__(inp):
         return inp
 
 
+def __restoreOld__():
+    global __valMem__
+    if __valMemOld__ is None:
+        return
+    __valMem__ = copy.deepcopy(__valMemOld__)
+
+
 class ProfileIO:
+    @staticmethod
+    def restore_old():
+        __restoreOld__()
+
     @staticmethod
     def get(path_with_obj: str):
         if path_with_obj not in __valMem__:
@@ -117,6 +150,11 @@ class ProfileIO:
     @staticmethod
     def save():
         __memPushBuffer__()
+        ProfileIO.store()
+
+    @staticmethod
+    def store():
+        __memStoreBuffer__()
 
     @staticmethod
     def load():
