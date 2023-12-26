@@ -101,13 +101,13 @@ class Shaker(GameObject):
         self.fix_p = self.camera.centre
         self.direction = direction
 
-        intensity = 48.0
+        intensity = 144.0
         ease = EasingRunner(0.04, vec2(0, 0), Math.vec2_polar(intensity, direction), EaseType.cubic)
         for i in range(8):
             intensity *= 0.76
-            self.direction += Math.rand(150, 210)
-            ease.to(0.05, Math.vec2_polar(intensity, self.direction), EaseType.cubic)
-        ease.to(0.05, vec2(0, 0), EaseType.cubic)
+            self.direction += Math.rand(166, 194)
+            ease.to(0.045, Math.vec2_polar(intensity, self.direction), EaseType.cubic)
+        ease.to(0.045, vec2(0, 0), EaseType.cubic)
         ease.run(self.set_camera)
 
     def update(self, args: GameArgs):

@@ -1,5 +1,6 @@
 from Core.Profile.Savable import *
 from Game.Map.Framework.Tiles import *
+from Resources.ResourceLib import Sounds
 from core import *
 from Game.Map.Objects.ObjectBase import MapObjectFuncBase
 
@@ -38,12 +39,12 @@ class SaveCrystal(MapObjectFuncBase):
             object_source.dispose()
             img = object_source.image.copy()
             instance_create(ShardAnimation(
-                img, object_source.centre + vec2(0, 48), FRect(0, 0, 1, 0.5),
-                vec2(1.2, -4), 7.5, 1.5, 12.0,  'bg'
+                img, object_source.centre + vec2(0, 48), FRect(0.5, 0, 0.5, 0.5),
+                vec2(2.2, -4), 17.5, 1.5, 12.0,  'bg'
             ))
             instance_create(ShardAnimation(
-                img.copy(), object_source.centre + vec2(0, 48), FRect(0, 0.5, 1, 0.5),
-                vec2(-1.2, 4), 7.5, 1.5, 12.0, 'bg'
+                img.copy(), object_source.centre + vec2(0, 48), FRect(0, 0.5, 0.5, 0.5),
+                vec2(-2.2, 4), 17.5, 1.5, 12.0, 'bg'
             ))
             self.dispose()
             player.gather_save()
@@ -51,13 +52,15 @@ class SaveCrystal(MapObjectFuncBase):
                 Animation(
                     ImageSet(vec2(48, 48), vec2(48, 48), 'Effects\\Crystal\\default.png'),
                     0.06,
-                    object_source.centre,
+                    object_source.centre + vec2(0, 48),
                     scale=2.0,
+                    surf_name='bg'
                 )
             )
             anim_set2 = ImageSet(vec2(48, 48), vec2(48, 48), 'Effects\\Crystal\\default.png')
             anim_set2.alpha = 0.675
             anim_set2.flip = True
+            Sounds.crystal.play()
             instance_create(Animation(anim_set2, 0.07, object_source.centre + vec2(0, 48), scale=2.7, surf_name='bg')) 
             self.image_changed()
             instance_create(StableAction(0.5, action=Action(self.image_changed)))

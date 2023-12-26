@@ -146,6 +146,7 @@ class EffectLib:
     grid: Shader
     seismic: Shader
     rgbSplit: Shader
+    stepSample: Shader
 
     @staticmethod
     def init():
@@ -154,6 +155,7 @@ class EffectLib:
         EffectLib.grid = Shader('Shaders\\Effects\\grid.glsl')
         EffectLib.seismic = Shader('Shaders\\Effects\\seismic.glsl')
         EffectLib.rgbSplit = Shader('Shaders\\Effects\\rgbSplit.glsl')
+        EffectLib.stepSample = Shader('Shaders\\Effects\\step_sample.glsl')
 
 
 class DefaultShaderLib:

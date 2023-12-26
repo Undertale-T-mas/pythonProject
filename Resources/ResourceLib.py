@@ -38,6 +38,7 @@ class Sounds:
     laser: Sound = None
     died: Sound = None
     jump: Sound = None
+    crystal: Sound = None
     playerDamaged: Sound = None
     robotDamaged: Sound = None
     recharge: Sound = None
@@ -46,6 +47,7 @@ class Sounds:
 
     @staticmethod
     def initialize():
+        Sounds.crystal = load_sound('crystal.wav')
         Sounds.recharge = load_sound('recharge.wav')
         Sounds.startGame = load_sound('start.wav')
         Sounds.shoot = load_sound('shoot.wav')
