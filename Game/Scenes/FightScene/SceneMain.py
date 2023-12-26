@@ -101,9 +101,9 @@ class Shaker(GameObject):
         self.fix_p = self.camera.centre
         self.direction = direction
 
-        intensity = 24.0
+        intensity = 48.0
         ease = EasingRunner(0.04, vec2(0, 0), Math.vec2_polar(intensity, direction), EaseType.cubic)
-        for i in range(6):
+        for i in range(8):
             intensity *= 0.76
             self.direction += Math.rand(150, 210)
             ease.to(0.05, Math.vec2_polar(intensity, self.direction), EaseType.cubic)
@@ -120,6 +120,7 @@ class FightScene(TileMapScene):
     __a_camera__: FightCameraObj
     ui_painter: UIPainter
     __on_kill__: bool
+    __died_position__: vec2
 
     @property
     def player(self):
@@ -137,7 +138,11 @@ class FightScene(TileMapScene):
     def __respawn_scene__(self):
         raise Exception()
 
-    def remove_player(self, shake_dir: float):
+    def remove_player(self, shake_dir: float, died_pos: vec2):
+        self.__died_position__ = died_pos
+        y_max = GameState.__gsRenderOptions__.screenSize.y
+        if self.__died_position__.y > y_max:
+            self.__died_position__.y = y_max
         self.instance_create(Shaker(self.__camera__, shake_dir))
         self.__camera__.dispose()
         self.__player__.dispose()

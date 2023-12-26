@@ -318,6 +318,7 @@ class MovableEntity(Entity, Collidable):
 
             if bdec >= 0 and ldec >= 0 and rdec >= 0:
                 # check left and right:
+                x_move = 0
                 if abs(move_del.x) > 1e-5 or f_mode:
                     l = self.physicArea.area.left
                     r = self.physicArea.area.right
@@ -345,6 +346,7 @@ class MovableEntity(Entity, Collidable):
 
                     if dx > 0:
                         move_del.x += dx
+                        x_move += dx
                         self.centre.x += dx
                         self.physicArea.area = self.physicArea.area.move(dx, 0)
                         dx = 0
@@ -367,6 +369,7 @@ class MovableEntity(Entity, Collidable):
                     if dx > 0:
                         move_del.x -= dx
                         self.centre.x -= dx
+                        x_move -= dx
                         self.physicArea.area = self.physicArea.area.move(-dx, 0)
 
                 bdec = self.physicArea.area.i_bottom // TILE_LENGTH
@@ -392,7 +395,14 @@ class MovableEntity(Entity, Collidable):
                         if tile.areaRect.bottom + 0.001 > head_y:
                             move_del.y += tile.areaRect.bottom - head_y
                             if self.__ySpeed__ < 0:
-                                self.__ySpeed__ = 0
+                                self.__ySpeed__ = max(self.__ySpeed__, -5.0)
+                                self.__ySpeed__ += self.__gravity__ * args.elapsedSec * 2.5
+                                if self.__ySpeed__ >= 0:
+                                    self.__ySpeed__ = 0
+                                move_del.x -= x_move
+                                self.centre.x -= x_move
+                                self.physicArea.area = self.physicArea.area.move(-x_move, 0)
+                                x_move = 0
 
         np = old_pos + move_del
         self.centre = np

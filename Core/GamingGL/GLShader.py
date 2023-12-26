@@ -144,12 +144,16 @@ class EffectLib:
     motion_blur: Shader
     overlay: Shader
     grid: Shader
+    seismic: Shader
+    rgbSplit: Shader
 
     @staticmethod
     def init():
         EffectLib.motion_blur = Shader('Shaders\\Effects\\motion_blur.glsl')
         EffectLib.overlay = Shader('Shaders\\Effects\\overlay.glsl')
         EffectLib.grid = Shader('Shaders\\Effects\\grid.glsl')
+        EffectLib.seismic = Shader('Shaders\\Effects\\seismic.glsl')
+        EffectLib.rgbSplit = Shader('Shaders\\Effects\\rgbSplit.glsl')
 
 
 class DefaultShaderLib:

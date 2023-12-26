@@ -68,8 +68,11 @@ def __memPushBuffer__():
         for key in __valMem__:
             root = key.split('.', 1)[0]
 
-            if __valMem__[key] != __valMemOld__[key] and root not in __fileChanged__:
-                __fileChanged__.add(root)
+            if root not in __fileChanged__:
+                if key not in __valMemOld__:
+                    __fileChanged__.add(root)
+                elif __valMem__[key] != __valMemOld__[key]:
+                    __fileChanged__.add(root)
             if root not in dir_dicts.keys():
                 dir_dicts[root] = dict()
             dir_dicts[root][key] = __valMem__[key]
@@ -117,6 +120,10 @@ def __typGetVal__(inp):
     try:
         return float(inp) * sg
     except ValueError:
+        if inp == 'True':
+            return True
+        elif inp == 'False':
+            return False
         return inp
 
 

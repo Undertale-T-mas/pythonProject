@@ -27,12 +27,15 @@ class UIPainter(Entity):
         self.pix = Texture(wsur)
         self.updated = True
         self.bullet_tex = Texture(load_image('Objects\\Icons\\Bullet.png'))
+        self.sc_tex = Texture(load_image('Objects\\Icons\\CrystalBlue.png'), GL_LINEAR)
         self.is_dead = False
         self.recharge_timer = 0.0
         self.alpha = 0.9
+        self.old_scnt = 0
 
     old_hp: float
     old_ammunition: int
+    old_scnt: int
     old_cooldown: float
     pix: Texture
     max_hp: float
@@ -40,6 +43,7 @@ class UIPainter(Entity):
     alpha: float
     recharge_time: float
     bullet_tex: Texture
+    sc_tex: Texture
 
     data: PlayerData
 
@@ -58,12 +62,15 @@ class UIPainter(Entity):
             self.updated = True
 
         if (self.data.hp != self.old_hp or self.old_cooldown != self.data.fire_cooldown
-                or self.old_ammunition != self.data.ammunition or self.old_dif != self.data.difficulty):
+                or self.old_ammunition != self.data.ammunition or self.old_dif != self.data.difficulty
+                or self.old_scnt != self.data.player_object.save_slot_energy()
+            ):
             self.old_hp = self.data.hp
             self.old_ammunition = self.data.ammunition
             self.updated = True
             self.old_cooldown = self.data.fire_cooldown
             self.old_dif = self.data.difficulty
+            self.old_scnt = self.data.player_object.save_slot_energy()
             self.max_hp = UIPainter.__HPLIST__[self.data.difficulty]
 
             self.recharge_time = self.data.player_object.recharge_time()
@@ -120,6 +127,8 @@ class UIPainter(Entity):
             f.blit(self.black_canvas, 'HP', vec2(50, 34), col=cv4.WHITE, scale=0.9)
             f.blit(self.black_canvas, 'BULLET', vec2(400, 34), col=cv4.WHITE, scale=0.8)
 
+            f.blit(self.black_canvas, 'SAVE', vec2(740, 34), col=cv4.WHITE, scale=0.8)
+
             if self.is_dead:
                 f.blit(self.black_canvas, 'DEAD', vec2(190, 34),
                        col=vec4(0.9, 0.9, 0.9), scale=0.75)
@@ -134,6 +143,15 @@ class UIPainter(Entity):
             for i in range(self.old_ammunition + 1, 8):
                 self.black_canvas.blit_data(self.bullet_tex, RenderData(pos, anchor=self.bullet_tex.centre, color=cv4.SILVER))
                 pos.x += 20
+
+            pos = vec2(841, 32)
+            for i in range(self.old_scnt):
+                self.black_canvas.blit_data(self.sc_tex, RenderData(pos, anchor=self.sc_tex.centre))
+                pos.x += 51
+
+            for i in range(self.old_scnt + 1, self.data.player_object.save_slot_size() + 1):
+                self.black_canvas.blit_data(self.sc_tex, RenderData(pos, anchor=self.sc_tex.centre, color=cv4.SILVER))
+                pos.x += 51
 
         sur.blit(self.black_canvas, vec2(0, y_limit),
                  FRect(0, min(y_limit, 72.0), self.black_canvas.get_width(),

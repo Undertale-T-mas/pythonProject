@@ -185,6 +185,7 @@ class FactoryWarn(TileGroup):
 
 class AutoTileMap(TileMap):
     all_data: Dict[str, Any]
+    arg_data: Dict[str, Any]
 
     __l_exist__: bool
     __r_exist__: bool
@@ -203,6 +204,7 @@ class AutoTileMap(TileMap):
         self._obj_id = 0
         self.__tile_token__ = set()
         self.all_data = dict()
+        self.arg_data = dict()
 
     def set_main(self, group: TileGroup):
         self.ins_group('m', group)
@@ -237,24 +239,33 @@ class AutoTileMap(TileMap):
 
         self.ins_generator(token, generator)
 
-    def ins_savable_obj(self, token: str, generate: ArgAction):
+    def ins_savable_obj(self, token: str, generate: ArgAction, extra: Any = None):
         def generator(x, y):
             self._obj_id += 1
             info = generate.act(self.__worldPos__, self._obj_id)
             self.add_object(MapObject(info, x, y))
+            if extra:
+                self.arg_data[token] = extra
 
         self.ins_generator(token, generator)
 
-    def ins_obj(self, token: str, obj: ObjectInfo | ObjectLibrary):
+    def ins_obj(self, token: str, obj: ObjectInfo | ObjectLibrary, extra: Any = None):
         if isinstance(obj, ObjectLibrary):
             obj = obj.value
 
         def generator(x, y):
             self.add_object(MapObject(obj, x, y))
+            if extra is not None:
+                self.arg_data[token] = extra
 
         self.ins_generator(token, generator)
 
     def is_tile(self, token: str) -> bool:
+        if ',' in token:
+            for part in token.split(','):
+                if part in self.__tile_token__:
+                    return True
+            return False
         return token in self.__tile_token__
 
     def ins_group(self, token: str, group: TileGroup):
@@ -334,4 +345,7 @@ class AutoTileMap(TileMap):
 
                 _all = tiles[y][x].split(',')
                 for u in _all:
-                    self.all_data[u](x, y)
+                    if u in self.arg_data:
+                        self.all_data[u](x, y, self.arg_data[u])
+                    else:
+                        self.all_data[u](x, y)

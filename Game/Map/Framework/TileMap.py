@@ -38,6 +38,7 @@ class TileMap(Entity):
 
     actived: List[Set[int]]
     updatable: List[Set[int]]
+    args_tmp: GameArgs
 
     __backGrounds__: List[Entity]
     __initialized__: bool
@@ -126,6 +127,8 @@ class TileMap(Entity):
                 y += 1
                 for j in self.actived[y]:
                     i[j].update(args)
+            for i in self.__backs__:
+                i.update(args)
 
         for obj in self.__backupd__:
             obj.update(args)

@@ -1,6 +1,7 @@
 from Game.Barrage.Barrage import *
 from Game.Characters.Humans.Data import PlayerData, IPlayer
 from Game.Characters.Humans.HPBar import HPBar
+from Game.Characters.Humans.Save import SavingSlot
 from Game.Characters.Movable import *
 from Game.Tech.DataLib import TechData
 from Resources.ResourceLib import *
@@ -236,11 +237,14 @@ class Player(MovableEntity, IPlayer):
     __state__: MoveState = MoveState.idle
     __image_set__: MultiImageSet
     __hand__: PlayerHand
+    __saver__: SavingSlot
+
     ammunition: int
     fire_cooldown: float
 
     def __init__(self, position: vec2 = vec2(24, 0), speed: vec2 = vec2(0, 0), data: PlayerData = PlayerData()):
         super().__init__()
+        self.__saver__ = SavingSlot()
         self.ammunition = data.ammunition
         self.fire_cooldown = data.fire_cooldown
         s = MultiImageSet(vec2(32, 48), vec2(48, 48), 'Characters\\Player')
@@ -251,8 +255,8 @@ class Player(MovableEntity, IPlayer):
         self.hp.__hp__ = min(data.hp, self.hp.hp_max)
         self.fractionLock = False
         self.gravity = 9.8
-        self.size = vec2(40, 96 - 24)
-        self.boundAnchor = vec2(20, 48 - 24)
+        self.size = vec2(40, 96 - 21)
+        self.boundAnchor = vec2(20, 48 - 21)
         self.centre = position
         self.__ySpeed__ = speed.y
         self.__lastSpeedX__ = speed.x
@@ -278,7 +282,7 @@ class Player(MovableEntity, IPlayer):
 
     @property
     def data(self) -> PlayerData:
-        return PlayerData(self.ammunition, self.fire_cooldown, self.hp.__hp__)
+        return PlayerData(self.ammunition, self.fire_cooldown, self.hp.__hp__, obj=self)
 
     __x_moving__: bool
     __step_timing__: float
@@ -340,7 +344,7 @@ class Player(MovableEntity, IPlayer):
                     0.08, self.centre + vec2(8, 16), True, 'barrage'
                 )
             )
-        GameState.__gsScene__.remove_player(shake_dir)
+        GameState.__gsScene__.remove_player(shake_dir, self.centre)
         Sounds.died.play()
         self.__dead__ = True
         return
@@ -375,6 +379,24 @@ class Player(MovableEntity, IPlayer):
             'Characters\\Player\\Effect\\Jump\\0.png',
             4
         ))
+
+    def hp_max(self):
+        return self.hp.hp_max
+
+    def save_slot_acceptable(self):
+        return self.__saver__.acceptable()
+
+    def gather_save(self):
+        self.__saver__.push()
+
+    def save_progress(self):
+        return self.__saver__.progress()
+
+    def save_slot_energy(self):
+        return self.__saver__.count.value
+
+    def save_slot_size(self):
+        return self.__saver__.slot_size()
 
     def update(self, args: GameArgs):
         speed_x_target = 0
@@ -446,6 +468,9 @@ class Player(MovableEntity, IPlayer):
 
         self.__step_timing__ += args.elapsedSec
 
+        if self.__ySpeed__ < -1:
+            self.state = MoveState.jump
+
         if self.state == MoveState.run:
             self.image.imageSource = self.__image_set__.imageDict['Punk_run']
 
@@ -488,4 +513,4 @@ class Player(MovableEntity, IPlayer):
 
         self.__hand__.update(args)
         self.data.update_data(self.ammunition, self.fire_cooldown, self.hp.__hp__, self.centre, self.hp.__difficulty__, self)
-
+        self.__saver__.update(args)

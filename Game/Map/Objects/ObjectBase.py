@@ -10,6 +10,8 @@ class MapObjectFuncBase(GameObject):
     _worldPos: vec2 | None
     _id: int | None
 
+    args: GameArgs
+
     def __init__(self, world_pos: vec2 | None = None, _id: int | None = None):
         self._worldPos = world_pos
         self._id = _id
@@ -27,7 +29,8 @@ class MapObjectFuncBase(GameObject):
                 str((self._id + 1234) ^ 9017)
                 )
 
-    def get_player(self) -> Entity:
+    @staticmethod
+    def get_player() -> IPlayer:
         return __get_player__()
 
     def on_create(self, pos_x: int, pos_y: int):
@@ -37,4 +40,4 @@ class MapObjectFuncBase(GameObject):
         raise NotImplementedError()
 
     def update(self, args: GameArgs):
-        pass
+        self.args = args

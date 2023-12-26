@@ -22,3 +22,6 @@ class KeyIdentity(Enum):
     speed_7 = [pygame.K_7]
     speed_8 = [pygame.K_8]
     speed_9 = [pygame.K_9]
+
+    ctrl = [pygame.K_LCTRL]
+    save = [pygame.K_s]

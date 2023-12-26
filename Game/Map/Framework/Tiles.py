@@ -101,6 +101,7 @@ class TileLibrary(Enum):
     iron_tbr = TileInfo('Factory\\IronTBR.png', size=FRect(0, 0, 1, 1), _id=29)
     iron_bl = TileInfo('Factory\\IronBL.png', size=FRect(0, 0, 1, 1), _id=30)
     iron_br = TileInfo('Factory\\IronBR.png', size=FRect(0, 0, 1, 1), _id=31)
+    iron_bg = TileInfo('Factory\\IronBack.png', size=FRect(0, 0, 1, 1), _id=1001)
     rail = TileInfo('Factory\\Rail.png', size=FRect(0, 0, 1, 0.4), _id=32, crossable=True)
 
     warn_ttl = TileInfo('Factory\\WarnTTL.png', size=FRect(0, 0, 1, 1), _id=36)
@@ -216,4 +217,4 @@ class Tile(Entity, Collidable):
             self.image.draw_self(render_args, self.centre + vec2(0, 48))
 
     def set_back(self):
-        self.image.color = cv4.GRAY
+        self.image.color = cv4.SILVER * 0.8

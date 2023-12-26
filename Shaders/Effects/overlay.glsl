@@ -6,7 +6,7 @@ uniform vec2 screen_size;
 uniform sampler2D sampler;
 
 uniform float iTime;
-
+uniform float iSplit;
 uniform float iIntensity;
 uniform float iWarn;
 uniform vec2 iCamPos;
@@ -25,7 +25,6 @@ void main()
     vec2 texCoord = fragTexCoord;
     fragColor = vec4((texture(sampler_overlay, (texCoord / 2.222 + iCamPos / screen_size)) * iIntensity + texture(sampler, texCoord)).xyz, 1.0);
 
-    // sample the overlay sampler to get a noise. The overlay sampler is noise-like.
     float dir0 = atan(texCoord.y - 0.5, texCoord.x - 0.5);
     float dir = dir0 / (3.1415926 * 2) + 0.5;
     float dist = distance(vec2(0.5, 0.57 * 0.7), texCoord * vec2(1, 0.7));

@@ -81,7 +81,7 @@ class RespawnScene(Scene):
 
     def __init__(self):
         super().__init__()
-        self.old_image = GameState.__gsSurfaceManager__.screen.copy_to(GameState.__gsSurfaceManager__.buffers[7])
+        self.old_image = GameState.__gsSurfaceManager__.screen.copy_to(GameState.__gsSurfaceManager__.buffers[5])
         self.bottom = GameState.__gsRenderOptions__.screenSize.y
 
     def set_bottom(self, val: float):
@@ -115,10 +115,11 @@ class DefaultFightScene(FightScene):
     __playerSpeedRemain__: vec2
     __bottom__: float
     __fade_in__: bool
-    __playerData__: PlayerData
     __timeElapsed__: float
+    __died_progress__: float
     timer: float
     __overlay_pos__: vec2
+    __warnIntensity__: float
 
     def __recover_fade__(self):
         self.__fade_in__ = False
@@ -134,10 +135,12 @@ class DefaultFightScene(FightScene):
                  data: PlayerData = PlayerData()
                  ):
         super().__init__()
+        self.__warnIntensity__ = 0.0
         self.timer = 0.0
         self.__overlay_pos__ = vec2(0, 0)
         self.__bottom__ = 0.0
         self.__timeElapsed__ = 0.0
+        self.__died_progress__ = 0.0
         self.__fade_in__ = fade_in
         if player_pos.y >= 0:
             self.__playerPos__ = player_pos
@@ -146,7 +149,7 @@ class DefaultFightScene(FightScene):
             self.__playerPos__ = player_pos
             self.__playerPos__.y *= -1
         self.__tileMap__ = tile_map
-        self.__playerData__ = data
+        self.player_data = data
         self.__playerSpeedRemain__ = speed_remain
 
     def start(self):
@@ -155,7 +158,7 @@ class DefaultFightScene(FightScene):
             self.__bottom__ = GameState.__gsRenderOptions__.screenSize.y
             EasingRunner(0.7, self.__bottom__, 0, EaseType.quint).run(self.__set_bottom__)
         self.set_tiles(self.__tileMap__)
-        self.create_player(self.__playerPos__, self.__playerSpeedRemain__, self.__playerData__)
+        self.create_player(self.__playerPos__, self.__playerSpeedRemain__, self.player_data)
         teleport_pos = self.__playerPos__
 
         if teleport_pos.x <= 0:
@@ -176,6 +179,10 @@ class DefaultFightScene(FightScene):
         super().update(game_args)
         self.__timeElapsed__ = game_args.elapsedSec
         self.timer += game_args.elapsedSec
+
+        if self.player is None or self.player.__dead__:
+            self.__died_progress__ += game_args.elapsedSec * 1.5
+            self.__died_progress__ = min(self.__died_progress__, 1.0)
 
         if self.__player__ is None:
             return
@@ -218,6 +225,11 @@ class DefaultFightScene(FightScene):
                 int(pos.x), int(pos.y - 1),
                 vec2(self.player.centre.x, -16), speed, False, self.player.data
             )
+        if self.player is not None:
+            self.__warnIntensity__ = Math.lerp(
+                self.__warnIntensity__, 1 - min(1, self.player.hp.__hp__ / self.player.hp.hp_max),
+                self.__timeElapsed__ * 10
+            )
 
     def on_save(self):
         __wmSave__(vec2(self.player.centre.x, self.tileMap.height * TILE_LENGTH - self.player.centre.y))
@@ -255,9 +267,9 @@ class DefaultFightScene(FightScene):
             dst.set_target_self()
 
             EffectLib.motion_blur.apply()
-            scale = Math.clamp(self.__timeElapsed__ * 167, 0.01, 1.0)
+            scale = Math.clamp(self.__timeElapsed__ * 100 + (1 if self.player.__dead__ else 0), 0.01, 1.0)
             EffectLib.motion_blur.set_arg('scale', scale)
-            EffectLib.motion_blur.set_arg('sampler', surface_manager.screen)
+            EffectLib.motion_blur.set_arg('sampler', src)
             EffectLib.motion_blur.set_arg('sampler_old', surface_manager.buffers[7])
             EffectLib.motion_blur.set_arg('screen_size', sz)
 
@@ -274,14 +286,39 @@ class DefaultFightScene(FightScene):
             EffectLib.motion_blur.reset()
             src, dst = dst, src
 
+        src.copy_to(surface_manager.buffers[7])
+
+        split_intensity = max(0.0, 1 - (1 - self.__died_progress__) ** 3) * 16 / 1000
+        if split_intensity > 0.0001:
+            GamingGL.default_transform()
+            dst.set_target_self()
+
+            EffectLib.rgbSplit.apply()
+            EffectLib.rgbSplit.set_arg('iSplit', split_intensity)
+            EffectLib.rgbSplit.set_arg('screen_size', sz)
+            EffectLib.rgbSplit.set_arg('sampler', src)
+
+            glBegin(GL_QUADS)
+
+            data = [vec4(0, 0, 0, 0), vec4(sz.x, 0, 1, 0),
+                    vec4(sz.x, sz.y, 1, 1), vec4(0, sz.y, 0, 1)]
+            for i in range(4):
+                glVertex4f(data[i].x, data[i].y, data[i].z, data[i].w)
+                glTexCoord2f(data[i].z, data[i].w)
+
+            glEnd()
+
+            EffectLib.rgbSplit.reset()
+            src, dst = dst, src
+
         if self.tileMap.overlay_image is not None:
             GamingGL.default_transform()
             dst.set_target_self()
 
             EffectLib.overlay.apply()
             EffectLib.overlay.set_arg('iIntensity', 0.25)
-            EffectLib.overlay.set_arg('sampler', surface_manager.screen)
-            # EffectLib.overlay.set_arg('iWarn', 0.2 + Math.sin(self.timer) * 0.2)
+            EffectLib.overlay.set_arg('sampler', src)
+            EffectLib.overlay.set_arg('iWarn', sin(self.__warnIntensity__ * 1.57) * 0.4)
             EffectLib.overlay.set_arg('iTime', self.timer)
             EffectLib.overlay.set_arg('iCamPos', self.__overlay_pos__)
             EffectLib.overlay.set_arg('sampler_overlay', self.tileMap.overlay_image)
@@ -300,13 +337,39 @@ class DefaultFightScene(FightScene):
             EffectLib.overlay.reset()
             src, dst = dst, src
 
+        # when player died, play seismic effect
+
+        if self.player is None or self.player.__dead__:
+            GamingGL.default_transform()
+            dst.set_target_self()
+
+            EffectLib.seismic.apply()
+            EffectLib.seismic.set_arg('iProgress', pow(self.__died_progress__, 0.333))
+            EffectLib.seismic.set_arg('iRadius', 470.0)
+            EffectLib.seismic.set_arg('iIntensity', 3.0)
+            EffectLib.seismic.set_arg('iCentre', self.__died_position__)
+            EffectLib.seismic.set_arg('screen_size', sz)
+            EffectLib.seismic.set_arg('sampler', src)
+
+            glBegin(GL_QUADS)
+
+            data = [vec4(0, 0, 0, 0), vec4(sz.x, 0, 1, 0),
+                    vec4(sz.x, sz.y, 1, 1), vec4(0, sz.y, 0, 1)]
+            for i in range(4):
+                glVertex4f(data[i].x, data[i].y, data[i].z, data[i].w)
+                glTexCoord2f(data[i].z, data[i].w)
+
+            glEnd()
+
+            EffectLib.seismic.reset()
+            src, dst = dst, src
+
         glUseProgram(0)
         glBindTexture(GL_TEXTURE_2D, 0)
 
         self.ui_painter.blit(src, self.__bottom__)
 
         src.copy_to(surface_manager.screen)
-        src.copy_to(surface_manager.buffers[7])
 
 
 class WorldManager:

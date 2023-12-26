@@ -24,6 +24,15 @@ class ImageSetBase:
         self.imageSource = Texture(load_image(path))
 
     __blockSize__: vec2
+    __offset__: vec2
+
+    @property
+    def offset(self) -> vec2:
+        return self.__offset__
+
+    @offset.setter
+    def offset(self, val: vec2):
+        self.__offset__ = val
 
     @property
     def blockSize(self) -> vec2:
@@ -60,6 +69,7 @@ class ImageSetBase:
     indexY: int
     __scale__: vec2
     stable: bool
+    __rotation__: float
 
     @property
     def scale(self) -> vec2 | float:
@@ -74,6 +84,14 @@ class ImageSetBase:
             self.__scale__ = val
         else:
             self.scale = vec2(val, val)
+
+    @property
+    def rotation(self):
+        return self.__rotation__
+
+    @rotation.setter
+    def rotation(self, val: float):
+        self.__rotation__ = val
 
     @property
     def alpha(self) -> float:
@@ -110,6 +128,7 @@ class ImageSetBase:
     def __init__(self):
         self.indexX = 0
         self.indexY = 0
+        self.__offset__ = vec2(0, 0)
         self.__col__ = vec4(1, 1, 1, 1)
         self.scale = 1.0
         self.__flip__ = False
@@ -117,6 +136,7 @@ class ImageSetBase:
         self.__imageDraw__ = None
         self.__idxXLast__ = 0
         self.__idxYLast__ = 0
+        self.__rotation__ = 0.0
         self.__imageUpdated__ = False
         self.stable = False
 
@@ -138,5 +158,5 @@ class ImageSetBase:
         args.target_surface.blit_data(
             self.__imageDraw__,
             RenderData(v, scale=self.__scale__, flip=self.__flip__, color=self.__get_color__(),
-                       anchor=self.anchor.get_anchor_pos(), bound=self.source_area())
+                       anchor=self.anchor.get_anchor_pos(), bound=self.source_area(), rotation=self.rotation)
         )

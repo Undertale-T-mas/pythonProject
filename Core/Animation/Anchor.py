@@ -8,6 +8,9 @@ from Core.Animation.AnchorBase import Anchor
 class ACustom(Anchor):
     anchor: vec2
 
+    def __init__(self, anchor: vec2 | None = None):
+        self.anchor = anchor
+
     def get_anchor_pos(self) -> vec2:
         return self.anchor
 

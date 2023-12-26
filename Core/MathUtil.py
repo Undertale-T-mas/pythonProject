@@ -93,6 +93,10 @@ class Math:
         return x * (1 - scale) + y * scale
 
     @staticmethod
+    def dir_deg(vec: vec2):
+        return math.degrees(math.atan2(vec.y, vec.x))
+
+    @staticmethod
     def sin(val: float) -> float:
         return math.sin(val)
 
@@ -129,6 +133,10 @@ class Math:
     @staticmethod
     def clamp(val, min_v, max_v):
         return max(min(val, max_v), min_v)
+
+    @staticmethod
+    def rotate(vec: vec2, rotation_deg: float):
+        return Math.vec2_polar(vec.length(), Math.dir_deg(vec) + rotation_deg)
 
 
 class FRect:

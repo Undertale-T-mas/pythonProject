@@ -4,7 +4,7 @@ from core import *
 __pdInstance__: Any
 
 
-class IPlayer:
+class IPlayer(Entity):
 
     def recharge_time(self):
         raise NotImplementedError()
@@ -13,6 +13,24 @@ class IPlayer:
         raise NotImplementedError()
 
     def restore(self):
+        raise NotImplementedError()
+
+    def gather_save(self):
+        raise NotImplementedError()
+
+    def save_slot_acceptable(self):
+        raise NotImplementedError()
+
+    def save_slot_energy(self):
+        raise NotImplementedError()
+
+    def save_slot_size(self):
+        raise NotImplementedError()
+
+    def hp_max(self):
+        raise NotImplementedError()
+
+    def save_progress(self):
         raise NotImplementedError()
 
 

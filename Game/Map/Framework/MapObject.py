@@ -1,5 +1,6 @@
 import core
 from Core.GameStates import GameState
+from Game.Map.Objects.Cannon import Cannon
 from Game.Map.Objects.Crystal import *
 from Game.Map.Objects.ObjectBase import *
 from core import *
@@ -17,6 +18,7 @@ class ObjectInfo:
     img_scale: float
     sur_name: str
     on_create: ArgAction | None
+    img_anchor: vec2 | None
 
     def get_image(self) -> ImageSetBase:
         if self.img_cnt == 1:
@@ -26,9 +28,10 @@ class ObjectInfo:
         res.scale = self.img_scale
         return res
 
-    def __init__(self, img_path: str, sur_name: str = 'bg', img_cnt: int = 1, img_scale: float = 1.5,
+    def __init__(self, img_path: str, sur_name: str = 'bg', img_cnt: int = 1, img_scale: float = 1.5, anchor: vec2 | None = None,
                  unit_size: vec2 | None = None, on_create: ArgAction | None = None, on_update: EntityEvent | None = None):
         self.img_path = img_path
+        self.img_anchor = anchor
         self.sur_name = sur_name
         self.on_update = on_update
         self.on_create = on_create
@@ -49,7 +52,7 @@ class ObjectLibrary(Enum):
     pointer_1 = ObjectInfo('Pointer1.png', img_scale=2)
     pointer_2 = ObjectInfo('Pointer2.png', img_scale=2)
     locker = ObjectInfo('Locker.png')
-    flag = ObjectInfo('Flag.png')
+    flag = ObjectInfo('Flag.png', anchor=vec2(16, 16))
     barrel_0 = ObjectInfo("Barrel0.png")
     barrel_1 = ObjectInfo("Barrel1.png")
 
@@ -63,14 +66,18 @@ class MapObject(Entity):
         super().__init__()
         if isinstance(img, ObjectLibrary):
             img = img.value
+        anchor = None
         if isinstance(img, ObjectInfo):
             if img.on_create is not None:
                 img.on_create.act(x, y)
             self.on_update = img.on_update
             self.surfaceName = img.sur_name
+            anchor = img.img_anchor
             img = img.get_image()
 
         self.image = img
+        if isinstance(anchor, vec2):
+            self.image.anchor = ACustom(anchor)
         self.centre = vec2((x + 0.5) * TILE_LENGTH, (y + 1) * TILE_LENGTH - img.blockSize.y * img.scale * 0.5)
 
     @property
@@ -119,9 +126,9 @@ class ObjectGenerate:
         return ObjectInfo('Sign.png', on_create=ArgAction(sign_create), on_update=EntityEvent(sign_test))
 
     @staticmethod
-    def make_crystal(map_world_pos: vec2, uuid: int):
+    def make_crystal(map_world_pos: vec2, uuid: int, data: Any = None):
         u = ObjectGenerate.ObjectTempData()
-        u.ins = SaveCrystal(map_world_pos, uuid)
+        u.ins = SaveCrystal(map_world_pos, uuid, data)
 
         def on_update(obj1: Entity):
             u.ins.on_update(obj1)
@@ -132,4 +139,18 @@ class ObjectGenerate:
 
         return ObjectInfo('SaveCrystal.png', on_create=ArgAction(on_create), on_update=EntityEvent(on_update),
                           img_cnt=8, unit_size=vec2(32, 32))
+
+    @staticmethod
+    def make_cannon(direction: float, interval: float):
+        u = ObjectGenerate.ObjectTempData()
+        u.ins = Cannon(direction, interval)
+
+        def on_update(obj1: Entity):
+            u.ins.on_update(obj1)
+
+        def on_create(x: int, y: int):
+            u.ins.on_create(x, y)
+            instance_prepare(u.ins)
+
+        return ObjectInfo('Cannon.png', on_create=ArgAction(on_create), on_update=EntityEvent(on_update), anchor=vec2(13, 13))
 

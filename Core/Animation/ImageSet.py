@@ -21,7 +21,7 @@ class SingleImage(ImageSetBase):
 
     def source_area(self):
         size = self.imageSource.get_size()
-        return FRect(0, 0, size[0], size[1])
+        return FRect(self.offset.x, self.offset.y, size[0], size[1])
 
 
 class ImageSet(ImageSetBase):
@@ -38,12 +38,12 @@ class ImageSet(ImageSetBase):
             self.__imageSource__ = path
 
     def source_area(self):
-        x = self.__blockDistance__.x * self.indexX
-        y = self.__blockDistance__.y * self.indexY
+        x = self.__blockDistance__.x * self.indexX + self.offset.x
+        y = self.__blockDistance__.y * self.indexY + self.offset.y
         return FRect(x, y, self.blockSize.x, self.blockSize.y)
 
-    def copy(self):
-        res = ImageSet(self.blockSize, self.__blockDistance__, self.imageSource)
+    def copy(self) -> ImageSetBase:
+        res = ImageSet(self.blockSize.copy(), self.__blockDistance__, self.imageSource)
         res.__scale__ = self.__scale__
         return res
 
@@ -61,8 +61,8 @@ class MultiImageSet(ImageSetBase):
         self.anchor = ACentre(self)
 
     def source_area(self):
-        x = self.__blockDistance__.x * self.indexX
-        y = self.__blockDistance__.y * self.indexY
+        x = self.__blockDistance__.x * self.indexX + self.offset.x
+        y = self.__blockDistance__.y * self.indexY + self.offset.y
         return FRect(x, y, self.blockSize.x, self.blockSize.y)
 
     imageDict: Dict[str, Texture]
@@ -99,7 +99,7 @@ class MultiImage(ImageSetBase):
         return vec2(self.__imageSource__.get_width(), self.__imageSource__.get_height())
 
     def source_area(self):
-        return FRect(0, 0, self.__imageSource__.get_width(), self.__imageSource__.get_height())
+        return FRect(self.offset.x, self.offset.y, self.__imageSource__.get_width(), self.__imageSource__.get_height())
 
     imageDict: Dict[str, Texture]
     imageList: List[Texture]

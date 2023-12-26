@@ -10,7 +10,7 @@ from ctypes import *
 
 from Core.GamingGL import GLShader
 from Core.GamingGL.GLShader import *
-from Core.MathUtil import Vector4 as vec4
+from Core.MathUtil import Vector4 as vec4, Math
 from Core.MathUtil import ColorV4 as cv4
 from Core.MathUtil import FRect
 
@@ -196,8 +196,10 @@ class Texture(IDrawable):
     def centre(self):
         return vec2(self.width / 2, self.height / 2)
 
-    def __init__(self, surface: Surface):
+    def __init__(self, surface: Surface, sampler_state: Any = None):
         self.width, self.height = surface.get_size()
+        if sampler_state is None:
+            sampler_state = GL_NEAREST
 
         dat = pygame.image.tostring(surface.convert_alpha(), 'RGBA')
         h = hash(dat)
@@ -212,8 +214,8 @@ class Texture(IDrawable):
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         glBindTexture(GL_TEXTURE_2D, self.texture_id)
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, sampler_state)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, sampler_state)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
 
@@ -291,6 +293,14 @@ class Texture(IDrawable):
         if __glBufferID__ == 0:
             for i in range(4):
                 __glPosArray__[i].y = GamingGL.__viewport__.y - __glPosArray__[i].y
+
+        if abs(render_data.rotation) > 1e-9:
+            centre = render_data.pos
+            if __glBufferID__ == 0:
+                centre.y = GamingGL.__viewport__.y - centre.y
+
+            for i in range(4):
+                __glPosArray__[i] = centre + Math.rotate(__glPosArray__[i] - centre, render_data.rotation)
 
         if mode:
             __glPushArray__()
