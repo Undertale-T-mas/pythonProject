@@ -53,13 +53,14 @@ class ObjectManager:
                 self.__idx_cnt__ += 1
             i += 1
 
-    def update_all(self, args: GameArgs):
+    def update_all(self, args: GameArgs, focus_id: int):
         self.push_buffer()
 
         i = 0
         for obj in self.__objects__:
             if not obj.is_disposed():
-                obj.update(args)
+                if obj.focus_id == focus_id:
+                    obj.update(args)
             else:
                 if i not in self.__idx__:
                     self.__idx__.add(i)

@@ -442,6 +442,46 @@ class DefaultFightScene(FightScene):
         self.ui_painter.blit(src, self.__bottom__)
         return src
 
+    def transform(self, src: RenderTarget, surface_manager: SurfaceManager):
+
+        ro = self.__render_options__.transform
+
+        if not ro.check_necessity():
+            return src
+
+        screen = surface_manager.screen
+        dst = screen
+        if src == screen:
+            dst = surface_manager.buffers[6]
+
+        sz = self.__render_options__.screenSize
+
+        GamingGL.default_transform()
+        dst.set_target_self()
+
+        EffectLib.transform.apply()
+        EffectLib.transform.set_arg('iCentreUV', ro.centre_uv)
+        EffectLib.transform.set_arg('iOffset', ro.offset)
+        EffectLib.transform.set_arg('iAlpha', ro.alpha)
+        EffectLib.transform.set_arg('iRotation', ro.rotation)
+        EffectLib.transform.set_arg('iScale', ro.scale)
+        EffectLib.transform.set_arg('screen_size', sz)
+        EffectLib.transform.set_arg('sampler', src)
+
+        glBegin(GL_QUADS)
+
+        data = [vec4(0, 0, 0, 0), vec4(sz.x, 0, 1, 0),
+                vec4(sz.x, sz.y, 1, 1), vec4(0, sz.y, 0, 1)]
+        for i in range(4):
+            glVertex4f(data[i].x, data[i].y, data[i].z, data[i].w)
+            glTexCoord2f(data[i].z, data[i].w)
+
+        glEnd()
+
+        EffectLib.transform.reset()
+        src, dst = dst, src
+        return src
+
     def draw(self, surface_manager: SurfaceManager):
         if not self.__fade_in__:
             super().draw(surface_manager)
@@ -466,7 +506,7 @@ class DefaultFightScene(FightScene):
                     area=rec,
                 )
 
-        self.apply_shader(surface_manager).copy_to(surface_manager.screen)
+        self.transform(self.apply_shader(surface_manager), surface_manager).copy_to(surface_manager.screen)
 
 
 class WorldManager:

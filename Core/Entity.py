@@ -9,6 +9,7 @@ from pygame import Vector2 as vec2
 class Entity(GameObject):
     def __init__(self):
         self.image = None
+        super().__init__()
         self.surfaceName = 'default'
         self.centre = vec2(0, 0)
         self.visible = True

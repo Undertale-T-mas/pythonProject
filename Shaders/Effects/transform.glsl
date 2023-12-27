@@ -6,7 +6,8 @@ uniform sampler2D sampler;
 uniform float iScale;
 uniform float iRotate;
 uniform float iAlpha;
-uniform float iCentreUV;
+uniform vec2 iCentreUV;
+uniform vec2 iOffset;
 
 out vec4 fragColor;
 
@@ -18,5 +19,8 @@ void main()
     float dir = atan((texCoord - iCentreUV).y, (texCoord - iCentreUV).x);
     dir += iRotate;
     len *= iScale;
-
+    vec2 pos = iCentreUV + iOffset + vec2(cos(dir) * len, sin(dir) * len);
+    vec4 col = texture(sampler, pos);
+    col.r *= iAlpha; col.g *= iAlpha; col.b *= iAlpha;
+    fragColor = col;
 }

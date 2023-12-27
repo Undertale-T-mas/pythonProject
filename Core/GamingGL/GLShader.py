@@ -148,6 +148,7 @@ class EffectLib:
     rgbSplit: Shader
     stepSample: Shader
     polar: Shader
+    transform: Shader
 
     @staticmethod
     def init():
@@ -158,6 +159,7 @@ class EffectLib:
         EffectLib.rgbSplit = Shader('Shaders\\Effects\\rgbSplit.glsl')
         EffectLib.stepSample = Shader('Shaders\\Effects\\step_sample.glsl')
         EffectLib.polar = Shader('Shaders\\Effects\\polar.glsl')
+        EffectLib.transform = Shader('Shaders\\Effects\\transform.glsl')
 
 
 class DefaultShaderLib:

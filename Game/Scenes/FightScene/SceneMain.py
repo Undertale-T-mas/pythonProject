@@ -99,6 +99,7 @@ class Shaker(GameObject):
     def __init__(self, camera: Entity, direction: float):
         self.camera = camera
         self.fix_p = self.camera.centre
+        super().__init__()
         self.direction = direction
 
         intensity = 144.0

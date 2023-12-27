@@ -11,6 +11,7 @@ class Scene:
     __render_options__: RenderOptions
     __initialized__: bool
     __camera__: Entity | None
+    __focus_id__: int
 
     @property
     def camera(self):
@@ -23,9 +24,13 @@ class Scene:
         pass
 
     def __init__(self):
+        self.__focus_id__ = 0
         self.__objManager__ = ObjectManager()
         self.__camera__ = None
         self.__initialized__ = False
+
+    def set_focus_target(self, focus_id: int):
+        self.__focus_id__ = focus_id
 
     def __gsDataSend__(self, render_options: RenderOptions):
         self.__render_options__ = render_options
@@ -34,7 +39,7 @@ class Scene:
         if not self.__initialized__:
             self.__initialized__ = True
             self.start()
-        self.__objManager__.update_all(game_args)
+        self.__objManager__.update_all(game_args, self.__focus_id__)
 
     def __get_surfaces__(self, manager: SurfaceManager):
         manager.draw_begin()

@@ -24,10 +24,18 @@ class ArgAction:
 
 
 class GameObject:
+    def __init__(self):
+        self._focus_id = 0
+
     def update(self, args: GameArgs):
         raise NotImplementedError()
 
     __disposed__ = False
+    _focus_id: int
+
+    @property
+    def focus_id(self):
+        return self._focus_id
 
     def is_disposed(self):
         return self.__disposed__
@@ -42,6 +50,7 @@ class StableAction(GameObject):
 
     def __init__(self, _time: float, action: Action):
         self.__time__ = _time
+        super().__init__()
         self.__action__ = action
 
     def update(self, args: GameArgs):
@@ -59,6 +68,7 @@ class DelayedAction(GameObject):
 
     def __init__(self, delay: float, action: Action):
         self.__delay__ = delay
+        super().__init__()
         self.__action__ = action
 
     def update(self, args: GameArgs):

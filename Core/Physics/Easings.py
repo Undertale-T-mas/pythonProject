@@ -139,6 +139,7 @@ class VirtualEasingObject(GameObject, Generic[T]):
 
     def __init__(self, action, easings: List[Easing], follow: Entity | None):
         self.easings = easings
+        super().__init__()
         self.follow = follow
         self.action = action
 

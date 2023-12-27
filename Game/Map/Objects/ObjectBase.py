@@ -15,6 +15,7 @@ class MapObjectFuncBase(GameObject):
     def __init__(self, world_pos: vec2 | None = None, _id: int | None = None):
         self._worldPos = world_pos
         self._id = _id
+        super().__init__()
 
     @staticmethod
     def image_changed():
