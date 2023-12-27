@@ -122,7 +122,9 @@ class DefaultFightScene(FightScene):
     __warnIntensity__: float
     __old_hp__: float
     __hit_blur__: float
+    __save_blur__: float
     __died_blur__: float
+    __save_end_progress__: float
 
     def __recover_fade__(self):
         self.__fade_in__ = False
@@ -138,7 +140,9 @@ class DefaultFightScene(FightScene):
                  data: PlayerData = PlayerData()
                  ):
         super().__init__()
+        self.__save_blur__ = 0.0
         self.__old_hp__ = -1.0
+        self.__save_end_progress__ = 0.0
         self.__hit_blur__ = 0.0
         self.__warnIntensity__ = 0.0
         self.timer = 0.0
@@ -186,6 +190,8 @@ class DefaultFightScene(FightScene):
         self.__timeElapsed__ = game_args.elapsedSec
         self.timer += game_args.elapsedSec
 
+        self.__save_end_progress__ = Math.lerp(self.__save_end_progress__, 0.0, min(1.0, game_args.elapsedSec * 1.2))
+
         if self.player is None or self.player.__dead__:
             self.__died_progress__ += game_args.elapsedSec * 1.5
             self.__died_progress__ = min(self.__died_progress__, 1.0)
@@ -193,6 +199,12 @@ class DefaultFightScene(FightScene):
 
         if self.__player__ is None:
             return
+
+        spg = self.__player__.save_progress()
+        if spg > 1e-7:
+            self.__save_blur__ = pow(spg, 0.35) * 4.0
+        else:
+            self.__save_blur__ = Math.lerp(self.__save_blur__, 0.0, min(1.0, game_args.elapsedSec * 20.0))
 
         if not self.__player__.__dead__:
             self.__overlay_pos__ = self.__camera__.centre - vec2(200, 0) + vec2(
@@ -249,35 +261,14 @@ class DefaultFightScene(FightScene):
             )
 
     def on_save(self):
+        self.__save_end_progress__ = 1.0
         __wmSave__(vec2(self.player.centre.x, self.tileMap.height * TILE_LENGTH - self.player.centre.y))
 
-    def draw(self, surface_manager: SurfaceManager):
-        if not self.__fade_in__:
-            super().draw(surface_manager)
-        else:
-            self.__get_surfaces__(surface_manager)
-            size = self.__render_options__.screenSize
-            rec = FRect(0, self.__bottom__, size.x, size.y - self.__bottom__)
-            surface_manager.screen.blit(
-                surface_manager.get_surface('bg'),
-                vec2(0, self.__bottom__),
-                area=rec,
-            )
-            surface_manager.screen.blit(
-                surface_manager.get_surface('default'),
-                vec2(0, 48 + rec.y),
-                area=rec,
-            )
-            if surface_manager.exist_surface('barrage'):
-                surface_manager.screen.blit(
-                    surface_manager.get_surface('barrage'),
-                    vec2(0, 48 + rec.y),
-                    area=rec,
-                )
-
+    def apply_shader(self, surface_manager: SurfaceManager):
         src = surface_manager.screen
         dst = surface_manager.buffers[6]
         sz = surface_manager.__renderOptions__.screenSize
+        player_screen_delta = - self.camera.centre + vec2(sz.x / 2, sz.y / 2 - 24)
         # do motion blur:
         if GameState.__gsRenderOptions__.motionBlurEnabled:
             GamingGL.default_transform()
@@ -308,6 +299,8 @@ class DefaultFightScene(FightScene):
         split_intensity = max(0.0, (1 - self.__died_progress__) ** 3) * 32 / 1000
         if self.__died_progress__ <= 0.0001:
             split_intensity = 0.0
+        if self.__save_blur__ > 0:
+            split_intensity = max(split_intensity, self.__save_blur__ / 50.0)
 
         if split_intensity > 0.0001:
             GamingGL.default_transform()
@@ -334,18 +327,26 @@ class DefaultFightScene(FightScene):
         step_intensity = 0.0
         step_intensity = max(step_intensity, self.__hit_blur__)
         step_intensity = max(step_intensity, self.__died_blur__)
+        step_intensity = max(step_intensity, self.__save_blur__)
 
         # when player died, play seismic effect
 
-        if self.player is None or self.player.__dead__:
+        if self.player is None or self.player.__dead__ or self.__save_end_progress__ > 1e-2:
             GamingGL.default_transform()
             dst.set_target_self()
 
+            seismic_pos = self.player.centre
+            radius = 750.0
+            prog = max(self.__died_progress__, 1 - self.__save_end_progress__)
+            if self.player is None or self.__player__.__dead__:
+                seismic_pos = self.__died_position__
+                radius = 470.0
+
             EffectLib.seismic.apply()
-            EffectLib.seismic.set_arg('iProgress', pow(self.__died_progress__, 0.333))
-            EffectLib.seismic.set_arg('iRadius', 470.0)
+            EffectLib.seismic.set_arg('iProgress', pow(prog, 0.333))
+            EffectLib.seismic.set_arg('iRadius', radius)
             EffectLib.seismic.set_arg('iIntensity', 6.0)
-            EffectLib.seismic.set_arg('iCentre', self.__died_position__)
+            EffectLib.seismic.set_arg('iCentre', seismic_pos + player_screen_delta)
             EffectLib.seismic.set_arg('screen_size', sz)
             EffectLib.seismic.set_arg('sampler', src)
 
@@ -368,7 +369,7 @@ class DefaultFightScene(FightScene):
 
             EffectLib.stepSample.apply()
             EffectLib.stepSample.set_arg('iIntensity', step_intensity)
-            EffectLib.stepSample.set_arg('iLightPos', self.player.centre)
+            EffectLib.stepSample.set_arg('iLightPos', self.player.centre + player_screen_delta)
             EffectLib.stepSample.set_arg('screen_size', sz)
             EffectLib.stepSample.set_arg('sampler', src)
 
@@ -383,6 +384,30 @@ class DefaultFightScene(FightScene):
             glEnd()
 
             EffectLib.stepSample.reset()
+            src, dst = dst, src
+
+        polar_intensity = 0.0
+        if polar_intensity > 0.0001:
+            GamingGL.default_transform()
+            dst.set_target_self()
+
+            EffectLib.polar.apply()
+            EffectLib.polar.set_arg('iIntensity', polar_intensity)
+            EffectLib.polar.set_arg('iCentre', sz / 2)
+            EffectLib.polar.set_arg('screen_size', sz)
+            EffectLib.polar.set_arg('sampler', src)
+
+            glBegin(GL_QUADS)
+
+            data = [vec4(0, 0, 0, 0), vec4(sz.x, 0, 1, 0),
+                    vec4(sz.x, sz.y, 1, 1), vec4(0, sz.y, 0, 1)]
+            for i in range(4):
+                glVertex4f(data[i].x, data[i].y, data[i].z, data[i].w)
+                glTexCoord2f(data[i].z, data[i].w)
+
+            glEnd()
+
+            EffectLib.polar.reset()
             src, dst = dst, src
 
         if self.tileMap.overlay_image is not None:
@@ -415,8 +440,33 @@ class DefaultFightScene(FightScene):
         glBindTexture(GL_TEXTURE_2D, 0)
 
         self.ui_painter.blit(src, self.__bottom__)
+        return src
 
-        src.copy_to(surface_manager.screen)
+    def draw(self, surface_manager: SurfaceManager):
+        if not self.__fade_in__:
+            super().draw(surface_manager)
+        else:
+            self.__get_surfaces__(surface_manager)
+            size = self.__render_options__.screenSize
+            rec = FRect(0, self.__bottom__, size.x, size.y - self.__bottom__)
+            surface_manager.screen.blit(
+                surface_manager.get_surface('bg'),
+                vec2(0, self.__bottom__),
+                area=rec,
+            )
+            surface_manager.screen.blit(
+                surface_manager.get_surface('default'),
+                vec2(0, 48 + rec.y),
+                area=rec,
+            )
+            if surface_manager.exist_surface('barrage'):
+                surface_manager.screen.blit(
+                    surface_manager.get_surface('barrage'),
+                    vec2(0, 48 + rec.y),
+                    area=rec,
+                )
+
+        self.apply_shader(surface_manager).copy_to(surface_manager.screen)
 
 
 class WorldManager:
@@ -437,8 +487,10 @@ class WorldManager:
 
     @staticmethod
     def change_map(x: int, y: int, pos: vec2, speed_remain: vec2, fade_in: bool = False, data: PlayerData = PlayerData()):
+        global __worldCurRoom__
+        __worldCurRoom__ = WorldData.get_map(x, y)
         change_scene(DefaultFightScene(
-            WorldData.get_map(x, y),
+            __worldCurRoom__,
             pos,
             speed_remain,
             fade_in,

@@ -1,3 +1,4 @@
+from Game.Characters.Humans.Data import IPlayer
 from core import *
 from Game.Tech.DataLib import TechData
 
@@ -8,10 +9,12 @@ SAVE_HOLD_TIME = 2.0
 class SavingSlot(GameObject):
 
     count: Savable[int]
+    objSource: IPlayer
 
-    def __init__(self):
+    def __init__(self, obj_source: IPlayer):
         self.count = Savable('player\\item.save_crystal', 0)
         self.__saveTimeTot__ = 0.0
+        self.objSource = obj_source
 
     def slot_size(self) -> int:
         return TechData.get_save_slot()
@@ -28,7 +31,7 @@ class SavingSlot(GameObject):
     def use(self):
         if not self.usable():
             raise ValueError()
-        self.count.value -= TechData.get_save_slot()
+        self.count.value -= TechData.get_save_cost()
 
     __saveTimeTot__: float
 
@@ -45,3 +48,5 @@ class SavingSlot(GameObject):
         if self.__saveTimeTot__ >= SAVE_HOLD_TIME:
             self.__saveTimeTot__ = 0.0
             self.use()
+            self.objSource.crystal_save()
+

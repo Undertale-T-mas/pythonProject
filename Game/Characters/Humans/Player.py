@@ -244,7 +244,7 @@ class Player(MovableEntity, IPlayer):
 
     def __init__(self, position: vec2 = vec2(24, 0), speed: vec2 = vec2(0, 0), data: PlayerData = PlayerData()):
         super().__init__()
-        self.__saver__ = SavingSlot()
+        self.__saver__ = SavingSlot(self)
         self.ammunition = data.ammunition
         self.fire_cooldown = data.fire_cooldown
         s = MultiImageSet(vec2(32, 48), vec2(48, 48), 'Characters\\Player')
@@ -341,7 +341,15 @@ class Player(MovableEntity, IPlayer):
             instance_create(
                 Animation(
                     img_set,
-                    0.08, self.centre + vec2(8, 16), True, 'barrage'
+                    0.1, self.centre + vec2(8, 16), True, 'barrage'
+                )
+            )
+            img_set = ImageSet(vec2(48, 48), vec2(48, 48), 'Effects\\Blood\\0.png')
+            img_set.scale = 3.0
+            instance_create(
+                Animation(
+                    img_set,
+                    0.075, self.centre + vec2(16, 32), True, 'barrage'
                 )
             )
         GameState.__gsScene__.remove_player(shake_dir, self.centre)
@@ -359,6 +367,10 @@ class Player(MovableEntity, IPlayer):
             self.give_force(13)
 
         Sounds.playerDamaged.play()
+
+    def crystal_save(self):
+        self.hp.recover()
+        self.__scene__.on_save()
 
     def recharge_time(self):
         return 0.7

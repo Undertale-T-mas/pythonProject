@@ -18,6 +18,11 @@ class SaveCrystal(MapObjectFuncBase):
             raise ArgumentError()
 
         object_source.visible = self.visible.value
+        if not self.visible.value:
+            self.dispose()
+            object_source.dispose()
+            return
+
         object_source.centre = self.centre + vec2(0, -24 - Math.sin_deg(self.time_tot * 90) * 15)
         if self.time >= 0.1:
             self.time -= 0.1

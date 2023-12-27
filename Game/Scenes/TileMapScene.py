@@ -12,6 +12,9 @@ class TileMapScene(Scene):
     __diffDynamic__: float
     tileChanged: bool
 
+    def on_save(self):
+        raise NotImplementedError()
+
     def __init__(self):
         super().__init__()
         self.tileChanged = False

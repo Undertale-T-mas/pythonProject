@@ -10,7 +10,7 @@ class Action:
         self.__fun__ = fun
 
     def act(self):
-        self.__fun__()
+        return self.__fun__()
 
 
 class ArgAction:

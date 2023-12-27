@@ -6,6 +6,9 @@ __pdInstance__: Any
 
 class IPlayer(Entity):
 
+    def crystal_save(self):
+        raise NotImplementedError()
+
     def recharge_time(self):
         raise NotImplementedError()
 

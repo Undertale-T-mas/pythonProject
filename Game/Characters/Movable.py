@@ -122,7 +122,6 @@ class MovableEntity(Entity, Collidable):
     __fractionLock__: bool
 
     __onGround__: bool
-
     __boundAnchor__: vec2 | None
     __ySpeed__: float
     __gravity__: float
@@ -298,7 +297,6 @@ class MovableEntity(Entity, Collidable):
                 move_del.y -= self.__inGroundDistance__
             else:
                 self.__ySpeed__ += self.__gravity__ * args.elapsedSec * 2.86
-
             move_del.y += self.__ySpeed__ * args.elapsedSec * 60
 
         # we check the body collision in the following codes:
@@ -341,6 +339,11 @@ class MovableEntity(Entity, Collidable):
                             continue
                         if tile.areaRect.right + 0.00001 > l:
                             tmp_dx = tile.areaRect.right - l
+
+                            if self.__ySpeed__ < 0.0:
+                                tile_up = self.__tileMap__.get_tile(ldec + 1, ydec)
+                                if not(tile_up.uuid == 0 or tile_up.crossable or (not tile_up.collidable) or (tile_up.areaRect.bottom <= t or tile_up.areaRect.top >= b)):
+                                    continue
                             if tmp_dx < TILE_LENGTH * 0.3:
                                 dx = max(dx, tmp_dx)
 
@@ -363,6 +366,11 @@ class MovableEntity(Entity, Collidable):
                             continue
                         if tile.areaRect.left - 0.00001 < r:
                             tmp_dx = r - tile.areaRect.left
+                            if self.__ySpeed__ < 0.0:
+                                tile_up = self.__tileMap__.get_tile(rdec - 1, ydec)
+                                if not(tile_up.uuid == 0 or tile_up.crossable or (not tile_up.collidable) or (tile_up.areaRect.bottom <= t or tile_up.areaRect.top >= b)):
+                                    continue
+
                             if tmp_dx < TILE_LENGTH * 0.3:
                                 dx = max(dx, tmp_dx)
 
@@ -373,7 +381,7 @@ class MovableEntity(Entity, Collidable):
                         self.physicArea.area = self.physicArea.area.move(-dx, 0)
 
                 bdec = self.physicArea.area.i_bottom // TILE_LENGTH
-                tdec = self.physicArea.area.i_top // TILE_LENGTH
+                tdec = max(0, self.physicArea.area.i_top // TILE_LENGTH)
                 ldec = self.physicArea.area.i_left // TILE_LENGTH
                 rdec = self.physicArea.area.i_right // TILE_LENGTH
 
@@ -396,13 +404,9 @@ class MovableEntity(Entity, Collidable):
                             move_del.y += tile.areaRect.bottom - head_y
                             if self.__ySpeed__ < 0:
                                 self.__ySpeed__ = max(self.__ySpeed__, -5.0)
-                                self.__ySpeed__ += self.__gravity__ * args.elapsedSec * 2.5
+                                self.__ySpeed__ += self.__gravity__ * args.elapsedSec * 1.5
                                 if self.__ySpeed__ >= 0:
                                     self.__ySpeed__ = 0
-                                move_del.x -= x_move
-                                self.centre.x -= x_move
-                                self.physicArea.area = self.physicArea.area.move(-x_move, 0)
-                                x_move = 0
 
         np = old_pos + move_del
         self.centre = np

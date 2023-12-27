@@ -142,6 +142,33 @@ class TileLibrary(Enum):
         on_update=ArgAction(__fac_entry_update__)
     )
 
+    @staticmethod
+    def make_lock_door(check_door_open: Action):
+
+        def __fac_entry_update2__(door: Entity, args: GameArgs): 
+            if door.__extra__ is None:
+                door.__extra__ = 0.0
+
+            door.__extra__ += args.elapsedSec
+            if door.image.indexX >= 4:
+                door.__collidable__ = False
+            else:
+                door.__collidable__ = True
+
+            if door.__extra__ >= 0.06:
+                door.__extra__ -= 0.06
+                door.image.indexX += 1 if check_door_open else -1
+                if door.image.indexX >= 6:
+                    door.image.indexX = 6
+                if door.image.indexX <= 0:
+                    door.image.indexX = 0
+
+        lock_door = TileInfo(
+            'Factory\\Door2.png', size=FRect(0, 0, 1, 2), _id=302,
+            on_update=ArgAction(__fac_entry_update2__)
+        )
+        return lock_door
+
 
 # noinspection PyMissingConstructor
 class Tile(Entity, Collidable):
