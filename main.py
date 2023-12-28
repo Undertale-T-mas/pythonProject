@@ -42,7 +42,8 @@ while running:
             running = False
 
     GamingGL.begin()
-    GameState.update(dt)
+    if GameState.update(dt):
+        break
     GameState.render()
     GamingGL.end()
 

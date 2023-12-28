@@ -6,6 +6,7 @@ from Core.GamingGL.GLShader import *
 from Core.MathUtil import FRect
 from Core.Profile.Savable import *
 from Game.Characters.Humans.Player import PlayerData
+from Game.Components.PauseUI import PauseUI
 from Game.Map.Framework.TileMap import TileMap
 from Game.Map.Framework.Tiles import TILE_LENGTH
 from Game.Map.Framework.WorldData import WorldData
@@ -117,11 +118,13 @@ class DefaultFightScene(FightScene):
     __fade_in__: bool
     __timeElapsed__: float
     __died_progress__: float
+    __main_alpha__: float
     timer: float
     __overlay_pos__: vec2
     __warnIntensity__: float
     __old_hp__: float
     __hit_blur__: float
+    __pause_ui__: PauseUI
     __save_blur__: float
     __died_blur__: float
     __save_end_progress__: float
@@ -140,8 +143,10 @@ class DefaultFightScene(FightScene):
                  data: PlayerData = PlayerData()
                  ):
         super().__init__()
+        self.__pause_ui__ = PauseUI(Action(self.resume_game))
         self.__save_blur__ = 0.0
         self.__old_hp__ = -1.0
+        self.__main_alpha__ = 1.0
         self.__save_end_progress__ = 0.0
         self.__hit_blur__ = 0.0
         self.__warnIntensity__ = 0.0
@@ -178,6 +183,7 @@ class DefaultFightScene(FightScene):
             teleport_pos.y = self.__tileMap__.height * TILE_LENGTH + teleport_pos.y
 
         self.__player__.teleport(teleport_pos)
+        self.instance_create(self.__pause_ui__)
 
         for obj in self.tileMap.get_objects():
             instance_create(obj)
@@ -189,10 +195,14 @@ class DefaultFightScene(FightScene):
         if key_on_press(KeyIdentity.pause):
             if self.is_pause:
                 self.resume_game()
-                self.__render_options__.transform.alpha = 1.0
             else:
                 self.pause_game()
-                self.__render_options__.transform.alpha = 0.5
+                rm = GameState.__gsSurfaceManager__
+                rm.screen.copy_to(rm.buffers[7])
+
+        self.__main_alpha__ = Math.lerp(
+            self.__main_alpha__, 0.5 if self.is_pause else 1, 10 * game_args.elapsedSec
+        )
 
         super().update(game_args)
         self.__timeElapsed__ = game_args.elapsedSec
@@ -476,12 +486,29 @@ class DefaultFightScene(FightScene):
 
     def draw(self, surface_manager: SurfaceManager):
         if self.is_pause:
-            src = surface_manager.screen
+            src = surface_manager.buffers[7]
+
         else:
             self.default_draw(surface_manager)
             src = self.apply_shader(surface_manager)
 
-        src.copy_to(surface_manager.screen)
+        if self.__main_alpha__ >= 0.999:
+            src.copy_to(surface_manager.screen)
+        else:
+            if self.is_pause:
+                surface_manager.screen.blit_data(
+                    src, RenderData(vec2(0, 0), color=vec4(self.__main_alpha__, self.__main_alpha__, self.__main_alpha__, 1.0))
+                )
+                GameState.__gsRenderOptions__.transform.alpha = 1.0
+            else:
+                src.copy_to(surface_manager.screen)
+                GameState.__gsRenderOptions__.transform.alpha = self.__main_alpha__
+
+        if self.is_pause:
+            args = RenderArgs()
+            args.camera_delta = vec2(0, 0)
+            args.target_surface = surface_manager.screen
+            self.__pause_ui__.draw(args)
 
 
 class WorldManager:

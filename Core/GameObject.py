@@ -23,12 +23,15 @@ class ArgAction:
         return self.__fun__(*args)
 
 
-class GameObject:
-    def __init__(self):
-        self._focus_id = 0
+class IUpdatable:
 
     def update(self, args: GameArgs):
         raise NotImplementedError()
+
+
+class GameObject(IUpdatable):
+    def __init__(self):
+        self._focus_id = 0
 
     __disposed__ = False
     _focus_id: int

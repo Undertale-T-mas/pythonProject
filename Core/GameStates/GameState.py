@@ -10,6 +10,8 @@ from typing import *
 from Core.GamingGL.GLBase import *
 from Core.Render.SurfaceManager import SurfaceManager
 
+
+__gsGameStop__: bool = False
 __gsGameArgs__ = GameArgs()
 __gsRenderArgs__ = RenderArgs()
 __gsScene__: Scene | Any = None
@@ -93,7 +95,7 @@ def render():
             __gsSurfaceManager__.screen.copy_to(__gsSurfaceManager__.display)
 
 
-def update(time_elapsed: float):
+def update(time_elapsed: float) -> bool:
     global __gsSceneBuffer__
     global __gsScene__
     global __gsKeyStates__
@@ -108,6 +110,7 @@ def update(time_elapsed: float):
     __gsInsBuffer__.clear()
     __gsScene__.update(__gsGameArgs__)
     __gsKeyLast__ = __gsKeyStates__
+    return __gsGameStop__
 
 
 def current_scene() -> Scene:
@@ -133,3 +136,7 @@ def key_on_press(key_id: KeyIdentity):
     else:
         raise Exception()
 
+
+def stop_game():
+    global __gsGameStop__
+    __gsGameStop__ = True

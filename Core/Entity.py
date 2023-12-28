@@ -6,7 +6,12 @@ from Core.GameObject import GameObject
 from pygame import Vector2 as vec2
 
 
-class Entity(GameObject):
+class IEntity:
+    def draw(self, render_args: RenderArgs):
+        raise NotImplementedError()
+
+
+class Entity(GameObject, IEntity):
     def __init__(self):
         self.image = None
         super().__init__()

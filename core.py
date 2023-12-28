@@ -15,7 +15,6 @@ from Core.Physics.Collidable import *
 from Core.Physics.CollidingArea import *
 from Core.Render.RenderOptions import *
 from Core.Render.SurfaceManager import *
-from Core.Render.VSurface import *
 from Core.GameObject import *
 from Core.GameArgs import *
 from pygame import Vector2 as vec2
