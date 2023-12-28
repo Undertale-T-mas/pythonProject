@@ -25,3 +25,5 @@ class KeyIdentity(Enum):
 
     ctrl = [pygame.K_LCTRL]
     save = [pygame.K_s]
+
+    pause = [pygame.K_ESCAPE]

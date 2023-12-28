@@ -186,6 +186,14 @@ class DefaultFightScene(FightScene):
         WorldManager.play_respawn_scene()
 
     def update(self, game_args: GameArgs):
+        if key_on_press(KeyIdentity.pause):
+            if self.is_pause:
+                self.resume_game()
+                self.__render_options__.transform.alpha = 1.0
+            else:
+                self.pause_game()
+                self.__render_options__.transform.alpha = 0.5
+
         super().update(game_args)
         self.__timeElapsed__ = game_args.elapsedSec
         self.timer += game_args.elapsedSec
@@ -442,47 +450,7 @@ class DefaultFightScene(FightScene):
         self.ui_painter.blit(src, self.__bottom__)
         return src
 
-    def transform(self, src: RenderTarget, surface_manager: SurfaceManager):
-
-        ro = self.__render_options__.transform
-
-        if not ro.check_necessity():
-            return src
-
-        screen = surface_manager.screen
-        dst = screen
-        if src == screen:
-            dst = surface_manager.buffers[6]
-
-        sz = self.__render_options__.screenSize
-
-        GamingGL.default_transform()
-        dst.set_target_self()
-
-        EffectLib.transform.apply()
-        EffectLib.transform.set_arg('iCentreUV', ro.centre_uv)
-        EffectLib.transform.set_arg('iOffset', ro.offset)
-        EffectLib.transform.set_arg('iAlpha', ro.alpha)
-        EffectLib.transform.set_arg('iRotation', ro.rotation)
-        EffectLib.transform.set_arg('iScale', ro.scale)
-        EffectLib.transform.set_arg('screen_size', sz)
-        EffectLib.transform.set_arg('sampler', src)
-
-        glBegin(GL_QUADS)
-
-        data = [vec4(0, 0, 0, 0), vec4(sz.x, 0, 1, 0),
-                vec4(sz.x, sz.y, 1, 1), vec4(0, sz.y, 0, 1)]
-        for i in range(4):
-            glVertex4f(data[i].x, data[i].y, data[i].z, data[i].w)
-            glTexCoord2f(data[i].z, data[i].w)
-
-        glEnd()
-
-        EffectLib.transform.reset()
-        src, dst = dst, src
-        return src
-
-    def draw(self, surface_manager: SurfaceManager):
+    def default_draw(self, surface_manager: SurfaceManager):
         if not self.__fade_in__:
             super().draw(surface_manager)
         else:
@@ -506,7 +474,14 @@ class DefaultFightScene(FightScene):
                     area=rec,
                 )
 
-        self.transform(self.apply_shader(surface_manager), surface_manager).copy_to(surface_manager.screen)
+    def draw(self, surface_manager: SurfaceManager):
+        if self.is_pause:
+            src = surface_manager.screen
+        else:
+            self.default_draw(surface_manager)
+            src = self.apply_shader(surface_manager)
+
+        src.copy_to(surface_manager.screen)
 
 
 class WorldManager:

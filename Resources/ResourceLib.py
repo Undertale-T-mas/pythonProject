@@ -38,6 +38,7 @@ class Sounds:
     laser: Sound = None
     died: Sound = None
     jump: Sound = None
+    pause: Sound = None
     crystal: Sound = None
     playerDamaged: Sound = None
     robotDamaged: Sound = None
@@ -53,6 +54,7 @@ class Sounds:
         Sounds.shoot = load_sound('shoot.wav')
         Sounds.laser = load_sound('laser.wav')
         Sounds.died = load_sound('died.wav')
+        Sounds.pause = load_sound('pause.wav')
         Sounds.jump = load_sound('jump.wav')
         Sounds.jumpLand = load_sound('jumpland.wav')
         Sounds.playerDamaged = load_sound('player_damaged.wav')

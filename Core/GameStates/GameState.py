@@ -6,6 +6,8 @@ from Core.GameStates.KeyIdentity import KeyIdentity
 from Core.GameStates.ObjectManager import *
 from Core.GameStates.Scene import *
 from typing import *
+
+from Core.GamingGL.GLBase import *
 from Core.Render.SurfaceManager import SurfaceManager
 
 __gsGameArgs__ = GameArgs()
@@ -47,9 +49,48 @@ def change_scene(scene: Scene):
 
 def render():
     __gsScene__.draw(__gsSurfaceManager__)
+
+    def copy_with_transform():
+
+        ro = __gsRenderOptions__.transform
+
+        src = __gsSurfaceManager__.screen
+        dst = __gsSurfaceManager__.display
+
+        sz = __gsRenderOptions__.screenSize
+
+        GamingGL.screen_transform()
+        dst.set_target_self()
+
+        EffectLib.transform.apply()
+        EffectLib.transform.set_arg('iCentreUV', ro.centre_uv)
+        EffectLib.transform.set_arg('iOffset', ro.offset)
+        EffectLib.transform.set_arg('iAlpha', ro.alpha)
+        EffectLib.transform.set_arg('iRotation', ro.rotation)
+        EffectLib.transform.set_arg('iScale', ro.scale)
+        EffectLib.transform.set_arg('screen_size', sz)
+        EffectLib.transform.set_arg('sampler', src)
+
+        glBegin(GL_QUADS)
+
+        data = [vec4(0, sz.y, 0, 0), vec4(sz.x, sz.y, 1, 0),
+                vec4(sz.x, 0, 1, 1), vec4(0, 0, 0, 1)]
+        for i in range(4):
+            glVertex4f(data[i].x, data[i].y, data[i].z, data[i].w)
+            glTexCoord2f(data[i].z, data[i].w)
+
+        glEnd()
+
+        EffectLib.transform.reset()
+
     if __gsRenderOptions__.extraBuffer:
+
         __gsSurfaceManager__.display.clear(cv4.TRANSPARENT)
-        __gsSurfaceManager__.screen.copy_to(__gsSurfaceManager__.display)
+
+        if __gsRenderOptions__.transform.check_necessity():
+            copy_with_transform()
+        else:
+            __gsSurfaceManager__.screen.copy_to(__gsSurfaceManager__.display)
 
 
 def update(time_elapsed: float):
@@ -91,3 +132,4 @@ def key_on_press(key_id: KeyIdentity):
         return False
     else:
         raise Exception()
+

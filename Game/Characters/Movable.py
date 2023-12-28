@@ -381,7 +381,7 @@ class MovableEntity(Entity, Collidable):
                         self.physicArea.area = self.physicArea.area.move(-dx, 0)
 
                 bdec = self.physicArea.area.i_bottom // TILE_LENGTH
-                tdec = max(0, self.physicArea.area.i_top // TILE_LENGTH)
+                tdec = self.physicArea.area.i_top // TILE_LENGTH
                 ldec = self.physicArea.area.i_left // TILE_LENGTH
                 rdec = self.physicArea.area.i_right // TILE_LENGTH
 
@@ -396,9 +396,9 @@ class MovableEntity(Entity, Collidable):
                             continue
                         if not tile.collidable:
                             continue
-                        if self.physicArea.area.right <= tile.areaRect.left:
+                        if self.physicArea.area.right - 1.5 <= tile.areaRect.left:
                             continue
-                        if self.physicArea.area.left >= tile.areaRect.right:
+                        if self.physicArea.area.left + 1.5 >= tile.areaRect.right:
                             continue
                         if tile.areaRect.bottom + 0.001 > head_y:
                             move_del.y += tile.areaRect.bottom - head_y
