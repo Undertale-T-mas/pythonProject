@@ -157,7 +157,8 @@ class TileLibrary(Enum):
 
             if door.__extra__ >= 0.06:
                 door.__extra__ -= 0.06
-                door.image.indexX += 1 if check_door_open else -1
+                door.image.indexX += 1 if check_door_open.act() else -1
+                GameState.__gsScene__.tileChanged = True
                 if door.image.indexX >= 6:
                     door.image.indexX = 6
                 if door.image.indexX <= 0:

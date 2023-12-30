@@ -141,9 +141,9 @@ class ObjectGenerate:
                           img_cnt=8, unit_size=vec2(32, 32))
 
     @staticmethod
-    def make_cannon(direction: float, interval: float):
+    def make_cannon(direction: float, interval: float, delay: float = 0.0):
         u = ObjectGenerate.ObjectTempData()
-        u.ins = Cannon(direction, interval)
+        u.ins = Cannon(direction, interval, delay=delay)
 
         def on_update(obj1: Entity):
             u.ins.on_update(obj1)

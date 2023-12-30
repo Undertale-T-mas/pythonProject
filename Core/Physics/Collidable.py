@@ -1,7 +1,8 @@
+from Core.GameObject import IUpdatable
 from Core.Physics.CollidingArea import CollideArea
 
 
-class Collidable:
+class Collidable(IUpdatable):
     physicSurfName: str
     physicArea: CollideArea
 

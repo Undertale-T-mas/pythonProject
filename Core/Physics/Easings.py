@@ -115,9 +115,9 @@ class EasingGenerator(Generic[T]):
                       EasingFunc(lambda args: start + vec2(args.time * speed.x, args.time * speed.y)))
 
     @staticmethod
-    def sin(intensity: float, cycle: float, phase: float):
-        return Easing(1e20, Math.sin(phase / 180 * pi), None,
-                      EasingFunc(lambda args: intensity * Math.sin((phase + args.time) / 180 * pi / cycle)))
+    def sin(intensity: float, cycle: float, phase: float, _time: float = 1e20):
+        return Easing(_time, Math.sin(phase / 180 * pi), None,
+                      EasingFunc(lambda args: intensity * Math.sin((phase + args.time) * 2 * pi / cycle)))
 
     @staticmethod
     def combine(source_x: Easing, source_y: Easing):
@@ -130,8 +130,8 @@ class EasingGenerator(Generic[T]):
 
 
 class VirtualEasingObject(GameObject, Generic[T]):
-    easeIndex = 0
-    timeProgress = 0
+    easeIndex: int
+    timeProgress: float
     result: T
     easings: List[Easing]
     follow: Entity | None
@@ -140,6 +140,8 @@ class VirtualEasingObject(GameObject, Generic[T]):
     def __init__(self, action, easings: List[Easing], follow: Entity | None):
         self.easings = easings
         super().__init__()
+        self.easeIndex = 0
+        self.timeProgress = 0.0
         self.follow = follow
         self.action = action
 
@@ -154,7 +156,7 @@ class VirtualEasingObject(GameObject, Generic[T]):
         if self.follow is None:
             pos = vec2(0, 0)
         else:
-            if self.is_disposed():
+            if self.follow.is_disposed():
                 self.dispose()
                 return
             pos = self.follow.centre
@@ -186,6 +188,12 @@ class EasingRunner(Generic[T]):
     def to(self, _time: float, tar: T, ease_type: EaseType = EaseType.linear):
         front = self.easings[-1]
         self.easings.append(EasingGenerator.generate_out(_time, front.end, tar, ease_type))
+        return self
+
+    def copy(self, times: int):
+        u = self.easings.copy()
+        for i in range(times):
+            self.easings += u.copy()
         return self
 
     def combine_y(self, easing: Easing, effect_from: int = 0, effect_to: int = -1):

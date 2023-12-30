@@ -239,13 +239,26 @@ class Player(MovableEntity, IPlayer):
     __hand__: PlayerHand
     __saver__: SavingSlot
 
+    _invincible_time: float
+
+    _controllable: bool
     ammunition: int
     fire_cooldown: float
+
+    @property
+    def controllable(self):
+        return self._controllable
+
+    @controllable.setter
+    def controllable(self, val: bool):
+        self.controllable = val
 
     def __init__(self, position: vec2 = vec2(24, 0), speed: vec2 = vec2(0, 0), data: PlayerData = PlayerData()):
         super().__init__()
         self.__saver__ = SavingSlot(self)
+        self._controllable = True
         self.ammunition = data.ammunition
+        self._invincible_time = 0.5
         self.fire_cooldown = data.fire_cooldown
         s = MultiImageSet(vec2(32, 48), vec2(48, 48), 'Characters\\Player')
         self.__hand__ = PlayerHand(self)
@@ -257,6 +270,7 @@ class Player(MovableEntity, IPlayer):
         self.gravity = 9.8
         self.size = vec2(40, 96 - 21)
         self.boundAnchor = vec2(20, 48 - 21)
+        self.__scene__ = None
         self.centre = position
         self.__ySpeed__ = speed.y
         self.__lastSpeedX__ = speed.x
@@ -358,7 +372,12 @@ class Player(MovableEntity, IPlayer):
         return
 
     def deal_damage(self, damage: Damage):
-        self.hp.take_damage(damage.damageLevel)
+        if self._invincible_time > 0:
+            pass
+        else:
+            self.hp.take_damage(damage.damageLevel)
+            self._invincible_time = 0.5
+
         self.jump(4 + 2 * damage.damageLevel)
 
         if damage.source.centre.x > self.centre.x:
@@ -367,6 +386,9 @@ class Player(MovableEntity, IPlayer):
             self.give_force(13)
 
         Sounds.playerDamaged.play()
+
+        if self.save_progress() >= 0.01:
+            self.died()
 
     def crystal_save(self):
         self.hp.recover()
@@ -412,10 +434,18 @@ class Player(MovableEntity, IPlayer):
 
     def update(self, args: GameArgs):
         speed_x_target = 0
-        if key_hold(ki.left):
-            speed_x_target -= 5
-        if key_hold(ki.right):
-            speed_x_target += 5
+
+        if self._invincible_time > 0:
+            self._invincible_time -= args.elapsedSec
+
+        if self.__scene__ is None:
+            self.__scene__ = current_scene()
+
+        if self.__scene__.player_controllable:
+            if key_hold(ki.left):
+                speed_x_target -= 5
+            if key_hold(ki.right):
+                speed_x_target += 5
 
         self.__moveIntention__.x = speed_x_target
         if speed_x_target > 0:
@@ -423,20 +453,26 @@ class Player(MovableEntity, IPlayer):
         if speed_x_target < 0:
             self.image.flip = True
 
-        if key_on_press(ki.recharge) and self.fire_cooldown <= 0:
-            self.recharge()
+        if self.__scene__.player_controllable:
+            if key_on_press(ki.recharge) and self.fire_cooldown <= 0:
+                self.recharge()
 
         if self.fire_cooldown <= 0:
-            if key_on_press(ki.shoot):
-                self.attack()
-                self.ammunition -= 1
+            if self.__scene__.player_controllable:
+                if key_on_press(ki.shoot):
+                    self.attack()
+                    self.ammunition -= 1
             if self.ammunition == 0:
                 self.recharge()
 
         if self.fire_cooldown > 0:
             self.fire_cooldown -= args.elapsedSec
 
-        need_jump = key_hold(ki.jump)
+        need_jump = False
+
+        if self.__scene__.player_controllable:
+            need_jump = key_hold(ki.jump)
+
         if need_jump:
             self.__jumpPressTime__ += args.elapsedSec
         else:
@@ -525,4 +561,5 @@ class Player(MovableEntity, IPlayer):
 
         self.__hand__.update(args)
         self.data.update_data(self.ammunition, self.fire_cooldown, self.hp.__hp__, self.centre, self.hp.__difficulty__, self)
-        self.__saver__.update(args)
+        if self.__scene__.savable:
+            self.__saver__.update(args)

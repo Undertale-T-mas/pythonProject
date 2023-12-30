@@ -130,7 +130,7 @@ class Start(Scene):
             self.start_cooldown -= game_args.elapsedSec
             self.start_tot = Math.lerp(self.start_tot, 1.0, self.__timeElapsed__ * 3.5)
             if self.start_cooldown <= -0.35:
-                WorldManager.respawn()
+                WorldManager.start(type(self))
 
         self.shader_time += self.__timeElapsed__ * (1 - self.start_tot)
 
@@ -149,6 +149,7 @@ class Start(Scene):
 
         src = surface_manager.buffers[1]
         dst = surface_manager.buffers[6]
+        dst.clear(cv4.TRANSPARENT)
         sz = surface_manager.__renderOptions__.screenSize
         # do motion blur:
         if GameState.__gsRenderOptions__.motionBlurEnabled:
@@ -183,7 +184,6 @@ class Start(Scene):
             src, dst = dst, src
 
         src.copy_to(surface_manager.screen)
-        surface_manager.screen.blit(surface_manager.buffers[0], vec2(0, 0))
 
         surface_manager.screen.blit(self.text_1, self.text_1_pos + vec2(self.centre_x * 0.05, 0))
         surface_manager.screen.blit(self.text_2, self.text_1_pos + vec2(322 + self.centre_x * 0.05, 90))

@@ -1,4 +1,7 @@
+from typing import Any
+
 from Core.Entity import Entity
+from Core.GameStates.GameState import change_scene
 from Core.Profile.Savable import Savable
 
 
@@ -11,8 +14,31 @@ __worldPlayerPosY__ = Savable[float]('global\\loc.ppos.y')
 __worldRoomX__ = Savable[int]('global\\loc.room.x')
 __worldRoomY__ = Savable[int]('global\\loc.room.y')
 
+__startType__: type
+__timeTot__: float
+__deathTot__: float
+
+
+def __set_start_type__(t: type):
+    global __startType__
+    __startType__ = t
+
+
+def __wdTransfer__(data: Any):
+    global __timeTot__, __deathTot__
+    __timeTot__ = data[0]
+    __deathTot__ = data[1]
+
 
 class WorldData:
+
+    @staticmethod
+    def get_time_tot():
+        return __timeTot__
+
+    @staticmethod
+    def get_death_tot():
+        return __deathTot__
 
     @staticmethod
     def insert(single_map: Entity, x: int, y: int):
@@ -38,3 +64,7 @@ class WorldData:
     @staticmethod
     def get_difficulty_adjust():
         return __world_difficulty_adjust__.value
+
+    @classmethod
+    def back_to_menu(cls):
+        change_scene(__startType__())

@@ -6,6 +6,14 @@ __pdInstance__: Any
 
 class IPlayer(Entity):
 
+    @property
+    def controllable(self):
+        raise NotImplementedError()
+
+    @controllable.setter
+    def controllable(self, val: bool):
+        raise NotImplementedError()
+
     def crystal_save(self):
         raise NotImplementedError()
 

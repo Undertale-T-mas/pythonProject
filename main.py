@@ -3,15 +3,17 @@ import sys
 import pygame
 
 import Game.TestScene
-import Resources.ResourceLib
 from Core.GameStates import GameState
 from Core.GameStates.Scene import Scene
 from Core.Render.RenderOptions import *
+from Game.Map.Framework.WorldManager import __quitSave__
 from Game.Scenes.Start import *
 from Core.GameStates.KeyIdentity import KeyIdentity as ki
 from Game.TestScene import *
 from pygame import Vector2 as vec2
 from Game.Map.Framework.WorldManager import *
+import Resources.ResourceLib
+from Resources.ResourceLib import *
 
 # pygame setup
 
@@ -74,7 +76,9 @@ while running:
     # limits FPS to 144
     # dt is delta time in seconds since last frame, used for frame rate
     # independent physics.
-    dt = min(clock.tick(144) / 1000, 0.0333) * speed
+    dt = min(clock.tick(144) / 1000, 0.04) * speed
 
+__quitSave__()
+clock.tick(10)
 pygame.quit()
 sys.exit()

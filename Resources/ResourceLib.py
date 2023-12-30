@@ -34,10 +34,13 @@ class Fonts:
 
 class Sounds:
     startGame: Sound = None
+    uiSelect: Sound = None
+    uiSwitch: Sound = None
     shoot: Sound = None
     laser: Sound = None
     died: Sound = None
     jump: Sound = None
+    bomb: Sound = None
     pause: Sound = None
     crystal: Sound = None
     playerDamaged: Sound = None
@@ -58,5 +61,8 @@ class Sounds:
         Sounds.jump = load_sound('jump.wav')
         Sounds.jumpLand = load_sound('jumpland.wav')
         Sounds.playerDamaged = load_sound('player_damaged.wav')
+        Sounds.bomb = load_sound('bomb.wav')
         Sounds.robotDamaged = load_sound('robot_damaged.wav')
         Sounds.robotDied = load_sound('robot_died.wav')
+        Sounds.uiSwitch = load_sound('ui_switch.wav')
+        Sounds.uiSelect = load_sound('ui_select.wav')

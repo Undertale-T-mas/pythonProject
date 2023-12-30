@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 from Core.GameArgs import GameArgs
 
@@ -26,6 +26,9 @@ class ArgAction:
 class IUpdatable:
 
     def update(self, args: GameArgs):
+        raise NotImplementedError()
+
+    def is_disposed(self):
         raise NotImplementedError()
 
 
@@ -80,3 +83,28 @@ class DelayedAction(GameObject):
             self.dispose()
             self.__action__.act()
 
+
+class TimeLine(GameObject):
+
+    times: List[float]
+    events: List[Action]
+
+    cur_time: float
+    idx: int
+
+    def __init__(self):
+        self.times = []
+        self.events = []
+        self.cur_time = 0.0
+        self.idx = 0
+        super().__init__()
+
+    def update(self, args: GameArgs):
+        self.cur_time += args.elapsedSec
+        while self.idx < len(self.events) and self.cur_time >= self.times[self.idx]:
+            self.events[self.idx].act()
+            self.idx += 1
+
+    def insert(self, time: float, action: Action):
+        self.times.append(time)
+        self.events.append(action)

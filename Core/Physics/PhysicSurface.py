@@ -47,6 +47,8 @@ class PhysicSurface:
 
         for obj in objs1:
             for tar in objs2:
+                if obj.is_disposed() or tar.is_disposed():
+                    continue
                 if obj.physicArea.CollideWith(tar.physicArea):
                     obj.on_collide(tar)
                     tar.on_collide(obj)

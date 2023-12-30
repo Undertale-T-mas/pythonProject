@@ -8,6 +8,11 @@ from Game.Map.Framework.WorldData import WorldData
 class TileMap(Entity):
     in_initialize: bool = False
     overlay_image: Texture | None
+    bgm: str
+    savable: bool
+    player_controllable: bool
+    overlay_intensity: float
+    overlay_pos: vec2
 
     __worldPos__: vec2
     __backs__: Set[Tile]
@@ -48,6 +53,10 @@ class TileMap(Entity):
 
     def __init__(self):
         super().__init__()
+        self.overlay_intensity = 0.25
+        self.overlay_pos = vec2(0.0, 0.0)
+        self.bgm = ''
+        self.savable = True
         self.overlay_image = None
         self.__objects__ = []
         self.surfaceName = 'bg'
@@ -63,6 +72,7 @@ class TileMap(Entity):
         self.tileChanged = True
         self.width = 0
         self.height = 0
+        self.player_controllable = True
 
     def add_background(self, path: str, factor_x: float, alpha: float = 1.0):
         img = SingleImage('BackGrounds\\' + path)

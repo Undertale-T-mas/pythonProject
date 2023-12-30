@@ -4,12 +4,26 @@ from Core.GameObject import DelayedAction, Action
 from Core.GameStates.GameState import instance_create
 from Core.Physics.Easings import *
 
+__mixerLastMusic__: str | None = None
+
 
 def stop_music(fade_out_sec: float = 1.0):
     mixer_music.fadeout(int(fade_out_sec * 1000))
+    global __mixerLastMusic__
+    __mixerLastMusic__ = None
+
+
+def get_music_pos() -> float:
+    return mixer_music.get_pos() * 0.001
 
 
 def play_music(path: str, fade_out_sec: float = 1.0, fade_in_sec: float = 0.0):
+    global __mixerLastMusic__
+
+    if __mixerLastMusic__ == path:
+        return
+
+    __mixerLastMusic__ = path
 
     if mixer_music.get_busy():
         mixer_music.fadeout(int(fade_out_sec * 1000))

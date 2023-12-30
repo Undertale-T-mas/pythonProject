@@ -89,6 +89,10 @@ class ColorV4:
 
 class Math:
     @staticmethod
+    def fract(val):
+        return val - math.floor(val)
+
+    @staticmethod
     def lerp(x, y, scale):
         return x * (1 - scale) + y * scale
 
@@ -125,6 +129,10 @@ class Math:
     @staticmethod
     def rand(l: int, r: int):
         return rander.randint(l, r)
+
+    @staticmethod
+    def rand_f(l: float, r: float):
+        return rander.random() * (r - l) + l
 
     @staticmethod
     def vec2_polar(dist: float, deg: float):

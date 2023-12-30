@@ -1,3 +1,4 @@
+from Resources.Music import *
 from Core.GameStates.Scene import *
 from Core.Profile.ProfileIO import *
 from Core.Profile.Savable import Savable
@@ -12,6 +13,14 @@ class TileMapScene(Scene):
     __diffDynamic__: float
     tileChanged: bool
 
+    @property
+    def savable(self):
+        return self.tileMap.savable
+
+    @property
+    def player_controllable(self):
+        return self.tileMap.player_controllable
+
     def on_save(self):
         raise NotImplementedError()
 
@@ -24,6 +33,12 @@ class TileMapScene(Scene):
         self.tileMap = tile_map
         self.__difficulty__ = WorldData.get_difficulty()
         self.__diffDynamic__ = WorldData.get_difficulty_adjust()
+        if tile_map.bgm != '':
+            if tile_map.bgm == 'STOP':
+                stop_music(1.0)
+            else:
+                play_music(tile_map.bgm, 1.0, 1.0)
+
         self.instance_create(self.tileMap)
 
     def update(self, game_args: GameArgs):

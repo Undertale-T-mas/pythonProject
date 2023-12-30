@@ -9,7 +9,7 @@ from Game.Characters.Humans.Player import PlayerData
 from Game.Components.PauseUI import PauseUI
 from Game.Map.Framework.TileMap import TileMap
 from Game.Map.Framework.Tiles import TILE_LENGTH
-from Game.Map.Framework.WorldData import WorldData
+from Game.Map.Framework.WorldData import WorldData, __wdTransfer__, __set_start_type__
 from Core.Physics.Easings import *
 
 import inspect
@@ -22,8 +22,11 @@ __worldPlayerPosY__ = Savable[float]('global\\loc.ppos.y')
 __worldRoomX__ = Savable[int]('global\\loc.room.x')
 __worldRoomY__ = Savable[int]('global\\loc.room.y')
 __worldRespawnTime__ = Savable[int]('global\\stat.respawn')
+__worldElapsedTime__ = Savable[float]('global\\stat.time.tot', 0.0)
+__worldElapsedTimeVTOT__ = __worldElapsedTime__.value
 
 from Game.Scenes.FightScene.SceneMain import FightScene
+from Resources.ResourceLib import Sounds
 
 if __worldRoomX__.value is None:
     __worldRoomX__.value = -1
@@ -45,12 +48,19 @@ if __diffDynamic__.value is None:
 __worldCurRoom__: TileMap
 
 
+def __quitSave__():
+
+    __worldElapsedTime__.value = __worldElapsedTimeVTOT__
+    ProfileIO.save()
+
+
 def __wmSave__(player_pos: vec2):
 
     __worldRoomX__.value = int(__worldCurRoom__.worldPos.x)
     __worldRoomY__.value = int(__worldCurRoom__.worldPos.y)
     __worldPlayerPosX__.value = player_pos.x
     __worldPlayerPosY__.value = player_pos.y
+    __worldElapsedTime__.value = __worldElapsedTimeVTOT__
     ProfileIO.save()
 
 
@@ -191,17 +201,31 @@ class DefaultFightScene(FightScene):
     def __respawn_scene__(self):
         WorldManager.play_respawn_scene()
 
+    def pause_game(self):
+        super().pause_game()
+        self.__pause_ui__.on_activate()
+        Sounds.pause.play()
+
+    def resume_game(self):
+        super().resume_game()
+        Sounds.pause.play()
+
     def update(self, game_args: GameArgs):
-        if key_on_press(KeyIdentity.pause):
+        global __worldElapsedTimeVTOT__
+        __worldElapsedTimeVTOT__ += game_args.elapsedSec
+        __wdTransfer__((__worldElapsedTimeVTOT__, __worldRespawnTime__))
+
+        if key_on_press(KeyIdentity.pause) and self.tileMap.savable:
             if self.is_pause:
                 self.resume_game()
-            else:
+            elif not self.__fade_in__:
                 self.pause_game()
                 rm = GameState.__gsSurfaceManager__
                 rm.screen.copy_to(rm.buffers[7])
 
         self.__main_alpha__ = Math.lerp(
-            self.__main_alpha__, 0.5 if self.is_pause else 1, 10 * game_args.elapsedSec
+            self.__main_alpha__, 0.5 if self.is_pause else 1,
+            min(1.0, 32 * game_args.elapsedSec)
         )
 
         super().update(game_args)
@@ -293,7 +317,7 @@ class DefaultFightScene(FightScene):
             dst.set_target_self()
 
             EffectLib.motion_blur.apply()
-            scale = Math.clamp(self.__timeElapsed__ * 100 + (1 if self.player.__dead__ else 0), 0.01, 1.0)
+            scale = Math.clamp(self.__timeElapsed__ * 77.7 + (1 if self.player.__dead__ else 0), 0.01, 1.0)
             EffectLib.motion_blur.set_arg('scale', scale)
             EffectLib.motion_blur.set_arg('sampler', src)
             EffectLib.motion_blur.set_arg('sampler_old', surface_manager.buffers[7])
@@ -433,11 +457,11 @@ class DefaultFightScene(FightScene):
             dst.set_target_self()
 
             EffectLib.overlay.apply()
-            EffectLib.overlay.set_arg('iIntensity', 0.25)
+            EffectLib.overlay.set_arg('iIntensity', self.tileMap.overlay_intensity)
             EffectLib.overlay.set_arg('sampler', src)
             EffectLib.overlay.set_arg('iWarn', sin(self.__warnIntensity__ * 1.57) * 0.4)
             EffectLib.overlay.set_arg('iTime', self.timer)
-            EffectLib.overlay.set_arg('iCamPos', self.__overlay_pos__)
+            EffectLib.overlay.set_arg('iCamPos', self.__overlay_pos__ + self.tileMap.overlay_pos)
             EffectLib.overlay.set_arg('sampler_overlay', self.tileMap.overlay_image)
             EffectLib.overlay.set_arg('screen_size', sz)
 
@@ -564,3 +588,8 @@ class WorldManager:
         ProfileIO.restore_old()
         __worldRespawnTime__.value += 1
         ProfileIO.save()
+
+    @staticmethod
+    def start(start_type: type):
+        WorldManager.respawn()
+        __set_start_type__(start_type)

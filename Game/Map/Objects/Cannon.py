@@ -65,9 +65,9 @@ class Cannon(MapObjectFuncBase):
             self.shoot(object_source.centre)
         pass
 
-    def __init__(self, direction: float, interval: float):
+    def __init__(self, direction: float, interval: float, delay: float = 0.0):
         self.direction = direction
-        self.t = interval
+        self.t = interval + delay
         self.interval = interval
         super().__init__()
 

@@ -12,7 +12,7 @@ T = TypeVar("T")
 class Savable(Generic[T]):
     path_with_obj: str
     _defaultVal: Any
-    __val__: Any = None
+    __val__: Any
     _unstable: bool
 
     def __init__(self, path_with_obj, default_val: Any = None, not_stable: bool = False):

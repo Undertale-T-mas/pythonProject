@@ -68,7 +68,7 @@ def render():
         EffectLib.transform.set_arg('iCentreUV', ro.centre_uv)
         EffectLib.transform.set_arg('iOffset', ro.offset)
         EffectLib.transform.set_arg('iAlpha', ro.alpha)
-        EffectLib.transform.set_arg('iRotation', ro.rotation)
+        EffectLib.transform.set_arg('iRotate', ro.rotation / 180 * 3.1415926)
         EffectLib.transform.set_arg('iScale', ro.scale)
         EffectLib.transform.set_arg('screen_size', sz)
         EffectLib.transform.set_arg('sampler', src)

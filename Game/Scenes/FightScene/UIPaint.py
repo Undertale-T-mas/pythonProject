@@ -128,6 +128,15 @@ class UIPainter(Entity):
             f.blit(self.black_canvas, 'BULLET', vec2(400, 34), col=cv4.WHITE, scale=0.8)
 
             f.blit(self.black_canvas, 'SAVE', vec2(740, 34), col=cv4.WHITE, scale=0.8)
+            t_t = WorldData.get_time_tot()
+            f.blit(self.black_canvas,
+                   str.format("{:0>2d}:{:0>2d}.{:.0f}", int(t_t / 60), int(t_t) % 60, int(10 * Math.fract(t_t))),
+                   vec2(993, 19), col=cv4.YELLOW, scale=0.5
+                   )
+            f.blit(self.black_canvas,
+                   str.format("{:0>5d}", int(WorldData.get_death_tot())),
+                   vec2(993, 50), col=cv4.RED, scale=0.5
+                   )
 
             if self.is_dead:
                 f.blit(self.black_canvas, 'DEAD', vec2(190, 34),
@@ -144,14 +153,14 @@ class UIPainter(Entity):
                 self.black_canvas.blit_data(self.bullet_tex, RenderData(pos, anchor=self.bullet_tex.centre, color=cv4.SILVER))
                 pos.x += 20
 
-            pos = vec2(841, 32)
+            pos = vec2(824, 33)
             for i in range(self.old_scnt):
                 self.black_canvas.blit_data(self.sc_tex, RenderData(pos, anchor=self.sc_tex.centre))
-                pos.x += 51
+                pos.x += 41
 
             for i in range(self.old_scnt + 1, self.data.player_object.save_slot_size() + 1):
                 self.black_canvas.blit_data(self.sc_tex, RenderData(pos, anchor=self.sc_tex.centre, color=cv4.SILVER))
-                pos.x += 51
+                pos.x += 41
 
         sur.blit(self.black_canvas, vec2(0, y_limit),
                  FRect(0, min(y_limit, 72.0), self.black_canvas.get_width(),
