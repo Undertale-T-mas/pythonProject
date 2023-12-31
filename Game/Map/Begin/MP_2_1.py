@@ -9,8 +9,72 @@ class BoolData:
     data: bool
 
 
-boss: Any = None
+class IRobot(LandRobot):
+
+    def attack_a(self):
+        raise NotImplementedError()
+
+    def attack_b(self):
+        raise NotImplementedError()
+
+    def attack_r(self):
+        raise NotImplementedError()
+
+    def reset_state(self, s: str):
+        raise NotImplementedError()
+
+
+boss: IRobot | None = None
 fight_ins: List[GameObject] = []
+
+
+class Missile(Barrage):
+
+    _mode: bool
+    rect: CollideRect
+    _speed: vec2
+
+    _default_x: float
+
+    def __init__(self, pos: vec2, speed_x: float, speed_y: float):
+        super().__init__(Damage(self, 2))
+        self.image = SingleImage('Objects\\Barrage\\Missile1.png')
+        self.image.scale = 1.5
+
+        self.centre = pos
+        self._default_x = speed_x
+        self._speed = vec2(speed_x, speed_y)
+        self._mode = True
+        rec = CollideRect()
+        self.physicArea = rec
+        self.rect = rec
+        rec.area = FRect(0.0, 0.0, 2.0, 2.0)
+
+    def update(self, args: GameArgs):
+
+        pl = get_player_data()
+        if self._mode:
+            if self._speed.x > 0:
+                if self.centre.x > pl.player_object.centre.x - 45:
+                    self._mode = False
+            else:
+                if self.centre.x < pl.player_object.centre.x + 45:
+                    self._mode = False
+
+        self._speed = Math.lerp(
+            self._speed,
+            vec2(self._default_x, 0.0) if self._mode else vec2(0.0, 14.0),
+            args.elapsedSec * 4.0
+        )
+        self._speed.x = Math.lerp(
+            self._speed.x,
+            self._default_x if self._mode else 0.0,
+            args.elapsedSec * 12.0
+        )
+
+        self.centre += self._speed * args.elapsedSec * 60
+        self.image.rotation = Math.dir_deg(self._speed)
+        self.rect.area.centre = self.centre
 
 
 class ToDemoEnd(GameObject):
@@ -31,13 +95,15 @@ class ToDemoEnd(GameObject):
         ro.alpha = 1 - self.time_tot * 0.5
 
 
-class BossRobot0(LandRobot):
+class BossRobot0(IRobot):
 
     alp: float
 
     def __init__(self, *args):
         global boss
         boss = self
+
+        self.__idxInterval__ = 0.1
 
         self.alp = 1.0
 
@@ -75,7 +141,53 @@ class BossRobot0(LandRobot):
         ps.set_at((0, 0), Color(255, 255, 255, 255))
         self.pix = Texture(ps)
 
+    def attack_a(self):
+        if self.__killed__:
+            return
+
+        bul = RobotBullet(
+            'Objects\\Barrage\\Laser1.png', self.centre + vec2(-80, 138.0),
+            self.image.flip,
+            vec2(-1300, 0),
+            Damage(self, 1)
+        )
+        bul.image.scale = 5
+        instance_create(bul)
+        Sounds.laser.play()
+        self.reset_state('Attack1')
+        self.__idx__ = 1
+        self.__idxInterval__ = 0.05
+
+    def attack_b(self):
+        if self.__killed__:
+            return
+
+        bul = RobotBullet(
+            'Objects\\Barrage\\Laser1.png', self.centre + vec2(-20, -38.0),
+            self.image.flip,
+            vec2(-1300, 0),
+            Damage(self, 1)
+        )
+        bul.image.scale = 4
+        instance_create(bul)
+        Sounds.laser.play()
+        self.reset_state('Attack3')
+        self.__idx__ = 1
+        self.__idxInterval__ = 0.05
+
+    def attack_r(self):
+        if self.__killed__:
+            return
+
+        bul = Missile(self.centre + vec2(-30, -48.0), -12.0, -14.0)
+        instance_create(bul)
+        Sounds.laser.play()
+        self.reset_state('Attack4')
+        self.__idx__ = 1
+        self.__idxInterval__ = 0.05
+
     col: vec4
+    __idxInterval__: float
     pix: Texture
 
     def on_collide(self, another):
@@ -105,6 +217,8 @@ class BossRobot0(LandRobot):
             return
         if self._state == 'Death':
             return
+
+        self.__idxInterval__ = 0.1
 
         self._state = state
         self.__idx__ = 0
@@ -155,14 +269,18 @@ class BossRobot0(LandRobot):
         self.move(args)
         self.image.indexX = self.__idx__
 
-        if self._state_acc_time >= 0.1:
+        if self._state_acc_time >= self.__idxInterval__:
             self.__idx__ += 1
-            self._state_acc_time -= 0.1
+            self._state_acc_time -= self.__idxInterval__
+            pl = get_player_data()
+            if pl.player_object.centre.x > self.areaRect.left - 40:
+                pl.player_object.deal_damage(Damage(self, 0))
             if self.__idx__ >= self.__state_cnt__[self._state]:
                 if self._state == 'Death':
                     self.__idx__ = self.__state_cnt__[self._state] - 1
                 else:
                     self.__idx__ = 0
+                    self.on_state_finish()
         self._state_acc_time += args.elapsedSec
 
         self.image.color = self.col
@@ -186,8 +304,8 @@ def register_action(token: str, act: Action):
     actions[token] = act
 
 
-def rhythm_activate(rhythm: List[str], interval: float):
-    t = 0.0
+def rhythm_activate(rhythm: List[str], interval: float, delta: float = 0.0):
+    t = delta
     tl = TimeLine()
     fight_ins.append(tl)
     for i in range(len(rhythm)):
@@ -202,6 +320,87 @@ def rhythm_activate(rhythm: List[str], interval: float):
 
 
 map: TileMap
+
+
+def introduce_attack_rhythm():
+
+    def shoot_1():
+        boss.attack_a()
+
+    def shoot_2():
+        boss.attack_b()
+
+    def shoot_3():
+        boss.attack_r()
+
+    register_action('s', Action(shoot_1))
+    register_action('t', Action(shoot_2))
+    register_action('r', Action(shoot_3))
+
+    rhythm_activate([
+        '', '', '', '',        '', '', '', '',
+
+        '', '', '', '',        's', '', '', '',
+        's', '', '', '',        't', '', '', '',
+        't', '', '', '',        's', '', 's', '',
+        's', '', '', '',        't', '', 't', '',
+
+        't', '', '', '',        's', '', 't', '',
+        's', '', '', '',        't', '', 's', '',
+        't', '', '', '',        's', '', 't', '',
+        's', '', '', '',        't', '', 's', '',
+
+        't', '', 'r', '',        't', '', 'r', '',
+        't', '', 'r', '',        't', '', 'r', '',
+        't', '', 'r', '',        't', '', 'r', '',
+        't', '', 'r', '',        't', '', 'r', '',
+
+        's', '', 'r', '',        's', '', 'r', '',
+        's', '', 'r', '',        's', '', 'r', '',
+        's', '', 'r', '',        's', '', 'r', '',
+        's', '', 'r', '',        's', '', 'r', '',
+
+        's,t', '', 'r', '',        's,t', '', 'r', '',
+        's,t', '', 'r', '',        's,t', '', 'r', '',
+        's,t', '', 'r', '',        's,t', '', 'r', '',
+        's,t', '', 'r', '',        's,t', '', 'r', '',
+
+        's,t', '', 'r', '',        's,t', '', 'r', '',
+        's,t', '', 'r', '',        's,t', '', 'r', '',
+        's,t', '', 'r', '',        's,t', '', 'r', '',
+        's,t', '', 'r', '',        's,t', '', 'r', '',
+
+        'r', '', 'r', '',        's,t', '', 'r', '',
+        'r', '', 'r', '',        's,t', '', 'r', '',
+        'r', '', 'r', '',        's,t', '', 'r', '',
+        'r', '', 'r', '',        's,t', '', 'r', '',
+
+        's,r', '', 'r', '',        's,t', '', 'r', 't',
+        's,r', '', 'r', '',        's,t', '', 'r', 't',
+        's,r', '', 'r', '',        's,t', '', 'r', 't',
+        's,r', '', 'r', '',        's,t', '', 'r', 't',
+
+        't', 't', 's,t', 't',         '', 'r', 's,r', 'r',
+        's', 's', 'r,s', 's',         's', 's', 's,r', 'r',
+        't', 't', 's,t', 't',         '', 'r', 's,r', 'r',
+        's', 's', 'r,s', 's',         's', 's', 's,r', 'r',
+
+        't', 't', 's,t', 't',         '', 'r', 's,r', 'r',
+        's', 's', 'r,s', 's',         's', 's', 's,r', 'r',
+        't', 't', 's,t', 't',         '', 'r', 's,r', 'r',
+        's', 's', 'r,s', 's',         's', 's', 's,r', 'r',
+
+        't', 't', 't', 't',          '', 'r', 's,r', 'r',
+        's', 's', 's', 's',          'r', 'r', 'r,t', 't',
+        't', 't', 't', 't',          '', 'r', 's,r', 'r',
+        's', 's', 's', 's',          'r', 'r', 'r,t', 't',
+
+        't', 't', 't', 't',          '', 'r', 's,r', 'r',
+        's', 's', 's', 's',          'r', 'r', 'r,t', 't',
+        't', 't', 't', 't',          't', 't', 's,t', 's,t',
+
+        '', '', '', '',         'r', 'r', 'r', '',
+    ], 0.19995, -0.013)
 
 
 def introduce_effect_rhythm():
@@ -309,6 +508,7 @@ def generate_effect():
         t = get_music_pos()
         if t > 1.57 and data.data:
             introduce_effect_rhythm()
+            introduce_attack_rhythm()
             data.data = False
 
     instance_create(StableAction(

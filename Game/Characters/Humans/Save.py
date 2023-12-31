@@ -1,4 +1,5 @@
 from Game.Characters.Humans.Data import IPlayer
+from Resources.ResourceLib import Sounds
 from core import *
 from Game.Tech.DataLib import TechData
 
@@ -12,9 +13,13 @@ class SavingSlot(GameObject):
     objSource: IPlayer
 
     def __init__(self, obj_source: IPlayer):
+        super().__init__()
         self.count = Savable('player\\item.save_crystal', 0)
         self.__saveTimeTot__ = 0.0
         self.objSource = obj_source
+
+    def player_moved(self):
+        self.__saveTimeTot__ = 0.0
 
     def slot_size(self) -> int:
         return TechData.get_save_slot()
@@ -49,4 +54,5 @@ class SavingSlot(GameObject):
             self.__saveTimeTot__ = 0.0
             self.use()
             self.objSource.crystal_save()
+            Sounds.save.play()
 

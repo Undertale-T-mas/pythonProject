@@ -6,6 +6,9 @@ __pdInstance__: Any
 
 class IPlayer(Entity):
 
+    def deal_damage(self, damage):
+        raise NotImplementedError()
+
     @property
     def controllable(self):
         raise NotImplementedError()

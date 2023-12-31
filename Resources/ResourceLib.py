@@ -47,6 +47,7 @@ class Sounds:
     robotDamaged: Sound = None
     recharge: Sound = None
     robotDied: Sound = None
+    save: Sound = None
     jumpLand: Sound = None
 
     @staticmethod
@@ -61,6 +62,7 @@ class Sounds:
         Sounds.jump = load_sound('jump.wav')
         Sounds.jumpLand = load_sound('jumpland.wav')
         Sounds.playerDamaged = load_sound('player_damaged.wav')
+        Sounds.save = load_sound('save.wav')
         Sounds.bomb = load_sound('bomb.wav')
         Sounds.robotDamaged = load_sound('robot_damaged.wav')
         Sounds.robotDied = load_sound('robot_died.wav')

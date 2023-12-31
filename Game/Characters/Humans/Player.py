@@ -450,8 +450,10 @@ class Player(MovableEntity, IPlayer):
         self.__moveIntention__.x = speed_x_target
         if speed_x_target > 0:
             self.image.flip = False
+            self.__saver__.player_moved()
         if speed_x_target < 0:
             self.image.flip = True
+            self.__saver__.player_moved()
 
         if self.__scene__.player_controllable:
             if key_on_press(ki.recharge) and self.fire_cooldown <= 0:
@@ -488,6 +490,7 @@ class Player(MovableEntity, IPlayer):
             self.__leaveGroundTime__ = 0.062
             Sounds.jump.set_volume(0.1)
             Sounds.jump.play()
+            self.__saver__.player_moved()
             self.state = MoveState.jump
 
             instance_create(MoveSmoke(

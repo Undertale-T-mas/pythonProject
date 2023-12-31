@@ -32,6 +32,6 @@ class HPBar(GameObject):
         defense_level = TechData.get_defense()
         val = Math.damage(damage_level, defense_level)
 
-        self.__hp__ -= val
+        # self.__hp__ -= val
         if self.__hp__ < 0:
             self.__player__.died()

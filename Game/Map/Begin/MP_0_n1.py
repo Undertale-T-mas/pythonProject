@@ -44,4 +44,4 @@ class MapTEST1(AutoTileMap):
         self.add_background('City\\3.png', 0.036, 0.87)
         self.add_background('City\\4.png', 0.08, 0.87)
         self.overlay_image = Texture(load_image('Effects\\Overlay\\purple.png'))
-        self.bgm = 'Auroral.mp3'
+        self.bgm = 'Expedition.mp3'

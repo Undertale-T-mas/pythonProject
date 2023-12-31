@@ -12,11 +12,11 @@ class Barrage(Entity, Collidable):
         self.autoDispose = True
         self.pierce = False
         self.damage = damage
+        self.physicSurfName = 'barrage'
+        self.surfaceName = 'barrage'
 
     def __set_centre__(self, result: vec2):
         self.centre = result
-        self.physicSurfName = 'barrage'
-        self.surfaceName = 'barrage'
 
     def move(self, ease: EasingRunner | Easing):
         if isinstance(ease, Easing):
