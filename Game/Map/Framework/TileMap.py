@@ -9,6 +9,7 @@ class TileMap(Entity):
     in_initialize: bool = False
     overlay_image: Texture | None
     bgm: str
+    damage_nerf: float
     savable: bool
     player_controllable: bool
     overlay_intensity: float
@@ -66,6 +67,7 @@ class TileMap(Entity):
         self.updatable = []
         self.__backs__ = set()
         self.__width__ = 0
+        self.damage_nerf = 1.0
         self.tiles = []
         self.__backGrounds__ = []
         self.__height__ = 0

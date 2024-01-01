@@ -48,7 +48,7 @@ class Missile(Barrage):
         rec = CollideRect()
         self.physicArea = rec
         self.rect = rec
-        rec.area = FRect(0.0, 0.0, 2.0, 2.0)
+        rec.area = FRect(0.0, 0.0, 1.0, 1.0)
 
     def update(self, args: GameArgs):
 
@@ -117,7 +117,7 @@ class BossRobot0(IRobot):
             MultiImageSet(vec2(96, 96), vec2(96, 96), 'Characters\\Enemys\\BOSS0'),
             vec2(48, 48 + 24.0), vec2(60, 192 + 24.0)
         )
-        self.__hp__ = 2000.0
+        self.__hp__ = 2100.0
         self.__hp__ = 10.0
         self.__killed__ = False
         self._state = ''
@@ -227,7 +227,7 @@ class BossRobot0(IRobot):
     def died(self):
         if self.__killed__:
             return
-        Sounds.bomb.play()
+        instance_create(DelayedAction(0.00, Action(Sounds.bomb.play)))
 
         def died_anim_play():
             anim = Animation(
@@ -258,6 +258,7 @@ class BossRobot0(IRobot):
         if self.__killed__:
             self.killed_time += args.elapsedSec
             self.reset_state('Death')
+            GameState.__gsRenderOptions__.transform.reset()
             if self.killed_time >= 2.0:
                 self.alp = 3.0 - self.killed_time
             if self.killed_time >= 3.0:
@@ -293,8 +294,12 @@ class BossRobot0(IRobot):
         render_args.target_surface.set_target_self()
         self.pix.draw(RenderData(self.centre - vec2(80, 100), anchor=None, scale=vec2(160, 20),
                                  color=vec4(0.75, 0.75, 0.75, 0.75)))
-        self.pix.draw(RenderData(self.centre - vec2(80, 100), anchor=None, scale=vec2(160 * self.__hp__ / 2000.0, 20),
+        self.pix.draw(RenderData(self.centre - vec2(80, 100), anchor=None, scale=vec2(160 * Math.clamp(self.__hp__ / 700.0, 0.0, 1.0), 20),
                                  color=vec4(0.75, 0.0, 0.0, 0.75)))
+        self.pix.draw(RenderData(self.centre - vec2(80, 100), anchor=None, scale=vec2(160 * Math.clamp(self.__hp__ / 700.0 - 1.0, 0.0, 1.0), 20),
+                                 color=vec4(0.75, 0.57, 0.0, 0.75)))
+        self.pix.draw(RenderData(self.centre - vec2(80, 100), anchor=None, scale=vec2(160 * Math.clamp(self.__hp__ / 700.0 - 2.0, 0.0, 1.0), 20),
+                                 color=vec4(0.55, 0.87, 0.0, 0.75)))
 
 
 actions: Dict[str, Action] = dict()
@@ -380,27 +385,66 @@ def introduce_attack_rhythm():
         's,r', '', 'r', '',        's,t', '', 'r', 't',
         's,r', '', 'r', '',        's,t', '', 'r', 't',
 
-        't', 't', 's,t', 't',         '', 'r', 's,r', 'r',
-        's', 's', 'r,s', 's',         's', 's', 's,r', 'r',
-        't', 't', 's,t', 't',         '', 'r', 's,r', 'r',
-        's', 's', 'r,s', 's',         's', 's', 's,r', 'r',
+        't', 't', 's,t', 't',         '', 'r', 'r', 'r',
+        's', 's', 'r,s', 's',         's', 's', 's', 'r',
+        't', 't', 's,t', 't',         '', 'r', 'r', 'r',
+        's', 's', 'r,s', 's',         's', 's', 's', 'r',
 
-        't', 't', 's,t', 't',         '', 'r', 's,r', 'r',
-        's', 's', 'r,s', 's',         's', 's', 's,r', 'r',
-        't', 't', 's,t', 't',         '', 'r', 's,r', 'r',
-        's', 's', 'r,s', 's',         's', 's', 's,r', 'r',
+        't', 't', 's,t', 't',         '', 'r', 'r', 'r',
+        's', 's', 'r,s', 's',         's', 's', 's', 'r',
+        't', 't', 's,t', 't',         '', 'r', 'r', 'r',
+        's', 's', 'r,s', 's',         's', 's', 's', 'r',
 
-        't', 't', 't', 't',          '', 'r', 's,r', 'r',
-        's', 's', 's', 's',          'r', 'r', 'r,t', 't',
-        't', 't', 't', 't',          '', 'r', 's,r', 'r',
-        's', 's', 's', 's',          'r', 'r', 'r,t', 't',
+        'r', 't', 't', 't',          '', 'r', 'r', 'r',
+        's', 's', 's', 's',          'r', 'r', 'r', 'r',
+        'r', 't', 't', 't',          '', 'r', 'r', 'r',
+        's', 's', 's', 's',          'r', 'r', 'r', 'r',
 
-        't', 't', 't', 't',          '', 'r', 's,r', 'r',
-        's', 's', 's', 's',          'r', 'r', 'r,t', 't',
-        't', 't', 't', 't',          't', 't', 's,t', 's,t',
-
+        'r', 't', 't', 't',          '', 'r', 'r', 'r',
+        's', 's', 's', 's',          'r', 'r', 'r', 'r',
+        'r', 't', 't', 't',          't', 't', 's,t', 's,t',
         '', '', '', '',         'r', 'r', 'r', '',
-    ], 0.19995, -0.013)
+
+        '', '', '', '',         'r', '', 'r', '',
+        'r', '', '', '',         's', '', 't', '',
+        'r', '', '', '',         'r', '', '', '',
+        'r', '', '', '',         's', '', 't', '',
+
+        'r', '', '', '',         'r', '', '', '',
+        'r', '', '', 's',         's,t', '', 's,t', '',
+        's,t', '', '', '',         '', '', '', '',
+        'r', '', 'r', '',         'r', '', 'r', '',
+
+        's', 's', 's', 's',         'r', 'r', 'r', 'r',
+        't', 't', 't', 't',         'r', 'r', 'r', 'r',
+        's', 's', 's', 's',         'r', 'r', 'r', 'r',
+        't', 't', 't', 't',         'r', 'r', 'r', 'r',
+
+        's', 's', 's', 's',         'r', 'r', 'r', 'r',
+        't', 't', 't', 't',         'r', 'r', 'r', 'r',
+        's', 's', 's', 's',         'r', 'r', 'r', 'r',
+        't', 't', 't', 't',         'r', 'r', 'r', 'r',
+
+        '', '', '', '',         's,t', '', 'r', '',
+        's,t', '', 'r', '',         's,t', '', 'r', '',
+        's,t', '', 'r', '',         's,t', '', 'r', '',
+        's,t', '', 'r', '',         's,t', '', 'r', '',
+
+        'r', 'r', 'r', '',         's,t', '', 's,t', '',
+        'r', 'r', 'r', '',         's,t', '', 's,t', '',
+        'r', 'r', 'r', '',         's,t', '', 's,t', '',
+        'r', 'r', 'r', '',         's,t', '', 's,t', '',
+
+        's,t', '', 'r', '',         's,t', '', 'r', '',
+        's,t', '', 'r', '',         's,t', '', 'r', '',
+        's,t', '', 'r', '',         's,t', '', 'r', '',
+        's,t', '', 'r', '',         's,t', '', 'r', '',
+
+        'r', 'r', 'r', '',         's,t', '', 's,t', '',
+        'r', 'r', 'r', '',         's,t', '', 's,t', '',
+        'r', 'r', 'r', '',         's,t', '', 's,t', '',
+        'r', 'r', 'r', '',         's,t', '', 's,t', '',
+    ], 0.19985, -0.005)
 
 
 def introduce_effect_rhythm():
@@ -413,6 +457,12 @@ def introduce_effect_rhythm():
     def set_rotate(val: float):
         ro.rotation = val
 
+    def set_alpha(val: float):
+        ro.alpha = val
+
+    def set_hide(val: float):
+        ro.brim_fade = val
+
     def set_overlay(val: float):
         map.overlay_intensity = val
 
@@ -424,22 +474,33 @@ def introduce_effect_rhythm():
         boss.reset_state('Walk')
 
     def scale():
-        EasingRunner(0.8, 0.986, 1.0, EaseType.quart).run(set_scale)
+        fight_ins.append(EasingRunner(0.8, 0.986, 1.0, EaseType.quart).run(set_scale))
 
     def overlay_shine():
-        EasingRunner(0.6, 0.18, 0.25, EaseType.quart).run(set_overlay)
+        fight_ins.append(EasingRunner(0.6, 0.18, 0.25, EaseType.quart).run(set_overlay))
 
     def rotate_positive():
-        EasingRunner(0.4, 1.3, 0.0, EaseType.quart).run(set_rotate)
+        fight_ins.append(EasingRunner(0.4, 1.3, 0.0, EaseType.quart).run(set_rotate))
+
+    def rotate_positive2():
+        fight_ins.append(EasingRunner(0.2, 0.5, 0.0, EaseType.quart).run(set_rotate))
 
     def rotate_negative():
-        EasingRunner(0.4, -1.3, 0.0, EaseType.quart).run(set_rotate)
+        fight_ins.append(EasingRunner(0.4, -1.3, 0.0, EaseType.quart).run(set_rotate))
 
     def move_boss_dur():
-        EasingRunner(1.6, -4.0, 0.0, EaseType.quad).run(move_boss)
+        fight_ins.append(EasingRunner(1.6, -4.0, 0.0, EaseType.quad).run(move_boss))
+
+    def shine_2():
+        fight_ins.append((EasingRunner(0.2 / 3, 0.0, 0.25, EaseType.sine).copy(3).run(set_overlay)))
+        fight_ins.append((EasingRunner(0.1 / 3, 0.5, 1.0, EaseType.quint).copy(6).to(0.8, 0.666, EaseType.quad).run(set_alpha)))
+
+    def shine_3():
+        fight_ins.append((EasingRunner(0.2 / 3, 0.10, 0.25, EaseType.sine).copy(3).run(set_overlay)))
+        fight_ins.append((EasingRunner(0.1 / 3, 0.75, 1.0, EaseType.quint).copy(6).to(1.0, 1.0, EaseType.linear).run(set_alpha)))
 
     def move_overlay():
-        (EasingRunner(0.8, 0.0, 100.0, EaseType.sine)
+        fight_ins.append((EasingRunner(0.8, 0.0, 100.0, EaseType.sine)
          .to(
             0.8, 0.0, EaseType.sine
         ).to(
@@ -454,18 +515,33 @@ def introduce_effect_rhythm():
             0.8, 100.0, EaseType.sine
         ).to(
             0.8, 0.0, EaseType.sine
-        ).copy(3).run(set_overlay_move))
+        ).copy(15).run(set_overlay_move)))
 
     def begin():
         map.player_controllable = True
 
+    def fade():
+        fight_ins.append(EasingRunner(0.8, 0.0, 0.3, EaseType.cubic).run(set_hide))
+        fight_ins.append((EasingRunner(1.6, 1.0, 0.9, EaseType.cubic).to(1.6, 1.0, EaseType.cubic).
+         copy(3).run(set_scale)))
+        fight_ins.append((EasingRunner(1.6, 0.0, 3, EaseType.cubic).to(1.6, 0.0, EaseType.cubic).
+         to(1.6, -3.0, EaseType.cubic).to(1.6, 0.0, EaseType.cubic).copy(3).run(set_rotate)))
+
+    def res():
+        fight_ins.append(EasingRunner(1.6, 0.3, 0.0, EaseType.cubic).run(set_hide))
+
     register_action('s', Action(scale))
     register_action('rp', Action(rotate_positive))
+    register_action('rp2', Action(rotate_positive2))
     register_action('rn', Action(rotate_negative))
     register_action('mv', Action(move_boss_dur))
     register_action('begin', Action(begin))
     register_action('l', Action(overlay_shine))
     register_action('ml', Action(move_overlay))
+    register_action('shine2', Action(shine_2))
+    register_action('shine3', Action(shine_3))
+    register_action('fade', Action(fade))
+    register_action('res', Action(res))
 
     rhythm_activate([
         'mv', '', '', '',        '', '', '', '',
@@ -497,6 +573,76 @@ def introduce_effect_rhythm():
         'rn', '', 'l,rn', '',        'rn', '', 'l,rn', '',
         'rp', '', 'l,rp', '',        'rp', '', 'l,rp', '',
         'rp', '', 'l,rp', '',        'rp', '', 'l,rp', '',
+
+        'rn,', '', 'l,rn', '',        'rn', '', 'l,rn', '',
+        'rn', '', 'l,rn', '',        'rn', '', 'l,rn', '',
+        'rp', '', 'l,rp', '',        'rp', '', 'l,rp', '',
+        'rp', '', 'l,rp', '',        'rp', '', 'l,rp', '',
+
+        'rn,', '', 'l,rn', '',        'rn', '', 'l,rn', '',
+        'rn', '', 'l,rn', '',        'rn', '', 'l,rn', '',
+        'rp', '', 'l,rp', '',        'rp', '', 'l,rp', '',
+        'rp', '', 'l,rp', '',        'rp', '', 'l,rp', '',
+
+        'rn,', '', 'l,rn', '',        'rn', '', 'l,rn', '',
+        'rn', '', 'l,rn', '',        'rn', '', 'l,rn', '',
+        'rp', '', 'l,rp', '',        'rp', '', 'l,rp', '',
+        'rp', '', 'l,rp', '',        'rp', '', 'l,rp', '',
+
+        'rn,', '', 'l,rn', '',        'rn', '', 'l,rn', '',
+        'rn', '', 'l,rn', '',        'rn', '', 'l,rn', '',
+        'rp', '', 'l,rp', '',        'rp', '', 'l,rp', '',
+        'rp', '', 'l,rp', '',        'rp', '', 'l,rp', '',
+
+        'rn,', '', 'l,rn', '',        'rn', '', 'l,rn', '',
+        'rn', '', 'l,rn', '',        'rn', '', 'l,rn', '',
+        'rp', '', 'l,rp', '',        'rp', '', 'l,rp', '',
+        'rp', '', 'l,rp', '',        'rp', '', 'l,rp', '',
+
+        'rn', '', 'l,rn', '',        'rn', '', 'l,rn', '',
+        'rn', '', 'l,rn', '',        'rn', '', 'l,rn', '',
+        'rp', '', 'l,rp', '',        'rp', '', 'l,rp', '',
+        '', '', '', '',        'rp2', 'rp2', 'rp2,shine2', '',
+
+        'fade', '', '', '',         '', '', '', '',
+        '', '', '', '',         '', '', '', '',
+        '', '', '', '',         '', '', '', '',
+        '', '', '', '',         '', '', '', '',
+
+        '', '', '', '',         '', '', '', '',
+        '', '', '', '',         '', '', '', '',
+        '', '', '', '',         '', '', '', '',
+        '', '', '', '',         '', '', '', '',
+
+        '', '', '', '',         '', '', '', '',
+        '', '', '', '',         '', '', '', '',
+        '', '', '', '',         '', '', '', '',
+        '', '', '', '',         '', '', '', '',
+
+        '', '', '', '',         '', '', '', '',
+        '', '', '', '',         '', '', '', '',
+        '', '', '', '',         '', '', '', '',
+        '', '', '', '',         '', '', 'shine3', '',
+
+        'res,s,rn', '', 'l,rn', '',         's,rn', '', 'l,rn', '',
+        's,rn', '', 'l,rn', '',         's,rn', '', 'l,rn', '',
+        's,rn', '', 'l,rn', '',         's,rn', '', 'l,rn', '',
+        's,rn', '', 'l,rn', '',         's,rn', '', 'l,rn', '',
+
+        's,rp', '', 'l,rp', '',         's,rp', '', 'l,rp', '',
+        's,rp', '', 'l,rp', '',         's,rp', '', 'l,rp', '',
+        's,rp', '', 'l,rp', '',         's,rp', '', 'l,rp', '',
+        's,rp', '', 'l,rp', '',         's,rp', '', 'l,rp', '',
+
+        's,rn', '', 'l,rn', '',         's,rn', '', 'l,rn', '',
+        's,rn', '', 'l,rn', '',         's,rn', '', 'l,rn', '',
+        's,rn', '', 'l,rn', '',         's,rn', '', 'l,rn', '',
+        's,rn', '', 'l,rn', '',         's,rn', '', 'l,rn', '',
+
+        's,rp', '', 'l,rp', '',         's,rp', '', 'l,rp', '',
+        's,rp', '', 'l,rp', '',         's,rp', '', 'l,rp', '',
+        's,rp', '', 'l,rp', '',         's,rp', '', 'l,rp', '',
+        's,rp', '', 'l,rp', '',         's,rp', '', 'l,rp', '',
     ], 0.20)
 
 
@@ -594,3 +740,4 @@ class MapTEST1(AutoTileMap):
         self.add_background('City2\\6.png', 0.02, 0.87)
         self.overlay_image = Texture(load_image('Effects\\Overlay\\red.png'))
         self.bgm = 'STOP'
+        self.damage_nerf = 0.4

@@ -35,13 +35,9 @@ GameState.change_scene(Start())
 flipped = False
 
 speed = 1e0
+time_rest = 0.0
 
 while running:
-    # poll for events
-    # pygame.QUIT event means the user clicked X to close your window
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
 
     GamingGL.begin()
     if GameState.update(dt):
@@ -76,7 +72,11 @@ while running:
     # limits FPS to 144
     # dt is delta time in seconds since last frame, used for frame rate
     # independent physics.
-    dt = min(clock.tick(144) / 1000, 0.04) * speed
+    time_rest += clock.tick(144) / 1000
+    time_rest = min(time_rest, 0.15)
+    time_cost = min(time_rest, 0.03)
+    dt = time_cost * speed
+    time_rest -= time_cost
 
 __quitSave__()
 clock.tick(10)

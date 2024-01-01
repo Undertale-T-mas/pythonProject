@@ -569,6 +569,8 @@ class WorldManager:
 
     @staticmethod
     def respawn(fade_in: bool = False):
+        GameState.__gsRenderOptions__.transform.reset()
+
         if WorldManager.__worldNeedInitialize__:
             TileMap.in_initialize = True
             WorldManager.__worldNeedInitialize__ = False

@@ -162,7 +162,7 @@ class Start(Scene):
             EffectLib.grid.set_arg(
                 'iBlendColor',
                 Math.lerp(
-                    Math.lerp(Vector3(0.7, 0.53, 0.9), Vector3(0.79, 0.45, 0.87), sin(self.time_tot) * 0.5 + 0.5),
+                    Math.lerp(Vector3(0.66, 0.63, 0.9), Vector3(0.89, 0.35, 0.87), sin(self.time_tot) * 0.5 + 0.5),
                     Vector3(1, 1, 1),
                     self.start_tot
                 )

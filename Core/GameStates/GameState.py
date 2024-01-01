@@ -23,6 +23,12 @@ __gsKeyStates__: ScancodeWrapper
 __gsKeyLast__: ScancodeWrapper
 
 __gsInsBuffer__: List[GameObject] = []
+__gsLastChar__: str = ''
+
+
+def __gsPushChar__(s: str):
+    global __gsLastChar__
+    __gsLastChar__ = s
 
 
 def initialize(render_options: RenderOptions):
@@ -70,6 +76,7 @@ def render():
         EffectLib.transform.set_arg('iAlpha', ro.alpha)
         EffectLib.transform.set_arg('iRotate', ro.rotation / 180 * 3.1415926)
         EffectLib.transform.set_arg('iScale', ro.scale)
+        EffectLib.transform.set_arg('iBrimFade', ro.brim_fade)
         EffectLib.transform.set_arg('screen_size', sz)
         EffectLib.transform.set_arg('sampler', src)
 
@@ -100,6 +107,24 @@ def update(time_elapsed: float) -> bool:
     global __gsScene__
     global __gsKeyStates__
     global __gsKeyLast__
+    global __gsLastChar__
+
+    __gsLastChar__ = ''
+
+    running = True
+    # poll for events
+    # pygame.QUIT event means the user clicked X to close your window
+    for _event in pygame.event.get():
+        if _event.type == pygame.QUIT:
+            running = False
+        elif _event.type == KEYDOWN:
+            asc = _event.unicode
+            if len(asc) != 1:
+                continue
+            asc = ord(asc)
+            if 32 <= asc <= 127:
+                __gsPushChar__(chr(asc))
+
     __gsKeyStates__ = key.get_pressed()
     __gsGameArgs__.update(time_elapsed)
     if not __gsSceneBuffer__ == __gsScene__:
@@ -110,6 +135,9 @@ def update(time_elapsed: float) -> bool:
     __gsInsBuffer__.clear()
     __gsScene__.update(__gsGameArgs__)
     __gsKeyLast__ = __gsKeyStates__
+
+    if not running:
+        return True
     return __gsGameStop__
 
 
@@ -140,3 +168,6 @@ def key_on_press(key_id: KeyIdentity):
 def stop_game():
     global __gsGameStop__
     __gsGameStop__ = True
+
+def key_input():
+    return __gsLastChar__

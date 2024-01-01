@@ -166,6 +166,7 @@ class VirtualEasingObject(GameObject, Generic[T]):
 
 class EasingRunner(Generic[T]):
     easings: List[Easing]
+    easing_instances: List[GameObject]
 
     def __init__(self, _time: float, start: T | None = None, end: T | None = None,
                  ease_args: EaseType | Easing = EaseType.linear):
@@ -184,6 +185,7 @@ class EasingRunner(Generic[T]):
             self.easings = [EasingGenerator.generate_out(_time, start, end, ease_args)]
         else:
             self.easings = [ease_args]
+        self.easing_instances = []
 
     def to(self, _time: float, tar: T, ease_type: EaseType = EaseType.linear):
         front = self.easings[-1]
@@ -215,4 +217,11 @@ class EasingRunner(Generic[T]):
             tot += self.easings[i].time
 
     def run(self, action, follow: Entity | None = None):
-        Core.GameStates.GameState.instance_create(VirtualEasingObject(action, self.easings, follow))
+        ins = VirtualEasingObject(action, self.easings, follow)
+        Core.GameStates.GameState.instance_create(ins)
+        self.easing_instances.append(ins)
+        return self
+
+    def dispose(self):
+        for obj in self.easing_instances:
+            obj.dispose()
