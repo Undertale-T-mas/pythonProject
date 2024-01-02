@@ -151,37 +151,36 @@ class Start(Scene):
         dst = surface_manager.buffers[6]
         dst.clear(cv4.TRANSPARENT)
         sz = surface_manager.__renderOptions__.screenSize
-        # do motion blur:
-        if GameState.__gsRenderOptions__.motionBlurEnabled:
-            GamingGL.default_transform()
-            dst.set_target_self()
 
-            EffectLib.grid.apply()
-            EffectLib.grid.set_arg('sampler', src)
-            EffectLib.grid.set_arg('iTime', self.shader_time + 0.000001)
-            EffectLib.grid.set_arg(
-                'iBlendColor',
-                Math.lerp(
-                    Math.lerp(Vector3(0.66, 0.63, 0.9), Vector3(0.89, 0.35, 0.87), sin(self.time_tot) * 0.5 + 0.5),
-                    Vector3(1, 1, 1),
-                    self.start_tot
-                )
+        GamingGL.default_transform()
+        dst.set_target_self()
+
+        EffectLib.grid.apply()
+        EffectLib.grid.set_arg('sampler', src)
+        EffectLib.grid.set_arg('iTime', self.shader_time + 0.000001)
+        EffectLib.grid.set_arg(
+            'iBlendColor',
+            Math.lerp(
+                Math.lerp(Vector3(0.66, 0.63, 0.9), Vector3(0.89, 0.35, 0.87), sin(self.time_tot) * 0.5 + 0.5),
+                Vector3(1, 1, 1),
+                self.start_tot
             )
-            EffectLib.grid.set_arg('iDotSize', 0.39)
-            EffectLib.grid.set_arg('screen_size', sz)
+        )
+        EffectLib.grid.set_arg('iDotSize', 0.39)
+        EffectLib.grid.set_arg('screen_size', sz)
 
-            glBegin(GL_QUADS)
+        glBegin(GL_QUADS)
 
-            data = [vec4(0, 0, 0, 0), vec4(sz.x, 0, 1, 0),
-                    vec4(sz.x, sz.y, 1, 1), vec4(0, sz.y, 0, 1)]
-            for i in range(4):
-                glVertex4f(data[i].x, data[i].y, data[i].z, data[i].w)
-                glTexCoord2f(data[i].z, data[i].w)
+        data = [vec4(0, 0, 0, 0), vec4(sz.x, 0, 1, 0),
+                vec4(sz.x, sz.y, 1, 1), vec4(0, sz.y, 0, 1)]
+        for i in range(4):
+            glVertex4f(data[i].x, data[i].y, data[i].z, data[i].w)
+            glTexCoord2f(data[i].z, data[i].w)
 
-            glEnd()
+        glEnd()
 
-            EffectLib.grid.reset()
-            src, dst = dst, src
+        EffectLib.grid.reset()
+        src, dst = dst, src
 
         src.copy_to(surface_manager.screen)
 
