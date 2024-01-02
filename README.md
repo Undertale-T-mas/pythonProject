@@ -7,6 +7,6 @@ How to play? If you want to play the game you needn't read the following instruc
   > spacebar or j to shoot\
   > r to reload\
   > hold ctrl + s for 2 secs to save game (need 2 time crystal)\
-  > esc for game pause and menu\
+  > esc for game pause and menu
 
 How to see the scoreboard? Press esc in the game to call the menu, then press down arrow key to the 'score' option, then press enter. You will see the world scoreboard.
