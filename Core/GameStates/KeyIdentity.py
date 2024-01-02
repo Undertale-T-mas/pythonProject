@@ -30,3 +30,4 @@ class KeyIdentity(Enum):
 
     pause = [pygame.K_ESCAPE]
     delete = [pygame.K_BACKSPACE]
+    enter = [pygame.K_KP_ENTER, pygame.K_RETURN]

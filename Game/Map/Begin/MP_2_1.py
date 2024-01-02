@@ -117,8 +117,7 @@ class BossRobot0(IRobot):
             MultiImageSet(vec2(96, 96), vec2(96, 96), 'Characters\\Enemys\\BOSS0'),
             vec2(48, 48 + 24.0), vec2(60, 192 + 24.0)
         )
-        self.__hp__ = 2100.0
-        self.__hp__ = 10.0
+        self.__hp__ = 2100.0 
         self.__killed__ = False
         self._state = ''
         self.image.flip = True

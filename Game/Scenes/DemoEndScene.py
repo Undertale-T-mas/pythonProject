@@ -1,3 +1,7 @@
+import threading
+
+import requests
+
 import Game.Map.Begin.MP_n1_n1
 import Resources.ResourceLib
 from Resources import ResourceLib
@@ -35,10 +39,74 @@ class DemoEndScene(Scene):
     scoreboard_state: int
 
     tip_text: str
+    time_value: float
     tip_color: vec4
 
     back_scale: List[float] = [0.0, 0.005, 0.015, 0.035, 0.067]
     back_images: List[Texture]
+
+    _loading: bool
+
+    def _request_url(self):
+
+        try:
+
+            url = f"http://uf-ex.com:3333/rank/level-1?username={self.username}&time={self.time_value}"
+            response = requests.post(url)
+            content = response.content
+            status_code = response.status_code
+
+            response_dict = json.loads(content)
+            if response_dict['message'] != 'success':
+                raise ConnectionError()
+
+            print('sent a post to server:', url)
+            print(f"status code: {status_code}")
+            print(f"content: {content}")
+
+            self.scoreboard_state = 1
+
+        except e:
+
+            self.scoreboard_state = -1
+            print('failed connection')
+
+        self._loading = False
+
+    def name_invalid(self):
+        if len(self.username) == 0:
+            return True
+
+        invalid_set = set()
+        invalid_set.add(' ')
+        invalid_set.add('/')
+        invalid_set.add('=')
+        invalid_set.add(',')
+        invalid_set.add('?')
+
+        for i in range(len(self.username)):
+            if self.username[i] in invalid_set:
+                return True
+
+        return False
+
+    def post(self):
+        if self.scoreboard_state == -3 or self.scoreboard_state == 1:
+            return
+
+        if self.name_invalid():
+            self.scoreboard_state = -2
+            return
+
+        self.scoreboard_state = -3
+        self._loading = True
+        try:
+            thread = threading.Thread(self._request_url())
+            thread.start()
+        except e:
+            self._loading = False
+            self.scoreboard_state = -1
+            print('Error in posting!')
 
     def set_pos_1(self, pos: vec2):
         self.text_1_pos = pos
@@ -48,7 +116,7 @@ class DemoEndScene(Scene):
             self.tip_text = 'please wait...'
             self.tip_color = cv4.YELLOW
         if self.scoreboard_state == -2:
-            self.tip_text = 'input username!'
+            self.tip_text = 'invalid name!'
             self.tip_color = cv4.RED
         elif self.scoreboard_state == -1:
             self.tip_text = 'check connection!'
@@ -64,6 +132,7 @@ class DemoEndScene(Scene):
         self.back_alpha = 0.0
         self.scoreboard_state = 0
         self.time_tot = -0.000001
+        self._loading = False
         self.char_last = ''
         self.shader_time = 0.0
         self.username = ''
@@ -86,6 +155,7 @@ class DemoEndScene(Scene):
 
         self.death_text = str.format("Death {:0>5d}", int(WorldData.get_death_tot()))
         t_t = WorldData.get_time_tot()
+        self.time_value = t_t
         self.time_text = str.format("Time {:0>2d}:{:0>2d}.{:.0f}", int(t_t / 60), int(t_t) % 60, int(10 * Math.fract(t_t)))
 
         text_start = Fonts.evil_empire.base_font.render(
@@ -166,6 +236,9 @@ class DemoEndScene(Scene):
         if key_on_press(ki.delete):
             if len(self.username) >= 1:
                 self.username = self.username[0:(len(self.username) - 1)]
+
+        if key_on_press(ki.enter):
+            self.post()
 
         self.make_tip()
 
